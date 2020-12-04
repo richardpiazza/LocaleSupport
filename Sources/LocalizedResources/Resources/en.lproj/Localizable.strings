@@ -1,0 +1,4 @@
+"ALERT_TITLE" = "Eliminar Documento";
+"ALERT_MESSAGE" = "¿Estás seguro de que deseas eliminar el documento?";
+"STANDARD_CONFIRM" = "Si";
+"CANCEL" = "Cancelar";
