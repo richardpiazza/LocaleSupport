@@ -19,7 +19,7 @@ public extension Database {
         return expressions(includeTranslations: false)
     }
     
-    func translations(for key: Translation.ID) -> [Translation] {
-        return translations(for: key, language: nil, region: nil)
+    func translations(for expressionID: Expression.ID) -> [Translation] {
+        return translations(for: expressionID, language: nil, region: nil)
     }
 }

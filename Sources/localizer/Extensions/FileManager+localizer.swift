@@ -34,8 +34,7 @@ extension FileManager {
         return try applicationSupportDirectory().appendingPathComponent("configuration.json")
     }
     
-    func defaultCatalogPath() throws -> String {
-//        return localizer.appendingPathComponent("catalog.sqlite").path
-        return "catalog.sqlite"
+    func catalogURL() throws -> URL {
+        return try applicationSupportDirectory().appendingPathComponent("catalog.sqlite")
     }
 }

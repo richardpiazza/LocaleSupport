@@ -202,7 +202,7 @@ public class SQLiteDatabase: Database {
         switch (language, region) {
         case (.some(let languageCode), .some(let regionCode)):
             clause = """
-            "\(Translation.CodingKeys.id.rawValue)" = :1
+            "\(Translation.CodingKeys.expressionID.rawValue)" = :1
                 AND "\(Translation.CodingKeys.language.rawValue)" = :2
                 AND "\(Translation.CodingKeys.region.rawValue)" = :3
             """
@@ -213,7 +213,7 @@ public class SQLiteDatabase: Database {
             }
         case (.some(let languageCode), .none):
             clause = """
-            "\(Translation.CodingKeys.id.rawValue)" = :1
+            "\(Translation.CodingKeys.expressionID.rawValue)" = :1
                 AND "\(Translation.CodingKeys.language.rawValue)" = :2
             """
             binding = {
@@ -222,7 +222,7 @@ public class SQLiteDatabase: Database {
             }
         case (.none, .some(let regionCode)):
             clause = """
-            "\(Translation.CodingKeys.id.rawValue)" = :1
+            "\(Translation.CodingKeys.expressionID.rawValue)" = :1
                 AND "\(Translation.CodingKeys.region.rawValue)" = :2
             """
             binding = {
@@ -231,7 +231,7 @@ public class SQLiteDatabase: Database {
             }
         default:
             clause = """
-            "\(Translation.CodingKeys.id.rawValue)" = :1
+            "\(Translation.CodingKeys.expressionID.rawValue)" = :1
             """
             binding = {
                 try $0.bind(position: 1, expressionID)

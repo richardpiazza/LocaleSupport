@@ -1,8 +1,6 @@
 import ArgumentParser
 
-let configuration = Configuration.current
-LanguageCode.default = configuration.defaultLanguageCode
-RegionCode.default = configuration.defaultRegionCode
+try Configuration.load(.default)
 
 struct Command: ParsableCommand {
     static var configuration: CommandConfiguration = {
@@ -18,9 +16,9 @@ struct Command: ParsableCommand {
             subcommands: [
                 Preview.self,
                 Catalog.self,
-                Import.self,
-                Export.self,
-                Generate.self,
+                Catalog.Import.self,
+                Catalog.Export.self,
+                Catalog.Generate.self,
                 Configure.self
             ],
             defaultSubcommand: Preview.self,

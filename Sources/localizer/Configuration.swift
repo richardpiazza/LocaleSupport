@@ -14,7 +14,7 @@ struct Configuration: Codable {
         return encoder
     }
     
-    static var current: Configuration {
+    static var `default`: Configuration {
         do {
             let url = try FileManager.default.configurationURL()
             let data = try Data(contentsOf: url)
@@ -25,6 +25,11 @@ struct Configuration: Codable {
                 defaultRegionCode: .default
             )
         }
+    }
+    
+    static func load(_ configuration: Configuration) throws {
+        LanguageCode.default = configuration.defaultLanguageCode
+        RegionCode.default = configuration.defaultRegionCode
     }
     
     static func save(_ configuration: Configuration) throws {
