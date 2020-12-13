@@ -26,14 +26,22 @@ extension Dictionary where Key == String, Value == String {
         }
     }
     
-    public func keys(language: LanguageCode, region: RegionCode?) -> [localizer.Key] {
-        return self.map { (key, value) -> localizer.Key in
-            return localizer.Key(
+    public func expressions(
+        defaultLanguage: LanguageCode = .en,
+        comment: String? = nil,
+        feature: String? = nil,
+        language: LanguageCode,
+        region: RegionCode? = nil
+    ) -> [Expression] {
+        return self.map { (key, value) -> Expression in
+            return Expression(
                 id: -1,
                 name: key,
-                comment: nil,
-                values: [
-                    localizer.Value(id: -1, key: -1, language: language, region: region, localization: value)
+                defaultLanguage: defaultLanguage,
+                comment: comment,
+                feature: feature,
+                translations: [
+                    Translation(id: -1, expressionID: -1, language: language, region: region, value: value)
                 ]
             )
         }

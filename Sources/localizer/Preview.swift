@@ -34,23 +34,23 @@ struct Preview: ParsableCommand {
     func run() throws {
         let url = try FileManager.default.url(for: input)
         
-        let keys: [Key]
+        let expressions: [Expression]
         switch source {
         case .android:
             let android = try StringsXml.make(contentsOf: url)
-            keys = android.keys(language: "", region: nil)
+            expressions = android.expressions(language: .default, region: nil)
         case .apple:
             let dictionary = try Dictionary(contentsOf: url)
-            keys = dictionary.keys(language: "", region: nil)
+            expressions = dictionary.expressions(language: .default, region: nil)
         }
         
-        keys.sorted(by: { $0.name < $1.name }).forEach { (key) in
-            switch key.values.count {
+        expressions.sorted(by: { $0.name < $1.name }).forEach { (expression) in
+            switch expression.translations.count {
             case .zero:
-                print("\(key.name) NO LOCALIZATIONS")
+                print("\(expression.name) NO TRANSLATIONS")
             default:
-                key.values.forEach { (value) in
-                    print("\(key.name) = \(value.localization)")
+                expression.translations.forEach { (translation) in
+                    print("\(expression.name) = \(translation.value)")
                 }
             }
         }

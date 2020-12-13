@@ -25,36 +25,36 @@ struct Export: ParsableCommand {
     
     func run() throws {
         let path = try FileManager.default.defaultCatalogPath()
-        let db = try StringsDatabase(path: path)
-        let keys = db.keys(includeValues: true).sorted(by: { $0.name < $1.name })
+        let db = try Catalog(path: path)
+        let expressions = db.expressions(includeTranslations: true).sorted(by: { $0.name < $1.name })
         
         switch format {
         case .markdown:
-            exportMarkdown(keys)
+            exportMarkdown(expressions)
         case .html:
-            exportHtml(keys)
+            exportHtml(expressions)
         }
     }
     
-    private func exportMarkdown(_ keys: [Key]) {
+    private func exportMarkdown(_ expressions: [Expression]) {
         var md: String = "# Strings"
         
-        keys.forEach { (key) in
+        expressions.forEach { (expression) in
             md += """
             
-            ## \(key.name)
-            \(key.comment ?? "")
+            ## \(expression.name)
+            \(expression.comment ?? "")
             
             | Language/Region | Localization |
             | --- | --- |
             """
             
-            let values = key.values.sorted(by: { $0.language < $1.language })
-            values.forEach { (value) in
-                if value.language == "en" {
-                    md += "| **\(value.designator)** | **\(value.localization)** |"
+            let translations = expression.translations.sorted(by: { $0.language.rawValue < $1.language.rawValue })
+            translations.forEach { (translation) in
+                if translation.language == expression.defaultLanguage {
+                    md += "| **\(translation.designator)** | **\(translation.value)** |"
                 } else {
-                    md += "| \(value.designator) | \(value.localization) |"
+                    md += "| \(translation.designator) | \(translation.value) |"
                 }
             }
         }
@@ -62,8 +62,8 @@ struct Export: ParsableCommand {
         print(md)
     }
     
-    private func exportHtml(_ keys: [Key]) {
-        let html = HTML.make(with: keys)
+    private func exportHtml(_ expressions: [Expression]) {
+        let html = HTML.make(with: expressions)
         print(html.render(indentedBy: .spaces(2)))
     }
 }

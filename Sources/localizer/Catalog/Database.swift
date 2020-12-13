@@ -1,25 +1,25 @@
 import Foundation
 
 public protocol Database {
-    func keys(includeValues: Bool) -> [Key]
-    func key(_ id: Key.ID) -> Key?
-    func key(named name: String) -> Key?
-    func keys(havingLanguage language: LanguageCode, region: RegionCode?) -> [Key]
+    func expressions(includeTranslations: Bool) -> [Expression]
+    func expression(_ id: Expression.ID) -> Expression?
+    func expression(named name: String) -> Expression?
+    func expressions(having language: LanguageCode, region: RegionCode?) -> [Expression]
     
-    func values() -> [Value]
-    func value(_ id: Key.ID) -> Value?
-    func values(for key: Key.ID, language: LanguageCode?, region: RegionCode?) -> [Value]
+    func translations() -> [Translation]
+    func translation(_ id: Translation.ID) -> Translation?
+    func translations(for expressionID: Expression.ID, language: LanguageCode?, region: RegionCode?) -> [Translation]
     
-    func insert(_ key: Key) throws
-    func insert(_ value: Value) throws
+    func insert(_ expression: Expression) throws
+    func insert(_ translation: Translation) throws
 }
 
 public extension Database {
-    func keys() -> [Key] {
-        return keys(includeValues: false)
+    func expressions() -> [Expression] {
+        return expressions(includeTranslations: false)
     }
     
-    func values(for key: Key.ID) -> [Value] {
-        return values(for: key, language: nil, region: nil)
+    func translations(for key: Translation.ID) -> [Translation] {
+        return translations(for: key, language: nil, region: nil)
     }
 }

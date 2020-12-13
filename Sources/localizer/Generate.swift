@@ -32,37 +32,31 @@ struct Generate: ParsableCommand {
     @Option(help: "The region code to use for the strings.")
     var region: RegionCode?
     
-    func validate() throws {
-        guard !language.isEmpty else {
-            throw ValidationError("'language' must be specified.")
-        }
-    }
-    
     func run() throws {
         let path = try FileManager.default.defaultCatalogPath()
-        let db = try StringsDatabase(path: path)
-        let keys = db.keys(havingLanguage: language, region: region).sorted(by: { $0.name < $1.name })
+        let db = try Catalog(path: path)
+        let expressions = db.expressions(having: language, region: region).sorted(by: { $0.name < $1.name })
         
         switch format {
         case .android:
-            exportAndroid(keys)
+            exportAndroid(expressions)
         case .apple:
-            exportApple(keys)
+            exportApple(expressions)
         }
     }
     
-    private func exportAndroid(_ keys: [Key]) {
-        let xml = XML.make(with: keys)
+    private func exportAndroid(_ expressions: [Expression]) {
+        let xml = XML.make(with: expressions)
         print(xml.render(indentedBy: .spaces(2)))
     }
     
-    private func exportApple(_ keys: [Key]) {
-        keys.forEach { (key) in
-            guard let value = key.values.first else {
+    private func exportApple(_ expressions: [Expression]) {
+        expressions.forEach { (expression) in
+            guard let translation = expression.translations.first else {
                 return
             }
             
-            print("\"\(key.name)\" = \"\(value.localization)\";")
+            print("\"\(expression.name)\" = \"\(translation.value)\";")
         }
     }
 }

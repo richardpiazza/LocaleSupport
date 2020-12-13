@@ -23,7 +23,7 @@ public struct StringsXml: Decodable, DynamicNodeDecoding {
 }
 
 public extension StringsXml {
-    func keys(language: LanguageCode, region: RegionCode?) -> [Key] {
-        return resources.map { $0.key(with: -1, language: language, region: region) }
+    func expressions(language: LanguageCode, region: RegionCode?) -> [Expression] {
+        return resources.map { $0.expression(id: -1, language: language, region: region) }
     }
 }

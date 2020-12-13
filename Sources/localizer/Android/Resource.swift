@@ -22,12 +22,22 @@ public struct Resource: Decodable, DynamicNodeDecoding {
 }
 
 public extension Resource {
-    func key(with id: Key.ID, language: String, region: String? = nil) -> Key {
-        return Key(
+    func expression(
+        id: Expression.ID,
+        defaultLanguage: LanguageCode = .en,
+        comment: String? = nil,
+        feature: String? = nil,
+        language: LanguageCode,
+        region: RegionCode? = nil
+    ) -> Expression {
+        return Expression(
             id: id,
             name: name,
-            values: [
-                Value(id: -1, key: id, language: language, region: region, localization: value)
+            defaultLanguage: defaultLanguage,
+            comment: comment,
+            feature: feature,
+            translations: [
+                Translation(id: -1, expressionID: id, language: language, region: region, value: value)
             ]
         )
     }

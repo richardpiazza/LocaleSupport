@@ -1,7 +1,7 @@
 import Plot
 
 extension HTML {
-    static func make(with keys: [Key]) -> Self {
+    static func make(with expressions: [Expression]) -> Self {
         return HTML(
             .head(
                 .title("Localization Strings"),
@@ -32,7 +32,7 @@ extension HTML {
                 .div(
                     .h1("Strings")
                 ),
-                .forEach(keys) {
+                .forEach(expressions) {
                     .localization($0)
                 }
             )
@@ -41,19 +41,19 @@ extension HTML {
 }
 
 extension Node where Context == HTML.BodyContext {
-    static func localization(_ key: Key) -> Self {
-        let values = key.values.sorted(by: { $0.language < $1.language })
+    static func localization(_ expression: Expression) -> Self {
+        let values = expression.translations.sorted(by: { $0.language.rawValue < $1.language.rawValue })
         
         return .div(
-            .h2(.text(key.name)),
-            .p(.text(key.comment ?? "")),
+            .h2(.text(expression.name)),
+            .p(.text(expression.comment ?? "")),
             .table(
                 .tr(
                     .th("Language/Region"),
                     .th("Localization")
                 ),
                 .forEach(values) {
-                    .if($0.language == "en", .defaultValue($0), else: .value($0))
+                    .if($0.language == expression.defaultLanguage, .defaultValue($0), else: .value($0))
                 }
             )
         )
@@ -63,27 +63,27 @@ extension Node where Context == HTML.BodyContext {
 }
 
 extension Node where Context == HTML.TableContext {
-    static func value(_ value: Value) -> Self {
+    static func value(_ translation: Translation) -> Self {
         return .tr(
             .td(
-                .text(value.designator)
+                .text(translation.designator)
             ),
             .td(
-                .text(value.localization)
+                .text(translation.value)
             )
         )
     }
     
-    static func defaultValue(_ value: Value) -> Self {
+    static func defaultValue(_ translation: Translation) -> Self {
         return .tr(
             .td(
                 .b(
-                    .text(value.designator)
+                    .text(translation.designator)
                 )
             ),
             .td(
                 .b(
-                    .text(value.localization)
+                    .text(translation.value)
                 )
             )
         )
@@ -91,14 +91,14 @@ extension Node where Context == HTML.TableContext {
 }
 
 extension XML {
-    static func make(with keys: [Key]) -> Self {
+    static func make(with expressions: [Expression]) -> Self {
         return XML(
             .element(named: "resources", nodes: [
                 .attribute(named: "xmlns:tools", value: "http://schemas.android.com/tools"),
-                .forEach(keys) {
+                .forEach(expressions) {
                     .element(named: "string", nodes: [
                         .attribute(named: "name", value: $0.name),
-                        .text($0.values.first?.localization ?? "")
+                        .text($0.translations.first?.value ?? "")
                     ])
                 }
             ])
