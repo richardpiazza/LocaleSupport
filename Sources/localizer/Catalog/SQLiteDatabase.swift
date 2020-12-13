@@ -1,7 +1,7 @@
 import Foundation
 import PerfectSQLite
 
-public class Catalog: Database {
+public class SQLiteDatabase: Database {
     
     private let db: SQLite
     
@@ -325,7 +325,7 @@ public class Catalog: Database {
     }
 }
 
-private extension Catalog {
+private extension SQLiteDatabase {
     enum ExpressionQuery {
         case id(_ id: Expression.ID)
         case name(_ name: String)

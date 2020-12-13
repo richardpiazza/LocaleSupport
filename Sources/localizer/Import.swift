@@ -3,15 +3,17 @@ import ArgumentParser
 
 struct Import: ParsableCommand {
     
-    enum Source: String, ExpressibleByArgument {
+    enum Format: String, ExpressibleByArgument {
         case android
         case apple
     }
     
     static var configuration: CommandConfiguration = .init(
         commandName: "import",
-        abstract: "Imports an Android 'Strings.xml' or Apple 'Localizable.strings' file into the catalog.",
-        discussion: "",
+        abstract: "Imports a translation file into the catalog.",
+        discussion: """
+        
+        """,
         version: "1.0.0",
         shouldDisplay: true,
         subcommands: [],
@@ -20,30 +22,33 @@ struct Import: ParsableCommand {
     )
     
     @Argument(help: "The source of the file 'android' or 'apple'.")
-    var source: Source
+    var format: Format
     
     @Argument(help: "The path to the file being imported")
-    var input: String
+    var filename: String
     
-    @Option(help: "The language code to use for the strings.")
-    var language: LanguageCode = .en
+    @Option(help: "The 'default' Language for the expressions being imported.")
+    var defaultLanguage: LanguageCode = .default
     
-    @Option(help: "The region code to use for the strings.")
+    @Option(help: "The language code for the translations in the imported file.")
+    var language: LanguageCode = .default
+    
+    @Option(help: "The region code for the translations in the imported file.")
     var region: RegionCode?
     
     func validate() throws {
-        guard !input.isEmpty else {
+        guard !filename.isEmpty else {
             throw ValidationError("'input' source file not provided.")
         }
     }
     
     func run() throws {
         let path = try FileManager.default.defaultCatalogPath()
-        let db = try Catalog(path: path)
-        let url = try FileManager.default.url(for: input)
+        let db = try SQLiteDatabase(path: path)
+        let url = try FileManager.default.url(for: filename)
         
         let expressions: [Expression]
-        switch source {
+        switch format {
         case .android:
             let android = try StringsXml.make(contentsOf: url)
             expressions = android.expressions(language: language, region: region)

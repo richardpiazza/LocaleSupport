@@ -25,7 +25,7 @@ struct Export: ParsableCommand {
     
     func run() throws {
         let path = try FileManager.default.defaultCatalogPath()
-        let db = try Catalog(path: path)
+        let db = try SQLiteDatabase(path: path)
         let expressions = db.expressions(includeTranslations: true).sorted(by: { $0.name < $1.name })
         
         switch format {

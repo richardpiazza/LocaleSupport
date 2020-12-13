@@ -11,7 +11,7 @@ struct Generate: ParsableCommand {
     
     static var configuration: CommandConfiguration = .init(
         commandName: "generate",
-        abstract: "Generate a localization file.",
+        abstract: "Generates a translation file from the catalog.",
         discussion: "",
         version: "1.0.0",
         shouldDisplay: true,
@@ -34,7 +34,7 @@ struct Generate: ParsableCommand {
     
     func run() throws {
         let path = try FileManager.default.defaultCatalogPath()
-        let db = try Catalog(path: path)
+        let db = try SQLiteDatabase(path: path)
         let expressions = db.expressions(having: language, region: region).sorted(by: { $0.name < $1.name })
         
         switch format {
