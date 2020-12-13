@@ -11,11 +11,29 @@ public struct Expression: Identifiable, Codable {
         case translations
     }
     
+    public enum Query {
+        case id(_ id: Expression.ID)
+        case name(_ name: String)
+    }
+    
+    public enum Update {
+        case name(_ name: String)
+        case defaultLanguage(_ language: LanguageCode)
+        case comment(_ comment: String?)
+        case feature(_ feature: String?)
+    }
+    
+    /// Unique/Primary Key
     public let id: Int
+    /// Key that identifies a collection of translations.
     public var name: String
+    /// The default/development language code.
     public var defaultLanguage: LanguageCode
+    /// Contextual information that guides translators.
     public var comment: String?
+    /// Optional grouping identifier.
     public var feature: String?
+    /// Associated translations.
     public var translations: [Translation]
     
     public init(

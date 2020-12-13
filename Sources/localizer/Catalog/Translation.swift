@@ -10,15 +10,26 @@ public struct Translation: Identifiable, Codable {
         case value
     }
     
+    public enum Update {
+        case language(_ language: LanguageCode)
+        case region(_ region: RegionCode?)
+        case value(_ value: String)
+    }
+    
+    /// Unique/Primary Key
     public let id: Int
+    /// Expression (Foreign Key)
     public let expressionID: Expression.ID
+    /// Language of the translation
     public var language: LanguageCode
+    /// Region code specifier
     public var region: RegionCode?
+    /// The translated string
     public var value: String
     
-    public init(language: LanguageCode = .default, region: RegionCode? = nil, value: String) {
+    public init(expressionID: Expression.ID, language: LanguageCode = .default, region: RegionCode? = nil, value: String) {
         id = -1
-        expressionID = -1
+        self.expressionID = expressionID
         self.language = language
         self.region = region
         self.value = value

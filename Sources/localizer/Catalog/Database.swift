@@ -10,8 +10,16 @@ public protocol Database {
     func translation(_ id: Translation.ID) -> Translation?
     func translations(for expressionID: Expression.ID, language: LanguageCode?, region: RegionCode?) -> [Translation]
     
-    func insert(_ expression: Expression) throws
-    func insert(_ translation: Translation) throws
+    @discardableResult
+    func insertExpression(_ expression: Expression) throws -> Expression.ID
+    @discardableResult
+    func insertTranslation(_ translation: Translation) throws -> Translation.ID
+    
+    func updateExpression(_ id: Expression.ID, _ update: Expression.Update) throws
+    func updateTranslation(_ id: Translation.ID, _ update: Translation.Update) throws
+    
+    func deleteExpression(_ id: Expression.ID) throws
+    func deleteTranslation(_ id: Translation.ID) throws
 }
 
 public extension Database {

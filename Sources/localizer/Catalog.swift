@@ -13,7 +13,8 @@ struct Catalog: ParsableCommand {
         subcommands: [
             Import.self,
             Export.self,
-            Generate.self
+            Generate.self,
+            Insert.self
         ],
         defaultSubcommand: nil,
         helpNames: .shortAndLong

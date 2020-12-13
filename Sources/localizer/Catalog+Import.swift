@@ -79,7 +79,7 @@ extension Catalog {
             }
             
             try expressions.forEach({
-                try db.insert($0)
+                try db.insertExpression($0)
                 let name = $0.name
                 $0.translations.forEach { (translation) in
                     print("Importing tag '\(name)' \(translation.designator): '\(translation.value)'")
