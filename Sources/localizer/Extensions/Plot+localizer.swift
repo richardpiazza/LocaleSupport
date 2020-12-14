@@ -1,4 +1,5 @@
 import Plot
+import HTMLString
 
 extension HTML {
     static func make(with expressions: [Expression]) -> Self {
@@ -45,10 +46,19 @@ extension Node where Context == HTML.BodyContext {
         let values = expression.translations.sorted(by: { $0.language.rawValue < $1.language.rawValue })
         
         return .div(
-            .h2(.text(expression.name)),
-            .p(.text(expression.comment ?? "")),
+            .h2(
+                .text(expression.name)
+            ),
+            .p(
+                .text("ID: \(expression.id)"),
+                .br(),
+                .text("Comment: \(expression.comment ?? "")"),
+                .br(),
+                .text("Feature: \(expression.feature ?? "")")
+            ),
             .table(
                 .tr(
+                    .th("ID"),
                     .th("Language/Region"),
                     .th("Localization")
                 ),
@@ -66,10 +76,13 @@ extension Node where Context == HTML.TableContext {
     static func value(_ translation: Translation) -> Self {
         return .tr(
             .td(
+                .text("\(translation.id)")
+            ),
+            .td(
                 .text(translation.designator)
             ),
             .td(
-                .text(translation.value)
+                .raw(translation.value.addingASCIIEntities())
             )
         )
     }
@@ -78,12 +91,17 @@ extension Node where Context == HTML.TableContext {
         return .tr(
             .td(
                 .b(
+                    .text("\(translation.id)")
+                )
+            ),
+            .td(
+                .b(
                     .text(translation.designator)
                 )
             ),
             .td(
                 .b(
-                    .text(translation.value)
+                    .raw(translation.value.addingASCIIEntities())
                 )
             )
         )

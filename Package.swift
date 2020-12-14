@@ -43,6 +43,10 @@ let package = Package(
             url: "https://github.com/JohnSundell/Plot.git",
             .upToNextMinor(from: "0.8.0")
         ),
+        .package(
+            url: "https://github.com/alexisakers/HTMLString.git",
+            .upToNextMinor(from: "6.0.0")
+        ),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -58,6 +62,7 @@ let package = Package(
                 "XMLCoder",
                 "PerfectSQLite",
                 "Plot",
+                "HTMLString",
             ]
         ),
         .target(

@@ -49,7 +49,7 @@ public class SQLiteDatabase: Database {
     
     private let selectFromExpression = """
     SELECT
-    "\(Expression.CodingKeys.id.rawValue)",
+    "\(Expression.table)"."\(Expression.CodingKeys.id.rawValue)",
     "\(Expression.CodingKeys.name.rawValue)",
     "\(Expression.CodingKeys.defaultLanguage.rawValue)",
     "\(Expression.CodingKeys.comment.rawValue)",
@@ -60,7 +60,7 @@ public class SQLiteDatabase: Database {
     
     private let selectFromTranslation = """
     SELECT
-    "\(Translation.CodingKeys.id.rawValue)",
+    "\(Translation.table)"."\(Translation.CodingKeys.id.rawValue)",
     "\(Translation.CodingKeys.expressionID.rawValue)",
     "\(Translation.CodingKeys.language.rawValue)",
     "\(Translation.CodingKeys.region.rawValue)",
