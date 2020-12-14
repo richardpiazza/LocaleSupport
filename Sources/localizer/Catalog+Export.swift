@@ -46,20 +46,22 @@ extension Catalog {
             
             expressions.forEach { (expression) in
                 md += """
-                
+                \n
                 ## \(expression.name)
-                \(expression.comment ?? "")
+                Id: \(expression.id)
+                Comment: \(expression.comment ?? "")
+                Feature: \(expression.feature ?? "")
                 
-                | Language/Region | Localization |
-                | --- | --- |
+                | ID | Language/Region | Localization |
+                | --- | --- | --- |
                 """
                 
                 let translations = expression.translations.sorted(by: { $0.language.rawValue < $1.language.rawValue })
                 translations.forEach { (translation) in
                     if translation.language == expression.defaultLanguage {
-                        md += "| **\(translation.designator)** | **\(translation.value)** |"
+                        md += "\n| **\(translation.id)** | **\(translation.designator)** | **\(translation.value)** |"
                     } else {
-                        md += "| \(translation.designator) | \(translation.value) |"
+                        md += "\n| \(translation.id) | \(translation.designator) | \(translation.value) |"
                     }
                 }
             }
