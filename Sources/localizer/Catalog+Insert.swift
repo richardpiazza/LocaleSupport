@@ -6,9 +6,7 @@ extension Catalog {
         static var configuration: CommandConfiguration = .init(
             commandName: "insert",
             abstract: "Adds a single entity to the catalog.",
-            discussion: """
-            
-            """,
+            discussion: "",
             version: "1.0.0",
             shouldDisplay: true,
             subcommands: [
@@ -27,9 +25,7 @@ extension Catalog.Insert {
         static var configuration: CommandConfiguration = .init(
             commandName: "expression",
             abstract: "Add an Expression to the catalog.",
-            discussion: """
-            
-            """,
+            discussion: "",
             version: "1.0.0",
             shouldDisplay: true,
             subcommands: [],
@@ -75,9 +71,7 @@ extension Catalog.Insert {
         static var configuration: CommandConfiguration = .init(
             commandName: "translation",
             abstract: "Add a Translation to the catalog.",
-            discussion: """
-            
-            """,
+            discussion: "",
             version: "1.0.0",
             shouldDisplay: true,
             subcommands: [],

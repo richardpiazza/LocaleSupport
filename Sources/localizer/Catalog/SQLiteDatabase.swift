@@ -3,6 +3,10 @@ import PerfectSQLite
 
 public class SQLiteDatabase: Database {
     
+    public enum Error: Swift.Error {
+        case expressionID(id: Expression.ID)
+    }
+    
     private let db: SQLite
     
     public init(path: String) throws {
@@ -384,6 +388,16 @@ public class SQLiteDatabase: Database {
         let binding: (SQLiteStmt) throws -> ()
         
         switch update {
+        case .expressionID(let expressionID):
+            guard let _ = expression(expressionID) else {
+                throw Error.expressionID(id: expressionID)
+            }
+            
+            property = .expressionID
+            binding = {
+                try $0.bind(position: 1, expressionID)
+                try $0.bind(position: 2, id)
+            }
         case .language(let language):
             property = .language
             binding = {

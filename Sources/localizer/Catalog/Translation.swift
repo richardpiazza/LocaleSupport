@@ -11,6 +11,7 @@ public struct Translation: Identifiable, Codable {
     }
     
     public enum Update {
+        case expressionID(_ id: Expression.ID)
         case language(_ language: LanguageCode)
         case region(_ region: RegionCode?)
         case value(_ value: String)
