@@ -18,7 +18,6 @@ struct Command: ParsableCommand {
                 Catalog.self,
                 Catalog.Import.self,
                 Catalog.Export.self,
-                Catalog.Generate.self,
                 Configure.self
             ],
             defaultSubcommand: Preview.self,

@@ -6,13 +6,13 @@ extension Catalog {
     struct Generate: ParsableCommand {
         
         enum Format: String, ExpressibleByArgument {
-            case android
-            case apple
+            case markdown
+            case html
         }
         
         static var configuration: CommandConfiguration = .init(
             commandName: "generate",
-            abstract: "Generates a translation file from the catalog.",
+            abstract: "Generate a viewable document using the strings catalog.",
             discussion: "",
             version: "1.0.0",
             shouldDisplay: true,
@@ -22,16 +22,7 @@ extension Catalog {
         )
         
         @Argument(help: "The export format")
-        var format: Format = .android
-        
-        @Argument(help: "The language code to use for the strings.")
-        var language: LanguageCode
-        
-        @Argument(help: "")
-        var filename: String
-        
-        @Option(help: "The region code to use for the strings.")
-        var region: RegionCode?
+        var format: Format
         
         @Option(help: "Overrides the default support directory path for the catalog database.")
         var catalogPath: String?
@@ -40,29 +31,47 @@ extension Catalog {
             let path = try catalogPath ?? FileManager.default.catalogURL().path
             let db = try SQLiteDatabase(path: path)
             
-            let expressions = db.expressions(having: language, region: region).sorted(by: { $0.name < $1.name })
+            let expressions = db.expressions(includeTranslations: true).sorted(by: { $0.name < $1.name })
             
             switch format {
-            case .android:
-                exportAndroid(expressions)
-            case .apple:
-                exportApple(expressions)
+            case .markdown:
+                exportMarkdown(expressions)
+            case .html:
+                exportHtml(expressions)
             }
         }
         
-        private func exportAndroid(_ expressions: [Expression]) {
-            let xml = XML.make(with: expressions)
-            print(xml.render(indentedBy: .spaces(2)))
-        }
-        
-        private func exportApple(_ expressions: [Expression]) {
+        private func exportMarkdown(_ expressions: [Expression]) {
+            var md: String = "# Strings"
+            
             expressions.forEach { (expression) in
-                guard let translation = expression.translations.first else {
-                    return
-                }
+                md += """
+                \n
+                ## \(expression.name)
+                Id: \(expression.id)
+                Comment: \(expression.comment ?? "")
+                Feature: \(expression.feature ?? "")
                 
-                print("\"\(expression.name)\" = \"\(translation.value)\";")
+                | ID | Language/Region | Localization |
+                | --- | --- | --- |
+                """
+                
+                let translations = expression.translations.sorted(by: { $0.language.rawValue < $1.language.rawValue })
+                translations.forEach { (translation) in
+                    if translation.language == expression.defaultLanguage {
+                        md += "\n| **\(translation.id)** | **\(translation.designator)** | **\(translation.value)** |"
+                    } else {
+                        md += "\n| \(translation.id) | \(translation.designator) | \(translation.value) |"
+                    }
+                }
             }
+            
+            print(md)
+        }
+        
+        private func exportHtml(_ expressions: [Expression]) {
+            let html = HTML.make(with: expressions)
+            print(html.render(indentedBy: .spaces(2)))
         }
     }
 }
