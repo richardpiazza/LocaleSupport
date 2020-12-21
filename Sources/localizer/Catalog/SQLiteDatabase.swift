@@ -41,7 +41,7 @@ public class SQLiteDatabase: Database {
                 "\(Translation.CodingKeys.region.rawValue)" TEXT,
                 "\(Translation.CodingKeys.value.rawValue)" TEXT NOT NULL,
                 PRIMARY KEY("\(Translation.CodingKeys.id.rawValue)" AUTOINCREMENT),
-                FOREIGN KEY("\(Translation.CodingKeys.expressionID.rawValue)") REFERENCES \(String(describing: Expression.self).lowercased())(\(Expression.CodingKeys.id.rawValue))
+                FOREIGN KEY("\(Translation.CodingKeys.expressionID.rawValue)") REFERENCES \(Expression.table)(\(Expression.CodingKeys.id.rawValue))
             );
             """
         )
