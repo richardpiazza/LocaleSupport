@@ -58,7 +58,7 @@ extension Catalog.Insert {
             let path = try catalogPath ?? FileManager.default.catalogURL().path
             let db = try SQLiteDatabase(path: path)
             
-            let expression = Expression(name: name, defaultLanguage: defaultLanguage, comment: comment, feature: feature)
+            let expression = Expression(name: name, languageCode: defaultLanguage, comment: comment, feature: feature)
             let id = try db.insertExpression(expression)
             print("Inserted Expression [\(id)] '\(expression.name)'")
         }

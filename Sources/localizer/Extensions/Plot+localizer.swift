@@ -43,7 +43,7 @@ extension HTML {
 
 extension Node where Context == HTML.BodyContext {
     static func localization(_ expression: Expression) -> Self {
-        let values = expression.translations.sorted(by: { $0.language.rawValue < $1.language.rawValue })
+        let values = expression.translations.sorted(by: { $0.languageCode.rawValue < $1.languageCode.rawValue })
         
         return .div(
             .h2(

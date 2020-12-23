@@ -139,7 +139,7 @@ public class SQLiteDatabase: Database {
                     var expression = Expression(
                         id: statement.identity(position: 0),
                         name: statement.columnText(position: 1),
-                        defaultLanguage: .en,
+                        languageCode: .en,
                         comment: statement.optional(position: 2),
                         feature: nil,
                         translations: []
@@ -280,7 +280,7 @@ public class SQLiteDatabase: Database {
                 ) VALUES (:1, :2, :3, :4);
                 """) { (statement) in
                 try statement.bind(position: 1, expression.name)
-                try statement.bind(position: 2, expression.defaultLanguage.rawValue)
+                try statement.bind(position: 2, expression.defaultLanguage)
                 if let comment = expression.comment, !comment.isEmpty {
                     try statement.bind(position: 3, comment)
                 } else {
@@ -306,7 +306,7 @@ public class SQLiteDatabase: Database {
     
     @discardableResult
     public func insertTranslation(_ translation: Translation) throws -> Translation.ID {
-        let existing = self.translations(for: translation.expressionID, language: translation.language, region: translation.region)
+        let existing = self.translations(for: translation.expressionID, language: translation.languageCode, region: translation.regionCode)
         guard existing.isEmpty else {
             return -1
         }
@@ -321,9 +321,9 @@ public class SQLiteDatabase: Database {
             ) VALUES (:1, :2, :3, :4);
             """, doBindings: { (statement) in
                 try statement.bind(position: 1, translation.expressionID)
-                try statement.bind(position: 2, translation.language.rawValue)
+                try statement.bind(position: 2, translation.language)
                 if let region = translation.region {
-                    try statement.bind(position: 3, region.rawValue)
+                    try statement.bind(position: 3, region)
                 } else {
                     try statement.bindNull(position: 3)
                 }
@@ -536,7 +536,7 @@ private extension SQLiteStmt {
         Expression(
             id: identity(position: 0),
             name: columnText(position: 1),
-            defaultLanguage: languageCode(position: 2),
+            languageCode: languageCode(position: 2),
             comment: optional(position: 3),
             feature: optional(position: 4),
             translations: []
@@ -547,7 +547,7 @@ private extension SQLiteStmt {
         Translation(
             id: identity(position: 0),
             expressionID: identity(position: 1),
-            language: languageCode(position: 2),
+            language: languageCode(position: 2).rawValue,
             region: optional(position: 3),
             value: columnText(position: 4)
         )

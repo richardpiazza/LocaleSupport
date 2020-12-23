@@ -20,7 +20,7 @@ struct Command: ParsableCommand {
                 Catalog.Export.self,
                 Configure.self
             ],
-            defaultSubcommand: Preview.self,
+            defaultSubcommand: nil,
             helpNames: [.short, .long])
     }()
 }

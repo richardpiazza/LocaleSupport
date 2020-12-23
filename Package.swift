@@ -47,6 +47,10 @@ let package = Package(
             url: "https://github.com/alexisakers/HTMLString.git",
             .upToNextMinor(from: "6.0.0")
         ),
+        .package(
+            url: "https://github.com/richardpiazza/Statement.git",
+            .upToNextMinor(from: "0.1.0")
+        ),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -63,6 +67,7 @@ let package = Package(
                 "PerfectSQLite",
                 "Plot",
                 "HTMLString",
+                "Statement",
             ]
         ),
         .target(
@@ -72,7 +77,7 @@ let package = Package(
         ),
         .testTarget(
             name: "LocaleSupportTests",
-            dependencies: ["LocaleSupport", "LocalizedResources"],
+            dependencies: ["LocaleSupport", "LocalizedResources", "localizer"],
             resources: [.process("Resources")]
         ),
     ],

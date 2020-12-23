@@ -24,7 +24,7 @@ public struct Resource: Decodable, DynamicNodeDecoding {
 public extension Resource {
     func expression(
         id: Expression.ID,
-        defaultLanguage: LanguageCode = .en,
+        defaultLanguage: LanguageCode = .default,
         comment: String? = nil,
         feature: String? = nil,
         language: LanguageCode,
@@ -33,11 +33,11 @@ public extension Resource {
         return Expression(
             id: id,
             name: name,
-            defaultLanguage: defaultLanguage,
+            languageCode: defaultLanguage,
             comment: comment,
             feature: feature,
             translations: [
-                Translation(id: -1, expressionID: id, language: language, region: region, value: value)
+                Translation(id: -1, expressionID: id, languageCode: language, regionCode: region, value: value)
             ]
         )
     }

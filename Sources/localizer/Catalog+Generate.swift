@@ -56,7 +56,7 @@ extension Catalog {
                 | --- | --- | --- |
                 """
                 
-                let translations = expression.translations.sorted(by: { $0.language.rawValue < $1.language.rawValue })
+                let translations = expression.translations.sorted(by: { $0.languageCode.rawValue < $1.languageCode.rawValue })
                 translations.forEach { (translation) in
                     if translation.language == expression.defaultLanguage {
                         md += "\n| **\(translation.id)** | **\(translation.designator)** | **\(translation.value)** |"

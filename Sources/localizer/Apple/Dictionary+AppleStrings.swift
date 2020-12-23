@@ -27,7 +27,7 @@ extension Dictionary where Key == String, Value == String {
     }
     
     public func expressions(
-        defaultLanguage: LanguageCode = .en,
+        defaultLanguage: LanguageCode = .default,
         comment: String? = nil,
         feature: String? = nil,
         language: LanguageCode,
@@ -37,11 +37,11 @@ extension Dictionary where Key == String, Value == String {
             return Expression(
                 id: -1,
                 name: key,
-                defaultLanguage: defaultLanguage,
+                languageCode: defaultLanguage,
                 comment: comment,
                 feature: feature,
                 translations: [
-                    Translation(id: -1, expressionID: -1, language: language, region: region, value: value)
+                    Translation(id: -1, expressionID: -1, languageCode: language, regionCode: region, value: value)
                 ]
             )
         }
