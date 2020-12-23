@@ -68,6 +68,7 @@ let package = Package(
                 "Plot",
                 "HTMLString",
                 "Statement",
+                .product(name: "StatementSQLite", package: "Statement"),
             ]
         ),
         .target(

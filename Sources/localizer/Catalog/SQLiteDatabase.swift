@@ -1,5 +1,6 @@
 import Foundation
 import PerfectSQLite
+import StatementSQLite
 
 public class SQLiteDatabase: Database {
     
@@ -19,34 +20,11 @@ public class SQLiteDatabase: Database {
     }
     
     private func createSchema() throws {
-        try db.execute(
-            statement: """
-            CREATE TABLE IF NOT EXISTS "\(Expression.table)" (
-                "\(Expression.CodingKeys.id.rawValue)" INTEGER NOT NULL UNIQUE,
-                "\(Expression.CodingKeys.name.rawValue)" TEXT NOT NULL,
-                "\(Expression.CodingKeys.defaultLanguage.rawValue)" TEXT NOT NULL,
-                "\(Expression.CodingKeys.comment.rawValue)" TEXT,
-                "\(Expression.CodingKeys.feature.rawValue)" TEXT,
-                PRIMARY KEY("\(Expression.CodingKeys.id.rawValue)" AUTOINCREMENT)
-            );
-            """
-        )
-        
-        try db.execute(
-            statement: """
-            CREATE TABLE IF NOT EXISTS "\(Translation.table)" (
-                "\(Translation.CodingKeys.id.rawValue)" INTEGER NOT NULL UNIQUE,
-                "\(Translation.CodingKeys.expressionID.rawValue)" INTEGER NOT NULL,
-                "\(Translation.CodingKeys.language.rawValue)" TEXT NOT NULL,
-                "\(Translation.CodingKeys.region.rawValue)" TEXT,
-                "\(Translation.CodingKeys.value.rawValue)" TEXT NOT NULL,
-                PRIMARY KEY("\(Translation.CodingKeys.id.rawValue)" AUTOINCREMENT),
-                FOREIGN KEY("\(Translation.CodingKeys.expressionID.rawValue)") REFERENCES \(Expression.table)(\(Expression.CodingKeys.id.rawValue))
-            );
-            """
-        )
+        try db.execute(statement: SQLiteStatement.createExpression.render())
+        try db.execute(statement: SQLiteStatement.createTranslation.render())
     }
     
+    @available(*, deprecated)
     private let selectFromExpression = """
     SELECT
     "\(Expression.table)"."\(Expression.CodingKeys.id.rawValue)",
@@ -58,6 +36,7 @@ public class SQLiteDatabase: Database {
     "\(Expression.table)"
     """
     
+    @available(*, deprecated)
     private let selectFromTranslation = """
     SELECT
     "\(Translation.table)"."\(Translation.CodingKeys.id.rawValue)",
@@ -69,6 +48,7 @@ public class SQLiteDatabase: Database {
     "\(Translation.table)"
     """
     
+    @available(*, deprecated)
     private let expressionJoinTranslation = """
     JOIN "\(Translation.table)"
         ON "\(Expression.table)"."\(Expression.CodingKeys.id.rawValue)" = "\(Translation.table)"."\(Translation.CodingKeys.expressionID.rawValue)"
@@ -79,7 +59,7 @@ public class SQLiteDatabase: Database {
         
         do {
             try db.forEachRow(
-                statement: "\(selectFromExpression);",
+                statement: SQLiteStatement.selectAllFromExpression.render(),
                 handleRow: { (statement, index) in
                     var expression = statement.expression
                     if includeTranslations {
@@ -105,36 +85,10 @@ public class SQLiteDatabase: Database {
     
     public func expressions(having language: LanguageCode, region: RegionCode?) -> [Expression] {
         var expressions: [Expression] = []
-        
-        let clause: String
-        let binding: (SQLiteStmt) throws -> ()
-        
-        switch region {
-        case .some(let code):
-            clause = """
-            "\(Translation.table)"."\(Translation.CodingKeys.language.rawValue)" = :1
-                AND "\(Translation.table)"."\(Translation.CodingKeys.region.rawValue)" = :2
-            """
-            binding = {
-                try $0.bind(position: 1, language.rawValue)
-                try $0.bind(position: 2, code.rawValue)
-            }
-        case .none:
-            clause = """
-            "\(Translation.table)"."\(Translation.CodingKeys.language.rawValue)" = :1
-            """
-            binding = { try $0.bind(position: 1, language.rawValue) }
-        }
-        
+
         do {
             try db.forEachRow(
-                statement: """
-                \(selectFromExpression)
-                \(expressionJoinTranslation)
-                WHERE
-                \(clause);
-                """,
-                doBindings: binding,
+                statement: SQLiteStatement.selectExpressionsWith(languageCode: language, regionCode: region).render(),
                 handleRow: { (statement, index) in
                     var expression = Expression(
                         id: statement.identity(position: 0),
@@ -160,7 +114,7 @@ public class SQLiteDatabase: Database {
         
         do {
             try db.forEachRow(
-                statement: "\(selectFromTranslation);",
+                statement: SQLiteStatement.selectAllFromTranslation.render(),
                 handleRow: { (statement, index) in
                     translations.append(statement.translation)
                 }
@@ -177,15 +131,7 @@ public class SQLiteDatabase: Database {
         
         do {
             try db.forEachRow(
-                statement: """
-                \(selectFromTranslation)
-                WHERE
-                "\(Translation.CodingKeys.id.rawValue)" = :1
-                LIMIT 1;
-                """,
-                doBindings: { (statement) in
-                    try statement.bind(position: 1, id)
-                },
+                statement: SQLiteStatement.selectTranslation(id).render(),
                 handleRow: { (statement, index) in
                     translation = statement.translation
                 }
@@ -200,56 +146,9 @@ public class SQLiteDatabase: Database {
     public func translations(for expressionID: Expression.ID, language: LanguageCode?, region: RegionCode?) -> [Translation] {
         var translations: [Translation] = []
         
-        let clause: String
-        let binding: (SQLiteStmt) throws -> ()
-        
-        switch (language, region) {
-        case (.some(let languageCode), .some(let regionCode)):
-            clause = """
-            "\(Translation.CodingKeys.expressionID.rawValue)" = :1
-                AND "\(Translation.CodingKeys.language.rawValue)" = :2
-                AND "\(Translation.CodingKeys.region.rawValue)" = :3
-            """
-            binding = {
-                try $0.bind(position: 1, expressionID)
-                try $0.bind(position: 2, languageCode.rawValue)
-                try $0.bind(position: 3, regionCode.rawValue)
-            }
-        case (.some(let languageCode), .none):
-            clause = """
-            "\(Translation.CodingKeys.expressionID.rawValue)" = :1
-                AND "\(Translation.CodingKeys.language.rawValue)" = :2
-            """
-            binding = {
-                try $0.bind(position: 1, expressionID)
-                try $0.bind(position: 2, languageCode.rawValue)
-            }
-        case (.none, .some(let regionCode)):
-            clause = """
-            "\(Translation.CodingKeys.expressionID.rawValue)" = :1
-                AND "\(Translation.CodingKeys.region.rawValue)" = :2
-            """
-            binding = {
-                try $0.bind(position: 1, expressionID)
-                try $0.bind(position: 2, regionCode.rawValue)
-            }
-        default:
-            clause = """
-            "\(Translation.CodingKeys.expressionID.rawValue)" = :1
-            """
-            binding = {
-                try $0.bind(position: 1, expressionID)
-            }
-        }
-        
         do {
             try db.forEachRow(
-                statement: """
-                \(selectFromTranslation)
-                WHERE
-                \(clause);
-                """,
-                doBindings: binding,
+                statement: SQLiteStatement.selectTranslationsFor(expressionID, languageCode: language, regionCode: region).render(),
                 handleRow: { (statement, index) in
                     translations.append(statement.translation)
                 }
@@ -270,29 +169,7 @@ public class SQLiteDatabase: Database {
             id = existing.id
             // UPDATE?
         case .none:
-            try db.execute(
-                statement: """
-                INSERT INTO "\(Expression.table)" (
-                    "\(Expression.CodingKeys.name.rawValue)",
-                    "\(Expression.CodingKeys.defaultLanguage.rawValue)",
-                    \(Expression.CodingKeys.comment.rawValue),
-                    \(Expression.CodingKeys.feature.rawValue)
-                ) VALUES (:1, :2, :3, :4);
-                """) { (statement) in
-                try statement.bind(position: 1, expression.name)
-                try statement.bind(position: 2, expression.defaultLanguage)
-                if let comment = expression.comment, !comment.isEmpty {
-                    try statement.bind(position: 3, comment)
-                } else {
-                    try statement.bindNull(position: 3)
-                }
-                if let feature = expression.feature, !feature.isEmpty {
-                    try statement.bind(position: 4, feature)
-                } else {
-                    try statement.bindNull(position: 4)
-                }
-            }
-            
+            try db.execute(statement: SQLiteStatement.insertExpression(expression).render())
             id = db.lastInsertRowID()
         }
         
@@ -311,125 +188,16 @@ public class SQLiteDatabase: Database {
             return -1
         }
         
-        try db.execute(
-            statement: """
-            INSERT INTO "\(Translation.table)" (
-                "\(Translation.CodingKeys.expressionID.rawValue)",
-                "\(Translation.CodingKeys.language.rawValue)",
-                "\(Translation.CodingKeys.region.rawValue)",
-                "\(Translation.CodingKeys.value.rawValue)"
-            ) VALUES (:1, :2, :3, :4);
-            """, doBindings: { (statement) in
-                try statement.bind(position: 1, translation.expressionID)
-                try statement.bind(position: 2, translation.language)
-                if let region = translation.region {
-                    try statement.bind(position: 3, region)
-                } else {
-                    try statement.bindNull(position: 3)
-                }
-                try statement.bind(position: 4, translation.value)
-            }
-        )
-        
+        try db.execute(statement: SQLiteStatement.insertTranslation(translation).render())
         return db.lastInsertRowID()
     }
     
     public func updateExpression(_ id: Expression.ID, _ update: Expression.Update) throws {
-        let property: Expression.CodingKeys
-        let binding: (SQLiteStmt) throws -> ()
-        
-        switch update {
-        case .name(let name):
-            property = .name
-            binding = {
-                try $0.bind(position: 1, name)
-                try $0.bind(position: 2, id)
-            }
-        case .defaultLanguage(let language):
-            property = .defaultLanguage
-            binding = {
-                try $0.bind(position: 1, language.rawValue)
-                try $0.bind(position: 2, id)
-            }
-        case .feature(let feature):
-            property = .feature
-            binding = {
-                if let value = feature {
-                    try $0.bind(position: 1, value)
-                } else {
-                    try $0.bindNull(position: 1)
-                }
-                try $0.bind(position: 2, id)
-            }
-        case .comment(let comment):
-            property = .comment
-            binding = {
-                if let value = comment {
-                    try $0.bind(position: 1, value)
-                } else {
-                    try $0.bindNull(position: 1)
-                }
-                try $0.bind(position: 2, id)
-            }
-        }
-        
-        try db.execute(
-            statement: """
-            UPDATE \(Expression.table)
-            SET "\(property.rawValue)" = :1
-            WHERE "\(Expression.CodingKeys.id.rawValue)" = :2;
-            """,
-            doBindings: binding
-        )
+        try db.execute(statement: SQLiteStatement.updateExpression(id, update).render())
     }
     
     public func updateTranslation(_ id: Translation.ID, _ update: Translation.Update) throws {
-        let property: Translation.CodingKeys
-        let binding: (SQLiteStmt) throws -> ()
-        
-        switch update {
-        case .expressionID(let expressionID):
-            guard let _ = expression(expressionID) else {
-                throw Error.expressionID(id: expressionID)
-            }
-            
-            property = .expressionID
-            binding = {
-                try $0.bind(position: 1, expressionID)
-                try $0.bind(position: 2, id)
-            }
-        case .language(let language):
-            property = .language
-            binding = {
-                try $0.bind(position: 1, language.rawValue)
-                try $0.bind(position: 2, id)
-            }
-        case .region(let region):
-            property = .region
-            binding = {
-                if let value = region {
-                    try $0.bind(position: 1, value.rawValue)
-                } else {
-                    try $0.bindNull(position: 1)
-                }
-                try $0.bind(position: 2, id)
-            }
-        case .value(let value):
-            property = .value
-            binding = {
-                try $0.bind(position: 1, value)
-                try $0.bind(position: 2, id)
-            }
-        }
-        
-        try db.execute(
-            statement: """
-            UPDATE \(Translation.table)
-            SET "\(property.rawValue)" = :1
-            WHERE "\(Translation.CodingKeys.id.rawValue)" = :2;
-            """,
-            doBindings: binding
-        )
+        try db.execute(statement: SQLiteStatement.updateTranslation(id, update).render())
     }
     
     public func deleteExpression(_ id: Expression.ID) throws {
@@ -554,10 +322,12 @@ private extension SQLiteStmt {
     }
 }
 
+@available(*, deprecated)
 private extension Expression {
     static let table = String(describing: Expression.self).lowercased()
 }
 
+@available(*, deprecated)
 private extension Translation {
     static let table = String(describing: Translation.self).lowercased()
 }
