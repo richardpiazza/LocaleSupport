@@ -24,36 +24,6 @@ public class SQLiteDatabase: Database {
         try db.execute(statement: SQLiteStatement.createTranslation.render())
     }
     
-    @available(*, deprecated)
-    private let selectFromExpression = """
-    SELECT
-    "\(Expression.table)"."\(Expression.CodingKeys.id.rawValue)",
-    "\(Expression.CodingKeys.name.rawValue)",
-    "\(Expression.CodingKeys.defaultLanguage.rawValue)",
-    "\(Expression.CodingKeys.comment.rawValue)",
-    "\(Expression.CodingKeys.feature.rawValue)"
-    FROM
-    "\(Expression.table)"
-    """
-    
-    @available(*, deprecated)
-    private let selectFromTranslation = """
-    SELECT
-    "\(Translation.table)"."\(Translation.CodingKeys.id.rawValue)",
-    "\(Translation.CodingKeys.expressionID.rawValue)",
-    "\(Translation.CodingKeys.language.rawValue)",
-    "\(Translation.CodingKeys.region.rawValue)",
-    "\(Translation.CodingKeys.value.rawValue)"
-    FROM
-    "\(Translation.table)"
-    """
-    
-    @available(*, deprecated)
-    private let expressionJoinTranslation = """
-    JOIN "\(Translation.table)"
-        ON "\(Expression.table)"."\(Expression.CodingKeys.id.rawValue)" = "\(Translation.table)"."\(Translation.CodingKeys.expressionID.rawValue)"
-    """
-    
     public func expressions(includeTranslations: Bool) -> [Expression] {
         var expressions: [Expression] = []
         
@@ -169,7 +139,13 @@ public class SQLiteDatabase: Database {
             id = existing.id
             // UPDATE?
         case .none:
-            try db.execute(statement: SQLiteStatement.insertExpression(expression).render())
+            let statement = SQLiteStatement.insertExpression(expression).render()
+            print("""
+            =====
+            \(statement)
+            =====
+            """)
+            try db.execute(statement: statement)
             id = db.lastInsertRowID()
         }
         
@@ -188,7 +164,13 @@ public class SQLiteDatabase: Database {
             return -1
         }
         
-        try db.execute(statement: SQLiteStatement.insertTranslation(translation).render())
+        let statement = SQLiteStatement.insertTranslation(translation).render()
+        print("""
+        =====
+        \(statement)
+        =====
+        """)
+        try db.execute(statement: statement)
         return db.lastInsertRowID()
     }
     
@@ -206,29 +188,11 @@ public class SQLiteDatabase: Database {
             try deleteTranslation($0.id)
         }
         
-        try db.execute(
-            statement: """
-            DELETE FROM \(Expression.table)
-            WHERE "\(Expression.CodingKeys.id.rawValue)" = :1
-            LIMIT 1;
-            """,
-            doBindings: { (statement) in
-                try statement.bind(position: 1, id)
-            }
-        )
+        try db.execute(statement: SQLiteStatement.deleteExpression(id).render())
     }
     
     public func deleteTranslation(_ id: Translation.ID) throws {
-        try db.execute(
-            statement: """
-            DELETE FROM \(Translation.table)
-            WHERE "\(Translation.CodingKeys.id.rawValue)" = :1
-            LIMIT 1;
-            """,
-            doBindings: { (statement) in
-                try statement.bind(position: 1, id)
-            }
-        )
+        try db.execute(statement: SQLiteStatement.deleteTranslation(id).render())
     }
 }
 
@@ -236,26 +200,9 @@ private extension SQLiteDatabase {
     func expression(query: Expression.Query) -> Expression? {
         var expression: Expression?
         
-        let field: String
-        let binding: (SQLiteStmt) throws -> ()
-        
-        switch query {
-        case .id(let id):
-            field = Expression.CodingKeys.id.rawValue
-            binding = { try $0.bind(position: 1, id) }
-        case .name(let name):
-            field = Expression.CodingKeys.name.rawValue
-            binding = { try $0.bind(position: 1, name) }
-        }
-        
         do {
             try db.forEachRow(
-                statement: """
-                \(selectFromExpression)
-                WHERE "\(field)" = :1
-                LIMIT 1;
-                """,
-                doBindings: binding,
+                statement: SQLiteStatement.selectExpression(query).render(),
                 handleRow: { (statement, index) in
                     expression = statement.expression
                 }
@@ -320,14 +267,4 @@ private extension SQLiteStmt {
             value: columnText(position: 4)
         )
     }
-}
-
-@available(*, deprecated)
-private extension Expression {
-    static let table = String(describing: Expression.self).lowercased()
-}
-
-@available(*, deprecated)
-private extension Translation {
-    static let table = String(describing: Translation.self).lowercased()
 }

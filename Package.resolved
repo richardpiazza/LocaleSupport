@@ -41,9 +41,9 @@
         "package": "Statement",
         "repositoryURL": "https://github.com/richardpiazza/Statement.git",
         "state": {
-          "branch": null,
-          "revision": "b11bb5d6e52bea8e8b3409d9aa3acd6e476c2beb",
-          "version": "0.1.0"
+          "branch": "feature/delete-having-contexts",
+          "revision": "76a9152efd6c9bf73684e3a531811cc10e3f78c2",
+          "version": null
         }
       },
       {

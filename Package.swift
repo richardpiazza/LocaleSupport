@@ -49,7 +49,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/richardpiazza/Statement.git",
-            .upToNextMinor(from: "0.1.0")
+            .branch("feature/delete-having-contexts")
         ),
     ],
     targets: [

@@ -30,11 +30,7 @@ extension SQLiteStatement {
     static func selectExpressionsWith(languageCode: LanguageCode, regionCode: RegionCode?) -> Self {
         .init(
             .SELECT(
-                .column(Expression.id),
-                .column(Expression.name),
-                .column(Expression.defaultLanguage),
-                .column(Expression.comment),
-                .column(Expression.feature)
+                .forEach(Expression.schema.columns, { .column($0) })
             ),
             .FROM_TABLE(Expression.self),
             .JOIN_TABLE(Translation.self, on: Translation.expressionID, equals: Expression.id),
@@ -44,6 +40,30 @@ extension SQLiteStatement {
                     .unwrap(regionCode, transform: { .comparison(Translation.region, .equal($0.rawValue)) })
                 )
             )
+        )
+    }
+    
+    static func selectExpression(_ query: Expression.Query) -> Self {
+        var id: Expression.ID?
+        var name: String?
+        
+        switch query {
+        case .id(let value):
+            id = value
+        case .name(let value):
+            name = value
+        }
+        
+        return .init(
+            .SELECT(
+                .forEach(Expression.schema.columns, { .column($0) })
+            ),
+            .FROM_TABLE(Expression.self),
+            .WHERE(
+                .unwrap(id, transform: { .comparison(Expression.id, .equal($0)) }),
+                .unwrap(name, transform: { .comparison(Expression.name, .equal($0)) })
+            ),
+            .LIMIT(1)
         )
     }
     
@@ -189,6 +209,26 @@ extension SQLiteStatement {
             .WHERE(
                 .comparison(Translation.id, .equal(id))
             )
+        )
+    }
+    
+    static func deleteExpression(_ id: Expression.ID) -> Self {
+        .init(
+            .DELETE_FROM_TABLE(Expression.self),
+            .WHERE(
+                .comparison(Expression.id, .equal(id))
+            ),
+            .LIMIT(1)
+        )
+    }
+    
+    static func deleteTranslation(_ id: Translation.ID) -> Self {
+        .init(
+            .DELETE_FROM_TABLE(Translation.self),
+            .WHERE(
+                .comparison(Translation.id, .equal(id))
+            ),
+            .LIMIT(1)
         )
     }
 }
