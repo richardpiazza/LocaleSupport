@@ -19,9 +19,13 @@ extension SQLiteStatement {
     }
     
     static var selectAllFromExpression: Self {
-        .init(
+        return .init(
             .SELECT(
-                .forEach(Expression.schema.columns, { .column($0) })
+                .column(Expression.id),
+                .column(Expression.name),
+                .column(Expression.defaultLanguage),
+                .column(Expression.comment),
+                .column(Expression.feature)
             ),
             .FROM_TABLE(Expression.self)
         )
@@ -30,7 +34,11 @@ extension SQLiteStatement {
     static func selectExpressionsWith(languageCode: LanguageCode, regionCode: RegionCode?) -> Self {
         .init(
             .SELECT(
-                .forEach(Expression.schema.columns, { .column($0) })
+                .column(Expression.id),
+                .column(Expression.name),
+                .column(Expression.defaultLanguage),
+                .column(Expression.comment),
+                .column(Expression.feature)
             ),
             .FROM_TABLE(Expression.self),
             .JOIN_TABLE(Translation.self, on: Translation.expressionID, equals: Expression.id),
@@ -56,7 +64,11 @@ extension SQLiteStatement {
         
         return .init(
             .SELECT(
-                .forEach(Expression.schema.columns, { .column($0) })
+                .column(Expression.id),
+                .column(Expression.name),
+                .column(Expression.defaultLanguage),
+                .column(Expression.comment),
+                .column(Expression.feature)
             ),
             .FROM_TABLE(Expression.self),
             .WHERE(
@@ -70,7 +82,11 @@ extension SQLiteStatement {
     static var selectAllFromTranslation: Self {
         .init(
             .SELECT(
-                .forEach(Translation.schema.columns, { .column($0) })
+                .column(Translation.id),
+                .column(Translation.expressionID),
+                .column(Translation.language),
+                .column(Translation.region),
+                .column(Translation.value)
             ),
             .FROM_TABLE(Translation.self)
         )
@@ -79,7 +95,11 @@ extension SQLiteStatement {
     static func selectTranslation(_ id: Translation.ID) -> Self {
         .init(
             .SELECT(
-                .forEach(Translation.schema.columns, { .column($0) })
+                .column(Translation.id),
+                .column(Translation.expressionID),
+                .column(Translation.language),
+                .column(Translation.region),
+                .column(Translation.value)
             ),
             .FROM_TABLE(Translation.self),
             .WHERE(
@@ -92,7 +112,11 @@ extension SQLiteStatement {
     static func selectTranslationsFor(_ expressionID: Expression.ID, languageCode: LanguageCode?, regionCode: RegionCode?) -> Self {
         .init(
             .SELECT(
-                .forEach(Translation.schema.columns, { .column($0) })
+                .column(Translation.id),
+                .column(Translation.expressionID),
+                .column(Translation.language),
+                .column(Translation.region),
+                .column(Translation.value)
             ),
             .FROM_TABLE(Translation.self),
             .WHERE(

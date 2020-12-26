@@ -1,14 +1,14 @@
 import Foundation
 
 public protocol Database {
-    func expressions(includeTranslations: Bool) -> [Expression]
-    func expression(_ id: Expression.ID) -> Expression?
-    func expression(named name: String) -> Expression?
-    func expressions(having language: LanguageCode, region: RegionCode?) -> [Expression]
+    func expressions(includeTranslations: Bool) throws -> [Expression]
+    func expression(_ id: Expression.ID) throws -> Expression
+    func expression(named name: String) throws -> Expression
+    func expressions(having language: LanguageCode, region: RegionCode?) throws -> [Expression]
     
-    func translations() -> [Translation]
-    func translation(_ id: Translation.ID) -> Translation?
-    func translations(for expressionID: Expression.ID, language: LanguageCode?, region: RegionCode?) -> [Translation]
+    func translations() throws -> [Translation]
+    func translation(_ id: Translation.ID) throws -> Translation
+    func translations(for expressionID: Expression.ID, language: LanguageCode?, region: RegionCode?) throws -> [Translation]
     
     @discardableResult
     func insertExpression(_ expression: Expression) throws -> Expression.ID
@@ -23,11 +23,11 @@ public protocol Database {
 }
 
 public extension Database {
-    func expressions() -> [Expression] {
-        return expressions(includeTranslations: false)
+    func expressions() throws -> [Expression] {
+        return try expressions(includeTranslations: false)
     }
     
-    func translations(for expressionID: Expression.ID) -> [Translation] {
-        return translations(for: expressionID, language: nil, region: nil)
+    func translations(for expressionID: Expression.ID) throws -> [Translation] {
+        return try translations(for: expressionID, language: nil, region: nil)
     }
 }

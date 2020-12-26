@@ -43,7 +43,7 @@ extension Catalog.Delete {
             let path = try catalogPath ?? FileManager.default.catalogURL().path
             let db = try SQLiteDatabase(path: path)
             
-            guard let _ = db.expression(id) else {
+            guard let _ = try? db.expression(id) else {
                 print("No Expression found with id '\(id)'.")
                 return
             }
@@ -77,7 +77,7 @@ extension Catalog.Delete {
             let path = try catalogPath ?? FileManager.default.catalogURL().path
             let db = try SQLiteDatabase(path: path)
             
-            guard let _ = db.translation(id) else {
+            guard let _ = try? db.translation(id) else {
                 print("No Translation found with id '\(id)'.")
                 return
             }

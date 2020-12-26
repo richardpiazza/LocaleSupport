@@ -40,7 +40,7 @@ extension Catalog {
             let path = try catalogPath ?? FileManager.default.catalogURL().path
             let db = try SQLiteDatabase(path: path)
             
-            let expressions = db.expressions(having: language, region: region).sorted(by: { $0.name < $1.name })
+            let expressions = try db.expressions(having: language, region: region).sorted(by: { $0.name < $1.name })
             
             switch format {
             case .android:

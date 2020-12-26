@@ -79,8 +79,18 @@ extension Catalog {
             }
             
             try expressions.forEach({
-                try db.insertExpression($0)
                 let name = $0.name
+                
+                do {
+                    try db.insertExpression($0)
+                } catch SQLiteDatabase.Error.statement(let action, let statement, let error) {
+                    print("===== \(action.uppercased()) =====")
+                    print(statement)
+                    print("-----")
+                    print(error.localizedDescription)
+                    print("=====")
+                }
+                
                 $0.translations.forEach { (translation) in
                     print("Importing tag '\(name)' \(translation.designator): '\(translation.value)'")
                 }

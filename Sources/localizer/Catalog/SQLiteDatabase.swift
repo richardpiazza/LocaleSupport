@@ -5,7 +5,10 @@ import StatementSQLite
 public class SQLiteDatabase: Database {
     
     public enum Error: Swift.Error {
+        case statement(action: String, statement: String, error: Swift.Error)
         case expressionID(id: Expression.ID)
+        case expressionNamed(name: String)
+        case translationID(id: Translation.ID)
     }
     
     private let db: SQLite
@@ -20,45 +23,60 @@ public class SQLiteDatabase: Database {
     }
     
     private func createSchema() throws {
-        try db.execute(statement: SQLiteStatement.createExpression.render())
-        try db.execute(statement: SQLiteStatement.createTranslation.render())
+        var statement = SQLiteStatement.createExpression.render()
+        do {
+            try db.execute(statement: statement)
+        } catch {
+            throw Error.statement(action: "Create Expression Table", statement: statement, error: error)
+        }
+        
+        statement = SQLiteStatement.createTranslation.render()
+        do {
+            try db.execute(statement: statement)
+        } catch {
+            throw Error.statement(action: "Create Translation Table", statement: statement, error: error)
+        }
     }
     
-    public func expressions(includeTranslations: Bool) -> [Expression] {
+    public func expressions(includeTranslations: Bool) throws -> [Expression] {
         var expressions: [Expression] = []
+        
+        let statement = SQLiteStatement.selectAllFromExpression.render()
         
         do {
             try db.forEachRow(
-                statement: SQLiteStatement.selectAllFromExpression.render(),
+                statement: statement,
                 handleRow: { (statement, index) in
                     var expression = statement.expression
                     if includeTranslations {
-                        expression.translations = translations(for: expression.id)
+                        expression.translations = try translations(for: expression.id)
                     }
                     expressions.append(expression)
                 }
             )
         } catch {
-            print(error)
+            throw Error.statement(action: "Select All Expressions", statement: statement, error: error)
         }
         
         return expressions
     }
     
-    public func expression(_ id: Expression.ID) -> Expression? {
-        return expression(query: .id(id))
+    public func expression(_ id: Expression.ID) throws -> Expression {
+        return try expression(query: .id(id))
     }
     
-    public func expression(named name: String) -> Expression? {
-        return expression(query: .name(name))
+    public func expression(named name: String) throws -> Expression {
+        return try expression(query: .name(name))
     }
     
-    public func expressions(having language: LanguageCode, region: RegionCode?) -> [Expression] {
+    public func expressions(having language: LanguageCode, region: RegionCode?) throws -> [Expression] {
         var expressions: [Expression] = []
 
+        let statement = SQLiteStatement.selectExpressionsWith(languageCode: language, regionCode: region).render()
+        
         do {
             try db.forEachRow(
-                statement: SQLiteStatement.selectExpressionsWith(languageCode: language, regionCode: region).render(),
+                statement: statement,
                 handleRow: { (statement, index) in
                     var expression = Expression(
                         id: statement.identity(position: 0),
@@ -68,63 +86,73 @@ public class SQLiteDatabase: Database {
                         feature: nil,
                         translations: []
                     )
-                    expression.translations = translations(for: expression.id, language: language, region: region)
+                    expression.translations = try translations(for: expression.id, language: language, region: region)
                     expressions.append(expression)
                 }
             )
         } catch {
-            print(error)
+            throw Error.statement(action: "Query Expressions", statement: statement, error: error)
         }
         
         return expressions
     }
     
-    public func translations() -> [Translation] {
+    public func translations() throws -> [Translation] {
         var translations: [Translation] = []
+        
+        let statement = SQLiteStatement.selectAllFromTranslation.render()
         
         do {
             try db.forEachRow(
-                statement: SQLiteStatement.selectAllFromTranslation.render(),
+                statement: statement,
                 handleRow: { (statement, index) in
                     translations.append(statement.translation)
                 }
             )
         } catch {
-            print(error)
+            throw Error.statement(action: "Select All Translations", statement: statement, error: error)
         }
         
         return translations
     }
     
-    public func translation(_ id: Translation.ID) -> Translation? {
+    public func translation(_ id: Translation.ID) throws -> Translation {
         var translation: Translation?
+        
+        let statement = SQLiteStatement.selectTranslation(id).render()
         
         do {
             try db.forEachRow(
-                statement: SQLiteStatement.selectTranslation(id).render(),
+                statement: statement,
                 handleRow: { (statement, index) in
                     translation = statement.translation
                 }
             )
         } catch {
-            print(error)
+            throw Error.statement(action: "Query Translation", statement: statement, error: error)
         }
         
-        return translation
+        guard let found = translation else {
+            throw Error.translationID(id: id)
+        }
+        
+        return found
     }
     
-    public func translations(for expressionID: Expression.ID, language: LanguageCode?, region: RegionCode?) -> [Translation] {
+    public func translations(for expressionID: Expression.ID, language: LanguageCode?, region: RegionCode?) throws -> [Translation] {
         var translations: [Translation] = []
+        
+        let statement = SQLiteStatement.selectTranslationsFor(expressionID, languageCode: language, regionCode: region).render()
         
         do {
             try db.forEachRow(
-                statement: SQLiteStatement.selectTranslationsFor(expressionID, languageCode: language, regionCode: region).render(),
+                statement: statement,
                 handleRow: { (statement, index) in
                     translations.append(statement.translation)
                 }
             )
         } catch {
-            print(error)
+            throw Error.statement(action: "Query Translations", statement: statement, error: error)
         }
         
         return translations
@@ -134,18 +162,19 @@ public class SQLiteDatabase: Database {
     public func insertExpression(_ expression: Expression) throws -> Expression.ID {
         var id: Expression.ID = expression.id
         
-        switch self.expression(named: expression.name) {
+        let found = try? self.expression(named: expression.name)
+        
+        switch found {
         case .some(let existing):
             id = existing.id
             // UPDATE?
         case .none:
             let statement = SQLiteStatement.insertExpression(expression).render()
-            print("""
-            =====
-            \(statement)
-            =====
-            """)
-            try db.execute(statement: statement)
+            do {
+                try db.execute(statement: statement)
+            } catch {
+                throw Error.statement(action: "Insert Expression", statement: statement, error: error)
+            }
             id = db.lastInsertRowID()
         }
         
@@ -159,18 +188,17 @@ public class SQLiteDatabase: Database {
     
     @discardableResult
     public func insertTranslation(_ translation: Translation) throws -> Translation.ID {
-        let existing = self.translations(for: translation.expressionID, language: translation.languageCode, region: translation.regionCode)
+        let existing = try self.translations(for: translation.expressionID, language: translation.languageCode, region: translation.regionCode)
         guard existing.isEmpty else {
             return -1
         }
         
         let statement = SQLiteStatement.insertTranslation(translation).render()
-        print("""
-        =====
-        \(statement)
-        =====
-        """)
-        try db.execute(statement: statement)
+        do {
+            try db.execute(statement: statement)
+        } catch {
+            throw Error.statement(action: "Insert Translation", statement: statement, error: error)
+        }
         return db.lastInsertRowID()
     }
     
@@ -183,7 +211,7 @@ public class SQLiteDatabase: Database {
     }
     
     public func deleteExpression(_ id: Expression.ID) throws {
-        let translations = self.translations(for: id)
+        let translations = try self.translations(for: id)
         try translations.forEach {
             try deleteTranslation($0.id)
         }
@@ -197,21 +225,32 @@ public class SQLiteDatabase: Database {
 }
 
 private extension SQLiteDatabase {
-    func expression(query: Expression.Query) -> Expression? {
+    func expression(query: Expression.Query) throws -> Expression {
         var expression: Expression?
+        
+        let statement = SQLiteStatement.selectExpression(query).render()
         
         do {
             try db.forEachRow(
-                statement: SQLiteStatement.selectExpression(query).render(),
+                statement: statement,
                 handleRow: { (statement, index) in
                     expression = statement.expression
                 }
             )
         } catch {
-            print(error)
+            throw Error.statement(action: "Query Expression", statement: statement, error: error)
         }
         
-        return expression
+        guard let found = expression else {
+            switch query {
+            case .id(let id):
+                throw Error.expressionID(id: id)
+            case .name(let name):
+                throw Error.expressionNamed(name: name)
+            }
+        }
+        
+        return found
     }
 }
 
