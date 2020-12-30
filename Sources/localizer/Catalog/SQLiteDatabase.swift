@@ -69,10 +69,15 @@ public class SQLiteDatabase: Database {
         return try expression(query: .name(name))
     }
     
-    public func expressions(having language: LanguageCode, region: RegionCode?) throws -> [Expression] {
+    public func expressions(having language: LanguageCode, region: RegionCode?, fallback: Bool) throws -> [Expression] {
         var expressions: [Expression] = []
 
-        let statement = SQLiteStatement.selectExpressionsWith(languageCode: language, regionCode: region).render()
+        let statement: String
+        if fallback {
+            statement = SQLiteStatement.selectAllFromExpression.render()
+        } else {
+            statement = SQLiteStatement.selectExpressionsWith(languageCode: language, regionCode: region).render()
+        }
         
         do {
             try db.forEachRow(
@@ -86,7 +91,11 @@ public class SQLiteDatabase: Database {
                         feature: nil,
                         translations: []
                     )
-                    expression.translations = try translations(for: expression.id, language: language, region: region)
+                    if let translations = try? self.translations(for: expression.id, language: language, region: region), !translations.isEmpty {
+                        expression.translations = translations
+                    } else {
+                        expression.translations = try translations(for: expression.id, language: language, region: nil)
+                    }
                     expressions.append(expression)
                 }
             )
@@ -142,17 +151,18 @@ public class SQLiteDatabase: Database {
     public func translations(for expressionID: Expression.ID, language: LanguageCode?, region: RegionCode?) throws -> [Translation] {
         var translations: [Translation] = []
         
-        let statement = SQLiteStatement.selectTranslationsFor(expressionID, languageCode: language, regionCode: region).render()
+        let statement = SQLiteStatement.selectTranslationsFor(expressionID, languageCode: language, regionCode: region)
+        let sql = statement.render()
         
         do {
             try db.forEachRow(
-                statement: statement,
+                statement: sql,
                 handleRow: { (statement, index) in
                     translations.append(statement.translation)
                 }
             )
         } catch {
-            throw Error.statement(action: "Query Translations", statement: statement, error: error)
+            throw Error.statement(action: "Query Translations", statement: sql, error: error)
         }
         
         return translations

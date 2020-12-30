@@ -1,4 +1,5 @@
 import Foundation
+import Statement
 import StatementSQLite
 
 extension SQLiteStatement {
@@ -123,7 +124,8 @@ extension SQLiteStatement {
                 .AND(
                     .comparison(Translation.expressionID, .equal(expressionID)),
                     .unwrap(languageCode, transform: { .comparison(Translation.language, .equal($0.rawValue)) }),
-                    .unwrap(regionCode, transform: { .comparison(Translation.region, .equal($0.rawValue)) })
+                    .unwrap(regionCode, transform: { .comparison(Translation.region, .equal($0.rawValue)) }),
+                    .if(languageCode != nil && regionCode == nil, .logical(Translation.region, .isNull))
                 )
             )
         )
