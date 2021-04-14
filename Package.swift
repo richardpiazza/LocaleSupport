@@ -49,7 +49,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/richardpiazza/Statement.git",
-            .upToNextMinor(from: "0.2.0")
+            .branch("feature/alter-context")
         ),
     ],
     targets: [
@@ -62,6 +62,7 @@ let package = Package(
         .target(
             name: "localizer",
             dependencies: [
+                "LocaleSupport",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 "XMLCoder",
                 "PerfectSQLite",

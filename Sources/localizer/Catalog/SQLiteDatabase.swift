@@ -1,6 +1,7 @@
 import Foundation
 import PerfectSQLite
 import StatementSQLite
+import LocaleSupport
 
 public class SQLiteDatabase: Database {
     
@@ -9,20 +10,79 @@ public class SQLiteDatabase: Database {
         case expressionID(id: Expression.ID)
         case expressionNamed(name: String)
         case translationID(id: Translation.ID)
+        case migration(from: Int, to: Int)
+    }
+    
+    private enum SchemaVersion: Int {
+        case undefined = 0
+        case v1 = 1
+        case v2 = 2
+        
+        static var current: Self { .v2 }
+    }
+    
+    private struct MigrationStep {
+        let source: SchemaVersion
+        let destination: SchemaVersion
     }
     
     private let db: SQLite
     
+    private var schemaVersion: SchemaVersion {
+        var schemaVersion: SchemaVersion = .undefined
+        
+        let sql = "PRAGMA user_version;"
+        
+        do {
+            try db.forEachRow(
+                statement: sql,
+                handleRow: { (statement, index) in
+                    if let version = SchemaVersion(rawValue: statement.columnInt(position: 0)) {
+                        schemaVersion = version
+                    }
+                })
+        } catch {
+            print(error)
+        }
+        
+        return schemaVersion
+    }
+    
+    private var tableNames: [String] {
+        var names: [String] = []
+        
+        let sql = "SELECT name FROM sqlite_master WHERE type='table';"
+        
+        do {
+            try db.forEachRow(statement: sql, handleRow: { (statement, index) in
+                names.append(statement.columnText(position: 0))
+            })
+        } catch {
+            print(error)
+        }
+        
+        return names
+    }
+    
     public init(path: String) throws {
         db = try SQLite(path)
-        try createSchema()
+        
+        let schemaVersion = self.schemaVersion
+        if schemaVersion != .current {
+            try migrateSchema(from: schemaVersion, to: .current)
+        }
     }
     
     deinit {
         db.close()
     }
     
-    private func createSchema() throws {
+    private func setSchemaVersion(_ version: SchemaVersion) throws {
+        let sql = "PRAGMA user_version = \(version.rawValue);"
+        try db.execute(statement: sql)
+    }
+    
+    private func createSchema(_ version: SchemaVersion) throws {
         var statement = SQLiteStatement.createExpression.render()
         do {
             try db.execute(statement: statement)
@@ -36,6 +96,43 @@ public class SQLiteDatabase: Database {
         } catch {
             throw Error.statement(action: "Create Translation Table", statement: statement, error: error)
         }
+        
+        try setSchemaVersion(version)
+    }
+    
+    private func migrateSchema(from: SchemaVersion, to: SchemaVersion) throws {
+        guard to.rawValue != from.rawValue else {
+            // Migration complete
+            return
+        }
+        
+        guard to.rawValue > from.rawValue else {
+            // Invalid migration direction
+            throw Error.migration(from: from.rawValue, to: to.rawValue)
+        }
+        
+        switch (from) {
+        case .undefined:
+            let names = tableNames
+            if names.contains(Expression.schema.name) {
+                try setSchemaVersion(.v1)
+            } else {
+                try createSchema(.current)
+            }
+        case .v1:
+            print("Migrating schema from '\(from.rawValue)' to '\(to.rawValue)'.")
+            let sql = SQLiteStatement.translationTable_addScriptCode.render()
+            try db.execute(statement: sql)
+            try setSchemaVersion(.v2)
+        case .v2:
+            break
+        }
+        
+        guard let next = SchemaVersion(rawValue: from.rawValue + 1) else {
+            throw Error.migration(from: from.rawValue, to: from.rawValue + 1)
+        }
+        
+        try migrateSchema(from: next, to: to)
     }
     
     public func expressions(includeTranslations: Bool) throws -> [Expression] {
@@ -69,14 +166,14 @@ public class SQLiteDatabase: Database {
         return try expression(query: .name(name))
     }
     
-    public func expressions(having language: LanguageCode, region: RegionCode?, fallback: Bool) throws -> [Expression] {
+    public func expressions(having language: LanguageCode, script: ScriptCode?, region: RegionCode?, fallback: Bool) throws -> [Expression] {
         var expressions: [Expression] = []
 
         let statement: String
         if fallback {
             statement = SQLiteStatement.selectAllFromExpression.render()
         } else {
-            statement = SQLiteStatement.selectExpressionsWith(languageCode: language, regionCode: region).render()
+            statement = SQLiteStatement.selectExpressionsWith(languageCode: language, scriptCode: script, regionCode: region).render()
         }
         
         do {
@@ -91,10 +188,10 @@ public class SQLiteDatabase: Database {
                         feature: nil,
                         translations: []
                     )
-                    if let translations = try? self.translations(for: expression.id, language: language, region: region), !translations.isEmpty {
+                    if let translations = try? self.translations(for: expression.id, language: language, script: script, region: region), !translations.isEmpty {
                         expression.translations = translations
                     } else {
-                        expression.translations = try translations(for: expression.id, language: language, region: nil)
+                        expression.translations = try translations(for: expression.id, language: language, script: nil, region: nil)
                     }
                     expressions.append(expression)
                 }
@@ -148,10 +245,10 @@ public class SQLiteDatabase: Database {
         return found
     }
     
-    public func translations(for expressionID: Expression.ID, language: LanguageCode?, region: RegionCode?) throws -> [Translation] {
+    public func translations(for expressionID: Expression.ID, language: LanguageCode?, script: ScriptCode?, region: RegionCode?) throws -> [Translation] {
         var translations: [Translation] = []
         
-        let statement = SQLiteStatement.selectTranslationsFor(expressionID, languageCode: language, regionCode: region)
+        let statement = SQLiteStatement.selectTranslationsFor(expressionID, languageCode: language, scriptCode: script, regionCode: region)
         let sql = statement.render()
         
         do {
@@ -189,7 +286,7 @@ public class SQLiteDatabase: Database {
         }
         
         try expression.translations.forEach {
-            let translation = Translation(id: -1, expressionID: id, language: $0.language, region: $0.region, value: $0.value)
+            let translation = Translation(id: -1, expressionID: id, language: $0.language, script: $0.script, region: $0.region, value: $0.value)
             try insertTranslation(translation)
         }
         
@@ -198,7 +295,7 @@ public class SQLiteDatabase: Database {
     
     @discardableResult
     public func insertTranslation(_ translation: Translation) throws -> Translation.ID {
-        let existing = try self.translations(for: translation.expressionID, language: translation.languageCode, region: translation.regionCode)
+        let existing = try self.translations(for: translation.expressionID, language: translation.languageCode, script: translation.scriptCode, region: translation.regionCode)
         guard existing.isEmpty else {
             return -1
         }
@@ -273,6 +370,8 @@ private extension SQLiteStmt {
         switch T.self {
         case is String.Type:
             return (columnText(position: position) as! T)
+        case is ScriptCode.Type:
+            return (ScriptCode(rawValue: columnText(position: position)) as! T)
         case is RegionCode.Type:
             return (RegionCode(rawValue: columnText(position: position)) as! T)
         default:
@@ -286,6 +385,14 @@ private extension SQLiteStmt {
     
     func languageCode(position: Int) -> LanguageCode {
         return LanguageCode(rawValue: columnText(position: position)) ?? .default
+    }
+    
+    func scriptCode(position: Int) -> ScriptCode? {
+        guard !isNull(position: position) else {
+            return nil
+        }
+        
+        return ScriptCode(rawValue: columnText(position: position))
     }
     
     func regionCode(position: Int) -> RegionCode? {
@@ -312,6 +419,7 @@ private extension SQLiteStmt {
             id: identity(position: 0),
             expressionID: identity(position: 1),
             language: languageCode(position: 2).rawValue,
+            script: optional(position: 5),
             region: optional(position: 3),
             value: columnText(position: 4)
         )

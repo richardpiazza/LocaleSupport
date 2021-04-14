@@ -1,6 +1,7 @@
 import ArgumentParser
 import Foundation
 import Plot
+import LocaleSupport
 
 extension Catalog {
     struct Export: ParsableCommand {
@@ -35,6 +36,9 @@ extension Catalog {
         @Argument(help: "TODO: Implement")
         var filename: String
         
+        @Option(help: "The script code to use for the strings.")
+        var script: ScriptCode?
+        
         @Option(help: "The region code to use for the strings.")
         var region: RegionCode?
         
@@ -48,7 +52,7 @@ extension Catalog {
             let path = try catalogPath ?? FileManager.default.catalogURL().path
             let db = try SQLiteDatabase(path: path)
             
-            let expressions = try db.expressions(having: language, region: region, fallback: !regionMatchOnly).sorted(by: { $0.name < $1.name })
+            let expressions = try db.expressions(having: language, script: script, region: region, fallback: !regionMatchOnly).sorted(by: { $0.name < $1.name })
             
             switch format {
             case .android:

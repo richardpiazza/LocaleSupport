@@ -1,5 +1,6 @@
 import XMLCoder
 import Foundation
+import LocaleSupport
 
 public struct StringsXml: Decodable, DynamicNodeDecoding {
     enum CodingKeys: String, CodingKey {

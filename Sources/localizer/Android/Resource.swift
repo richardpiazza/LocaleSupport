@@ -1,4 +1,5 @@
 import XMLCoder
+import LocaleSupport
 
 public struct Resource: Decodable, DynamicNodeDecoding {
     enum CodingKeys: String, CodingKey {
@@ -28,6 +29,7 @@ public extension Resource {
         comment: String? = nil,
         feature: String? = nil,
         language: LanguageCode,
+        script: ScriptCode? = nil,
         region: RegionCode? = nil
     ) -> Expression {
         return Expression(
@@ -37,7 +39,7 @@ public extension Resource {
             comment: comment,
             feature: feature,
             translations: [
-                Translation(id: -1, expressionID: id, languageCode: language, regionCode: region, value: value)
+                Translation(id: -1, expressionID: id, languageCode: language, scriptCode: script, regionCode: region, value: value)
             ]
         )
     }

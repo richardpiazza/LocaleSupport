@@ -5,7 +5,7 @@ import Plot
 extension Catalog {
     struct Generate: ParsableCommand {
         
-        enum Format: String, ExpressibleByArgument {
+        enum Format: String, CaseIterable, ExpressibleByArgument {
             case markdown
             case html
         }
@@ -13,7 +13,9 @@ extension Catalog {
         static var configuration: CommandConfiguration = .init(
             commandName: "generate",
             abstract: "Generate a viewable document using the strings catalog.",
-            discussion: "",
+            discussion: """
+            Available formats: \(Format.allCases.map{ $0.rawValue }.joined(separator: " "))
+            """,
             version: "1.0.0",
             shouldDisplay: true,
             subcommands: [],

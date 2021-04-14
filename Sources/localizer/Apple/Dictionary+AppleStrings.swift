@@ -1,4 +1,5 @@
 import Foundation
+import LocaleSupport
 
 extension Dictionary where Key == String, Value == String {
     /// Reimplementation of the `NSDictionary(contentsOf:)`
@@ -31,6 +32,7 @@ extension Dictionary where Key == String, Value == String {
         comment: String? = nil,
         feature: String? = nil,
         language: LanguageCode,
+        script: ScriptCode? = nil,
         region: RegionCode? = nil
     ) -> [Expression] {
         return self.map { (key, value) -> Expression in
@@ -41,7 +43,7 @@ extension Dictionary where Key == String, Value == String {
                 comment: comment,
                 feature: feature,
                 translations: [
-                    Translation(id: -1, expressionID: -1, languageCode: language, regionCode: region, value: value)
+                    Translation(id: -1, expressionID: -1, languageCode: language, scriptCode: script, regionCode: region, value: value)
                 ]
             )
         }

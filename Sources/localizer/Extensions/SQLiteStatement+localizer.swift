@@ -1,6 +1,7 @@
 import Foundation
 import Statement
 import StatementSQLite
+import LocaleSupport
 
 extension SQLiteStatement {
     static var createExpression: Self {
@@ -32,7 +33,7 @@ extension SQLiteStatement {
         )
     }
     
-    static func selectExpressionsWith(languageCode: LanguageCode, regionCode: RegionCode?) -> Self {
+    static func selectExpressionsWith(languageCode: LanguageCode, scriptCode: ScriptCode?, regionCode: RegionCode?) -> Self {
         .init(
             .SELECT(
                 .column(Expression.id),
@@ -46,6 +47,7 @@ extension SQLiteStatement {
             .WHERE(
                 .AND(
                     .comparison(Translation.language, .equal(languageCode.rawValue)),
+                    .unwrap(scriptCode, transform: { .comparison(Translation.script, .equal($0.rawValue)) }),
                     .unwrap(regionCode, transform: { .comparison(Translation.region, .equal($0.rawValue)) })
                 )
             )
@@ -87,7 +89,8 @@ extension SQLiteStatement {
                 .column(Translation.expressionID),
                 .column(Translation.language),
                 .column(Translation.region),
-                .column(Translation.value)
+                .column(Translation.value),
+                .column(Translation.script)
             ),
             .FROM_TABLE(Translation.self)
         )
@@ -100,7 +103,8 @@ extension SQLiteStatement {
                 .column(Translation.expressionID),
                 .column(Translation.language),
                 .column(Translation.region),
-                .column(Translation.value)
+                .column(Translation.value),
+                .column(Translation.script)
             ),
             .FROM_TABLE(Translation.self),
             .WHERE(
@@ -110,22 +114,25 @@ extension SQLiteStatement {
         )
     }
     
-    static func selectTranslationsFor(_ expressionID: Expression.ID, languageCode: LanguageCode?, regionCode: RegionCode?) -> Self {
+    static func selectTranslationsFor(_ expressionID: Expression.ID, languageCode: LanguageCode?, scriptCode: ScriptCode?, regionCode: RegionCode?) -> Self {
         .init(
             .SELECT(
                 .column(Translation.id),
                 .column(Translation.expressionID),
                 .column(Translation.language),
                 .column(Translation.region),
-                .column(Translation.value)
+                .column(Translation.value),
+                .column(Translation.script)
             ),
             .FROM_TABLE(Translation.self),
             .WHERE(
                 .AND(
                     .comparison(Translation.expressionID, .equal(expressionID)),
                     .unwrap(languageCode, transform: { .comparison(Translation.language, .equal($0.rawValue)) }),
+                    .unwrap(scriptCode, transform: { .comparison(Translation.script, .equal($0.rawValue)) }),
                     .unwrap(regionCode, transform: { .comparison(Translation.region, .equal($0.rawValue)) }),
-                    .if(languageCode != nil && regionCode == nil, .logical(Translation.region, .isNull))
+                    .if(languageCode != nil && regionCode == nil, .logical(Translation.region, .isNull)),
+                    .if(languageCode != nil && scriptCode == nil, .logical(Translation.script, .isNull))
                 )
             )
         )
@@ -156,13 +163,15 @@ extension SQLiteStatement {
                 .column(Translation.expressionID),
                 .column(Translation.language),
                 .column(Translation.region),
-                .column(Translation.value)
+                .column(Translation.value),
+                .column(Translation.script)
             ),
             .VALUES(
                 .value(translation.expressionID),
                 .value(translation.language),
                 .unwrap(translation.region, transform: { .value($0) }, else: .value(NSNull())),
-                .value(translation.value)
+                .value(translation.value),
+                .unwrap(translation.script, transform: { .value($0) }, else: .value(NSNull()))
             )
         )
     }
@@ -207,6 +216,8 @@ extension SQLiteStatement {
     static func updateTranslation(_ id: Translation.ID, _ update: Translation.Update) -> Self {
         var expressionID: Expression.ID?
         var language: String?
+        var script: String?
+        var scriptNull: Bool = false
         var region: String?
         var regionNull: Bool = false
         var value: String?
@@ -216,6 +227,9 @@ extension SQLiteStatement {
             expressionID = value
         case .language(let value):
             language = value.rawValue
+        case .script(let value):
+            script = value?.rawValue
+            scriptNull = (value == nil)
         case .region(let value):
             region = value?.rawValue
             regionNull = (value == nil)
@@ -228,8 +242,10 @@ extension SQLiteStatement {
             .SET(
                 .unwrap(expressionID, transform: { .value($0) }),
                 .unwrap(language, transform: { .value($0) }),
+                .unwrap(script, transform: { .value($0) }),
                 .unwrap(region, transform: { .value($0) }),
                 .unwrap(value, transform: { .value($0) }),
+                .if(scriptNull, .value(NSNull())),
                 .if(regionNull, .value(NSNull()))
             ),
             .WHERE(
@@ -255,6 +271,15 @@ extension SQLiteStatement {
                 .comparison(Translation.id, .equal(id))
             ),
             .LIMIT(1)
+        )
+    }
+    
+    static var translationTable_addScriptCode: Self {
+        .init(
+            .ALTER_TABLE(
+                Translation.self,
+                .ADD_COLUMN(Translation.script)
+            )
         )
     }
 }

@@ -1,5 +1,6 @@
 import ArgumentParser
 import Foundation
+import LocaleSupport
 
 extension Catalog {
     struct Update: ParsableCommand {

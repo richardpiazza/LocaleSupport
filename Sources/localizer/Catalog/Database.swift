@@ -1,3 +1,4 @@
+import LocaleSupport
 import Foundation
 
 public protocol Database {
@@ -7,14 +8,15 @@ public protocol Database {
     /// Retrieves expressions that match a specific language/region.
     ///
     /// - parameter language: The `LanguageCode` to match
+    /// - parameter script: The optional `ScriptCode` to match
     /// - parameter region: The optional `RegionCode` to match
-    /// - parameter fallback: When a _region_is specified, and a matching translation is not found, the region-less
+    /// - parameter fallback: When a _script/region_is specified, and a matching translation is not found, the region-less
     ///                       (if available) expression will be provided. (See 'export' command).
-    func expressions(having language: LanguageCode, region: RegionCode?, fallback: Bool) throws -> [Expression]
+    func expressions(having language: LanguageCode, script: ScriptCode?, region: RegionCode?, fallback: Bool) throws -> [Expression]
     
     func translations() throws -> [Translation]
     func translation(_ id: Translation.ID) throws -> Translation
-    func translations(for expressionID: Expression.ID, language: LanguageCode?, region: RegionCode?) throws -> [Translation]
+    func translations(for expressionID: Expression.ID, language: LanguageCode?, script: ScriptCode?, region: RegionCode?) throws -> [Translation]
     
     @discardableResult
     func insertExpression(_ expression: Expression) throws -> Expression.ID
@@ -33,12 +35,12 @@ public extension Database {
         return try expressions(includeTranslations: false)
     }
     
-    func expressions(having language: LanguageCode, region: RegionCode?) throws -> [Expression] {
-        return try expressions(having: language, region: region, fallback: true)
+    func expressions(having language: LanguageCode, script: ScriptCode?, region: RegionCode?) throws -> [Expression] {
+        return try expressions(having: language, script: script, region: region, fallback: true)
     }
     
     
     func translations(for expressionID: Expression.ID) throws -> [Translation] {
-        return try translations(for: expressionID, language: nil, region: nil)
+        return try translations(for: expressionID, language: nil, script: nil, region: nil)
     }
 }
