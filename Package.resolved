@@ -41,8 +41,8 @@
         "package": "Statement",
         "repositoryURL": "https://github.com/richardpiazza/Statement.git",
         "state": {
-          "branch": "feature/alter-context",
-          "revision": "2b8e2f2a8c105f4619e390dc398523d6282f88eb",
+          "branch": "main",
+          "revision": "9c509000bc675de25116d99ddac4db1ebf5dea7e",
           "version": null
         }
       },

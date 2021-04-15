@@ -49,7 +49,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/richardpiazza/Statement.git",
-            .branch("feature/alter-context")
+            .branch("main")
         ),
     ],
     targets: [

@@ -46,9 +46,9 @@ extension SQLiteStatement {
             .JOIN_TABLE(Translation.self, on: Translation.expressionID, equals: Expression.id),
             .WHERE(
                 .AND(
-                    .comparison(Translation.language, .equal(languageCode.rawValue)),
-                    .unwrap(scriptCode, transform: { .comparison(Translation.script, .equal($0.rawValue)) }),
-                    .unwrap(regionCode, transform: { .comparison(Translation.region, .equal($0.rawValue)) })
+                    .column(Translation.language, op: .equal, value: languageCode.rawValue),
+                    .unwrap(scriptCode, transform: { .column(Translation.script, op: .equal, value: $0.rawValue) }),
+                    .unwrap(regionCode, transform: { .column(Translation.region, op: .equal, value: $0.rawValue) })
                 )
             )
         )
@@ -75,8 +75,8 @@ extension SQLiteStatement {
             ),
             .FROM_TABLE(Expression.self),
             .WHERE(
-                .unwrap(id, transform: { .comparison(Expression.id, .equal($0)) }),
-                .unwrap(name, transform: { .comparison(Expression.name, .equal($0)) })
+                .unwrap(id, transform: { .column(Expression.id, op: .equal, value: $0) }),
+                .unwrap(name, transform: { .column(Expression.name, op: .equal, value: $0) })
             ),
             .LIMIT(1)
         )
@@ -108,7 +108,7 @@ extension SQLiteStatement {
             ),
             .FROM_TABLE(Translation.self),
             .WHERE(
-                .comparison(Translation.id, .equal(id))
+                .column(Translation.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
@@ -127,12 +127,12 @@ extension SQLiteStatement {
             .FROM_TABLE(Translation.self),
             .WHERE(
                 .AND(
-                    .comparison(Translation.expressionID, .equal(expressionID)),
-                    .unwrap(languageCode, transform: { .comparison(Translation.language, .equal($0.rawValue)) }),
-                    .unwrap(scriptCode, transform: { .comparison(Translation.script, .equal($0.rawValue)) }),
-                    .unwrap(regionCode, transform: { .comparison(Translation.region, .equal($0.rawValue)) }),
-                    .if(languageCode != nil && regionCode == nil, .logical(Translation.region, .isNull)),
-                    .if(languageCode != nil && scriptCode == nil, .logical(Translation.script, .isNull))
+                    .column(Translation.expressionID, op: .equal, value: expressionID),
+                    .unwrap(languageCode, transform: { .column(Translation.language, op: .equal, value: $0.rawValue) }),
+                    .unwrap(scriptCode, transform: { .column(Translation.script, op: .equal, value: $0.rawValue) }),
+                    .unwrap(regionCode, transform: { .column(Translation.region, op: .equal, value: $0.rawValue) }),
+                    .if(languageCode != nil && regionCode == nil, .column(Translation.region, op: .equal, value: NSNull())),
+                    .if(languageCode != nil && scriptCode == nil, .column(Translation.script, op: .equal, value: NSNull()))
                 )
             )
         )
@@ -208,7 +208,7 @@ extension SQLiteStatement {
                 .if(featureNull, .value(NSNull()))
             ),
             .WHERE(
-                .comparison(Expression.id, .equal(id))
+                .column(Expression.id, op: .equal, value: id)
             )
         )
     }
@@ -249,7 +249,7 @@ extension SQLiteStatement {
                 .if(regionNull, .value(NSNull()))
             ),
             .WHERE(
-                .comparison(Translation.id, .equal(id))
+                .column(Translation.id, op: .equal, value: id)
             )
         )
     }
@@ -258,7 +258,7 @@ extension SQLiteStatement {
         .init(
             .DELETE_FROM_TABLE(Expression.self),
             .WHERE(
-                .comparison(Expression.id, .equal(id))
+                .column(Expression.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
@@ -268,7 +268,7 @@ extension SQLiteStatement {
         .init(
             .DELETE_FROM_TABLE(Translation.self),
             .WHERE(
-                .comparison(Translation.id, .equal(id))
+                .column(Translation.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
