@@ -24,6 +24,30 @@ public extension Locale {
         
         try self.init(id)
     }
+}
+
+public extension Locale {
+    /// Two character ISO 639-1 identifier
+    var alpha2Code: String? { (languageCode?.count == 2) ? languageCode : nil }
+    
+    /// Three character ISO 639-2 identifier
+    var alpha3Code: String? { (languageCode?.count == 3) ? languageCode : nil }
+    
+    /// A emoji representation of the locales region code.
+    var flag: String? {
+        guard let regionCode = self.regionCode else {
+            return nil
+        }
+        
+        // equivalent to UInt32 = 127397
+        let base = UnicodeScalar("🇦").value - UnicodeScalar("A").value
+        var symbol = ""
+        regionCode.unicodeScalars.forEach {
+            symbol.unicodeScalars.append(UnicodeScalar(base + $0.value)!)
+        }
+        
+        return symbol
+    }
     
     /// Returns a localized string for a locale which contains the identifier and components
     func localizedString(for locale: Locale) -> String {
@@ -39,14 +63,6 @@ public extension Locale {
         }
         return components.joined(separator: " ")
     }
-}
-
-public extension Locale {
-    /// Two character ISO 639-1 identifier
-    var alpha2Code: String? { (languageCode?.count == 2) ? languageCode : nil }
-    
-    /// Three character ISO 639-2 identifier
-    var alpha3Code: String? { (languageCode?.count == 3) ? languageCode : nil }
 }
 
 public extension Locale {
