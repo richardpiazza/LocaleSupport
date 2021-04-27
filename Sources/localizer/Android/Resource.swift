@@ -1,5 +1,6 @@
 import XMLCoder
 import LocaleSupport
+import TranslationCatalog
 
 public struct Resource: Decodable, DynamicNodeDecoding {
     enum CodingKeys: String, CodingKey {
@@ -24,7 +25,7 @@ public struct Resource: Decodable, DynamicNodeDecoding {
 
 public extension Resource {
     func expression(
-        id: Expression.ID,
+        uuid: Expression.ID,
         defaultLanguage: LanguageCode = .default,
         comment: String? = nil,
         feature: String? = nil,
@@ -32,15 +33,16 @@ public extension Resource {
         script: ScriptCode? = nil,
         region: RegionCode? = nil
     ) -> Expression {
-        return Expression(
-            id: id,
+        var expression = Expression(
+            uuid: uuid,
+            key: name,
             name: name,
-            languageCode: defaultLanguage,
-            comment: comment,
-            feature: feature,
-            translations: [
-                Translation(id: -1, expressionID: id, languageCode: language, scriptCode: script, regionCode: region, value: value)
-            ]
-        )
+            defaultLanguage: defaultLanguage,
+            context: comment,
+            feature: feature)
+        expression.translations = [
+            Translation(uuid: .zero, expressionID: uuid, languageCode: language, scriptCode: script, regionCode: region, value: value)
+        ]
+        return expression
     }
 }

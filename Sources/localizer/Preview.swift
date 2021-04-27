@@ -1,5 +1,6 @@
 import ArgumentParser
 import Foundation
+import TranslationCatalog
 
 struct Preview: ParsableCommand {
     

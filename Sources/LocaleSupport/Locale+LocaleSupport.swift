@@ -5,6 +5,8 @@ public extension Locale {
         case unavailableIdentifier(String)
     }
     
+    typealias Identifier = String
+    
     init(_ id: String) throws {
         guard Locale.availableIdentifiers.contains(id) else {
             throw Error.unavailableIdentifier(id)

@@ -1,6 +1,7 @@
 import XMLCoder
 import Foundation
 import LocaleSupport
+import TranslationCatalog
 
 public struct StringsXml: Decodable, DynamicNodeDecoding {
     enum CodingKeys: String, CodingKey {
@@ -25,6 +26,6 @@ public struct StringsXml: Decodable, DynamicNodeDecoding {
 
 public extension StringsXml {
     func expressions(language: LanguageCode, region: RegionCode?) -> [Expression] {
-        return resources.map { $0.expression(id: -1, language: language, region: region) }
+        return resources.map { $0.expression(uuid: .zero, language: language) }
     }
 }

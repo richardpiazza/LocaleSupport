@@ -1,6 +1,6 @@
 import XCTest
 @testable import LocaleSupport
-@testable import LocalizedResources
+@testable import TestResources
 
 final class ExpressibleByLocalizedStringTests: XCTestCase {
     

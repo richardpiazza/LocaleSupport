@@ -60,9 +60,14 @@ let package = Package(
             dependencies: []
         ),
         .target(
+            name: "TranslationCatalog",
+            dependencies: ["LocaleSupport"]
+        ),
+        .target(
             name: "localizer",
             dependencies: [
                 "LocaleSupport",
+                "TranslationCatalog",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 "XMLCoder",
                 "PerfectSQLite",
@@ -73,13 +78,13 @@ let package = Package(
             ]
         ),
         .target(
-            name: "LocalizedResources",
+            name: "TestResources",
             dependencies: [],
             resources: [.process("Resources")]
         ),
         .testTarget(
             name: "LocaleSupportTests",
-            dependencies: ["LocaleSupport", "LocalizedResources", "localizer"],
+            dependencies: ["LocaleSupport", "TestResources", "localizer"],
             resources: [.process("Resources")]
         ),
     ],

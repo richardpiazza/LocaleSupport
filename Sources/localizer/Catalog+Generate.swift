@@ -1,6 +1,7 @@
 import ArgumentParser
 import Foundation
 import Plot
+import TranslationCatalog
 
 extension Catalog {
     struct Generate: ParsableCommand {
@@ -26,14 +27,9 @@ extension Catalog {
         @Argument(help: "The export format")
         var format: Format
         
-        @Option(help: "Overrides the default support directory path for the catalog database.")
-        var catalogPath: String?
-        
         func run() throws {
-            let path = try catalogPath ?? FileManager.default.catalogURL().path
-            let db = try SQLiteDatabase(path: path)
-            
-            let expressions = try db.expressions(includeTranslations: true).sorted(by: { $0.name < $1.name })
+            let catalog = try SQLiteCatalog()
+            let expressions = try catalog.expressions().sorted(by: { $0.name < $1.name })
             
             switch format {
             case .markdown:
@@ -51,7 +47,7 @@ extension Catalog {
                 \n
                 ## \(expression.name)
                 Id: \(expression.id)
-                Comment: \(expression.comment ?? "")
+                Context: \(expression.context ?? "")
                 Feature: \(expression.feature ?? "")
                 
                 | ID | Language/Region | Localization |
@@ -60,10 +56,10 @@ extension Catalog {
                 
                 let translations = expression.translations.sorted(by: { $0.languageCode.rawValue < $1.languageCode.rawValue })
                 translations.forEach { (translation) in
-                    if translation.language == expression.defaultLanguage {
-                        md += "\n| **\(translation.id)** | **\(translation.designator)** | **\(translation.value)** |"
+                    if translation.languageCode == expression.defaultLanguage {
+                        md += "\n| **\(translation.id)** | **\(translation.localeIdentifier)** | **\(translation.value)** |"
                     } else {
-                        md += "\n| \(translation.id) | \(translation.designator) | \(translation.value) |"
+                        md += "\n| \(translation.id) | \(translation.localeIdentifier) | \(translation.value) |"
                     }
                 }
             }
