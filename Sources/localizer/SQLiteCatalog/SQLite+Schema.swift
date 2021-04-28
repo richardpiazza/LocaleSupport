@@ -76,21 +76,18 @@ extension SQLite {
     }
     
     private func createSchema(_ version: SchemaVersion) throws {
-        var statement = SQLiteStatement.createExpression.render()
-        try execute(statement: statement)
-        
-        statement = SQLiteStatement.createTranslation.render()
-        try execute(statement: statement)
-        
-        try setSchemaVersion(version)
+        try doWithTransaction {
+            try execute(statement: .createProjectEntity)
+            try execute(statement: .createExpressionEntity)
+            try execute(statement: .createTranslationEntity)
+            try execute(statement: .createProjectExpressionEntity)
+            try setSchemaVersion(version)
+        }
     }
     
     func migrateSchema(from: SchemaVersion, to: SchemaVersion) throws {
         guard to.rawValue != from.rawValue else {
             // Migration complete
-            try doWithTransaction {
-                try addExpressionKeyUsingName()
-            }
             return
         }
         
@@ -106,6 +103,7 @@ extension SQLite {
                 try setSchemaVersion(.v1)
             } else {
                 try createSchema(.current)
+                return
             }
         case .v1:
             print("Migrating schema from '\(from.rawValue)' to '\(to.rawValue)'.")
@@ -125,7 +123,7 @@ extension SQLite {
                 try setSchemaVersion(.v3)
             }
         case .v3:
-            break
+            return
         }
         
         guard let next = SchemaVersion(rawValue: from.rawValue + 1) else {

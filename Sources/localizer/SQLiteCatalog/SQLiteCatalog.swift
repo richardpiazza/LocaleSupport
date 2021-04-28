@@ -35,7 +35,7 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
     public enum Query: CatalogQuery {
         case name(String)
         case expression(LanguageCode, ScriptCode?, RegionCode?)
-        case translation(Int, LanguageCode, ScriptCode?, RegionCode?)
+        case translation(Expression.ID, LanguageCode, ScriptCode?, RegionCode?)
     }
     
     public enum Error: Swift.Error {
@@ -156,12 +156,20 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
     }
     
     public func updateExpression(_ id: Expression.ID, action: CatalogAction) throws {
-        preconditionFailure("Not Implemented")
+        guard let entity = try? db.expressionEntity(withUUID: id) else {
+            throw Error.invalidExpressionID(id)
+        }
+        
+        guard let update = action as? SQLiteCatalog.ExpressionUpdate else {
+            throw Error.invalidAction(action)
+        }
+        
+        try db.execute(statement: .updateExpression(entity.id, update))
     }
     
     public func deleteExpression(_ id: Expression.ID, action: CatalogAction) throws {
         guard let entity = try? db.expressionEntity(withUUID: id) else {
-            return
+            throw Error.invalidExpressionID(id)
         }
         
         try db.execute(statement: .deleteTranslations(withExpressionID: entity.id))
@@ -210,7 +218,26 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
     }
     
     public func translations(matching query: CatalogQuery) throws -> [TranslationCatalog.Translation] {
-        preconditionFailure("Not Implemented")
+        guard let typedQuery = query as? Query else {
+            throw Error.invalidQuery(query)
+        }
+        
+        var entities: [TranslationEntity] = []
+        var expressionID: Expression.ID
+        
+        switch typedQuery {
+        case .translation(let expression, let language, let script, let region):
+            expressionID = expression
+            try db.forEachRow(statement: .selectTranslationsFor(expression, languageCode: language, scriptCode: script, regionCode: region), handleRow: { (entity: TranslationEntity) in
+                entities.append(entity)
+            })
+        default:
+            return []
+        }
+        
+        return entities.compactMap({
+            TranslationCatalog.Translation($0, expressionUUID: expressionID.uuidString)
+        })
     }
     
     public func createTranslation(_ translation: TranslationCatalog.Translation, action: CatalogAction) throws -> TranslationCatalog.Translation.ID {
@@ -241,7 +268,15 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
     }
     
     public func updateTranslation(_ id: TranslationCatalog.Translation.ID, action: CatalogAction) throws {
-        preconditionFailure("Not Implemented")
+        guard let entity = try? db.translationEntity(withUUID: id) else {
+            throw Error.invalidTranslationID(id)
+        }
+        
+        guard let update = action as? SQLiteCatalog.TranslationUpdate else {
+            throw Error.invalidAction(action)
+        }
+        
+        try db.execute(statement: .updateTranslation(entity.id, update))
     }
     
     public func deleteTranslation(_ id: TranslationCatalog.Translation.ID, action: CatalogAction) throws {

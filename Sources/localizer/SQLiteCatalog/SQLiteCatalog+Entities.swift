@@ -22,7 +22,7 @@ internal extension SQLiteCatalog {
         
         @Column(table: ProjectEntity.self, name: CodingKeys.id.rawValue, dataType: "INTEGER", notNull: true, unique: true, primaryKey: true, autoIncrement: true)
         var id: Int = 0
-        @Column(table: ProjectEntity.self, name: CodingKeys.uuid.rawValue, dataType: "TEXT", notNull: true)
+        @Column(table: ProjectEntity.self, name: CodingKeys.uuid.rawValue, dataType: "TEXT", notNull: true, unique: true)
         var uuid: String = ""
         @Column(table: ProjectEntity.self, name: CodingKeys.name.rawValue, dataType: "TEXT", notNull: true)
         var name: String = ""
@@ -70,7 +70,7 @@ internal extension SQLiteCatalog {
         
         @Column(table: ExpressionEntity.self, name: CodingKeys.id.rawValue, dataType: "INTEGER", notNull: true, unique: true, primaryKey: true, autoIncrement: true)
         var id: Int = 0
-        @Column(table: ExpressionEntity.self, name: CodingKeys.uuid.rawValue, dataType: "TEXT", notNull: true)
+        @Column(table: ExpressionEntity.self, name: CodingKeys.uuid.rawValue, dataType: "TEXT", notNull: true, unique: true)
         var uuid: String = ""
         @Column(table: ExpressionEntity.self, name: CodingKeys.key.rawValue, dataType: "TEXT", notNull: true)
         var key: String = ""
@@ -108,7 +108,7 @@ internal extension SQLiteCatalog {
         
         @Column(table: TranslationEntity.self, name: CodingKeys.id.rawValue, dataType: "INTEGER", notNull: true, unique: true, primaryKey: true, autoIncrement: true)
         var id: Int = 0
-        @Column(table: TranslationEntity.self, name: CodingKeys.uuid.rawValue, dataType: "TEXT", notNull: true)
+        @Column(table: TranslationEntity.self, name: CodingKeys.uuid.rawValue, dataType: "TEXT", notNull: true, unique: true)
         var uuid: String = ""
         @Column(table: TranslationEntity.self, name: CodingKeys.expressionID.rawValue, dataType: "INTEGER", notNull: true, foreignKey: ExpressionEntity.id)
         var expressionID: Int = 0
@@ -118,7 +118,7 @@ internal extension SQLiteCatalog {
         var script: String? = nil
         @Column(table: TranslationEntity.self, name: CodingKeys.region.rawValue, dataType: "TEXT")
         var region: String? = nil
-        @Column(table: TranslationEntity.self, name: CodingKeys.script.rawValue, dataType: "TEXT", notNull: true)
+        @Column(table: TranslationEntity.self, name: CodingKeys.value.rawValue, dataType: "TEXT", notNull: true)
         var value: String = ""
     }
 }

@@ -31,7 +31,7 @@ extension SQLiteStatement {
 // MARK: - Expression
 extension SQLiteStatement {
     // MARK: Schema
-    static var createExpression: Self {
+    static var createExpressionEntity: Self {
         .init(
             .CREATE(
                 .SCHEMA(SQLiteCatalog.ExpressionEntity.self, ifNotExists: true)
@@ -248,7 +248,7 @@ extension SQLiteStatement {
 // MARK: - Translation
 extension SQLiteStatement {
     // MARK: Schema
-    static var createTranslation: Self {
+    static var createTranslationEntity: Self {
         .init(
             .CREATE(
                 .SCHEMA(SQLiteCatalog.TranslationEntity.self, ifNotExists: true)
