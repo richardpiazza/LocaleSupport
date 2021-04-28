@@ -18,6 +18,10 @@ let package = Package(
             name: "LocaleSupport",
             targets: ["LocaleSupport"]
         ),
+        .library(
+            name: "TranslationCatalog",
+            targets: ["TranslationCatalog"]
+        ),
         .executable(
             name: "localizer",
             targets: ["localizer"]
