@@ -53,7 +53,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/richardpiazza/Statement.git",
-            .branch("main")
+            .branch("feature/context-refinements")
         ),
     ],
     targets: [

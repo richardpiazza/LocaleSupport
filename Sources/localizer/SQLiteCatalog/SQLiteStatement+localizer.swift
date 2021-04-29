@@ -39,27 +39,6 @@ extension SQLiteStatement {
         )
     }
     
-    static var expressionTable_renameComment: Self {
-        .init(
-            .ALTER_TABLE(
-                SQLiteCatalog.ExpressionEntity.self,
-                .raw("RENAME COLUMN comment TO context")
-            )
-        )
-    }
-    
-    static var expressionTable_addUUID: Self {
-        .init(
-            .ALTER_TABLE(SQLiteCatalog.ExpressionEntity.self, .ADD_COLUMN(SQLiteCatalog.ExpressionEntity.uuid))
-        )
-    }
-    
-    static var expressionTable_addKey: Self {
-        .init(
-            .ALTER_TABLE(SQLiteCatalog.ExpressionEntity.self, .ADD_COLUMN(SQLiteCatalog.ExpressionEntity.key))
-        )
-    }
-    
     // MARK: Queries
     static var selectAllFromExpression: Self {
         return .init(
@@ -135,7 +114,7 @@ extension SQLiteStatement {
     
     static func insertExpression(_ expression: SQLiteCatalog.ExpressionEntity) -> Self {
         .init(
-            .INSERT_INTO_TABLE(
+            .INSERT_INTO(
                 SQLiteCatalog.ExpressionEntity.self,
                 .column(SQLiteCatalog.ExpressionEntity.uuid),
                 .column(SQLiteCatalog.ExpressionEntity.key),
@@ -157,7 +136,7 @@ extension SQLiteStatement {
     
     static func deleteExpression(_ id: Int) -> Self {
         .init(
-            .DELETE_FROM_TABLE(SQLiteCatalog.ExpressionEntity.self),
+            .DELETE_FROM(SQLiteCatalog.ExpressionEntity.self),
             .WHERE(
                 .column(SQLiteCatalog.ExpressionEntity.id, op: .equal, value: id)
             ),
@@ -372,7 +351,7 @@ extension SQLiteStatement {
     
     static func insertTranslation(_ translation: SQLiteCatalog.TranslationEntity) -> Self {
         .init(
-            .INSERT_INTO_TABLE(
+            .INSERT_INTO(
                 SQLiteCatalog.TranslationEntity.self,
                 .column(SQLiteCatalog.TranslationEntity.uuid),
                 .column(SQLiteCatalog.TranslationEntity.expressionID),
@@ -394,7 +373,7 @@ extension SQLiteStatement {
     
     static func deleteTranslation(_ id: Int) -> Self {
         .init(
-            .DELETE_FROM_TABLE(SQLiteCatalog.TranslationEntity.self),
+            .DELETE_FROM(SQLiteCatalog.TranslationEntity.self),
             .WHERE(
                 .column(SQLiteCatalog.TranslationEntity.id, op: .equal, value: id)
             ),
@@ -404,7 +383,7 @@ extension SQLiteStatement {
     
     static func deleteTranslations(withExpressionID id: Int) -> Self {
         .init(
-            .DELETE_FROM_TABLE(SQLiteCatalog.TranslationEntity.self),
+            .DELETE_FROM(SQLiteCatalog.TranslationEntity.self),
             .WHERE(
                 .column(SQLiteCatalog.TranslationEntity.expressionID, op: .equal, value: id)
             )
@@ -493,8 +472,10 @@ extension SQLiteStatement {
                 .column(SQLiteCatalog.ExpressionEntity.context),
                 .column(SQLiteCatalog.ExpressionEntity.feature)
             ),
-            .FROM_TABLE(SQLiteCatalog.ExpressionEntity.self),
-            .JOIN_TABLE(SQLiteCatalog.TranslationEntity.self, on: SQLiteCatalog.TranslationEntity.expressionID, equals: SQLiteCatalog.ExpressionEntity.id),
+            .FROM(
+                .TABLE(SQLiteCatalog.ExpressionEntity.self),
+                .JOIN(SQLiteCatalog.TranslationEntity.self, on: SQLiteCatalog.TranslationEntity.expressionID, equals: SQLiteCatalog.ExpressionEntity.id)
+            ),
             .WHERE(
                 .AND(
                     .column(SQLiteCatalog.TranslationEntity.language, op: .equal, value: languageCode.rawValue),

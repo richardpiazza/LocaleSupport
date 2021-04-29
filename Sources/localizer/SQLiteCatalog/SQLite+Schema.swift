@@ -134,7 +134,7 @@ extension SQLite {
     }
     
     private func addSchemaV3Fields() throws {
-        try execute(statement: .expressionTable_renameComment)
+        try execute(statement: "ALTER TABLE expression RENAME COLUMN comment TO context;")
         try execute(statement: "ALTER TABLE expression ADD COLUMN uuid TEXT;")
         try execute(statement: "ALTER TABLE translation ADD COLUMN uuid TEXT;")
         try execute(statement: "ALTER TABLE expression ADD COLUMN key TEXT;")

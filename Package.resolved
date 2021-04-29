@@ -41,8 +41,8 @@
         "package": "Statement",
         "repositoryURL": "https://github.com/richardpiazza/Statement.git",
         "state": {
-          "branch": "main",
-          "revision": "9c509000bc675de25116d99ddac4db1ebf5dea7e",
+          "branch": "feature/context-refinements",
+          "revision": "ce256ad98dd3f22bc2ca7963304803956eff98db",
           "version": null
         }
       },
