@@ -88,8 +88,16 @@ let package = Package(
         ),
         .testTarget(
             name: "LocaleSupportTests",
-            dependencies: ["LocaleSupport", "TestResources", "localizer"],
+            dependencies: ["LocaleSupport", "TestResources"]
+        ),
+        .testTarget(
+            name: "LocalizerTests",
+            dependencies: ["localizer"],
             resources: [.process("Resources")]
+        ),
+        .testTarget(
+            name: "TranslationCatalogTests",
+            dependencies: ["TranslationCatalog"]
         ),
     ],
     swiftLanguageVersions: [.v5]

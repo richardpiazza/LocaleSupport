@@ -10,7 +10,7 @@ final class ExpressibleByLocalizedStringTests: XCTestCase {
     ]
     
     private static var indicators: (prefix: Character, suffix: Character)? = nil
-    private static var bundle: Bundle = .module
+    private static var bundle: Bundle = .main
     
     private enum Strings: String, ExpressibleByLocalizedString {
         case alertTitle = "Delete Document"
