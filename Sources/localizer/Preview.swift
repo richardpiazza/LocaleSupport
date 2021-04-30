@@ -39,10 +39,10 @@ struct Preview: ParsableCommand {
         switch source {
         case .android:
             let android = try StringsXml.make(contentsOf: url)
-            expressions = android.expressions(language: .default, region: nil)
+            expressions = android.expressions(language: .default, script: nil, region: nil)
         case .apple:
             let dictionary = try Dictionary(contentsOf: url)
-            expressions = dictionary.expressions(language: .default, region: nil)
+            expressions = dictionary.expressions(language: .default, script: nil, region: nil)
         }
         
         expressions.sorted(by: { $0.name < $1.name }).forEach { (expression) in

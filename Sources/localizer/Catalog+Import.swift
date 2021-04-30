@@ -73,10 +73,10 @@ extension Catalog {
             switch fileFormat {
             case .android:
                 let android = try StringsXml.make(contentsOf: url)
-                expressions = android.expressions(language: language, region: region)
+                expressions = android.expressions(defaultLanguage: defaultLanguage, language: language, script: script, region: region)
             case .apple:
                 let dictionary = try Dictionary(contentsOf: url)
-                expressions = dictionary.expressions(language: language, region: region)
+                expressions = dictionary.expressions(defaultLanguage: defaultLanguage, language: language, script: script, region: region)
             }
             
             try expressions.forEach({

@@ -53,6 +53,14 @@ extension SQLite {
         return output
     }
     
+    func expressionEntity(withKey key: String) throws -> SQLiteCatalog.ExpressionEntity? {
+        var output: SQLiteCatalog.ExpressionEntity?
+        try forEachRow(statement: .selectExpression(withKey: key)) { (entity: SQLiteCatalog.ExpressionEntity) in
+            output = entity
+        }
+        return output
+    }
+    
     func translationEntities() throws -> [SQLiteCatalog.TranslationEntity] {
         var output: [SQLiteCatalog.TranslationEntity] = []
         try forEachRow(statement: .selectAllFromTranslation, handleRow: { (entity: SQLiteCatalog.TranslationEntity) in

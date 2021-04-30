@@ -33,7 +33,7 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
     
     // TODO: Split into entity queries?
     public enum Query: CatalogQuery {
-        case name(String)
+        case expressionKey(String)
         case expression(LanguageCode, ScriptCode?, RegionCode?)
         case translation(Expression.ID, LanguageCode, ScriptCode?, RegionCode?)
     }
@@ -115,8 +115,8 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
         var entities: [ExpressionEntity] = []
         
         switch typedQuery {
-        case .name(let name):
-            try db.forEachRow(statement: .selectExpression(withName: name), handleRow: { (entity: ExpressionEntity) in
+        case .expressionKey(let key):
+            try db.forEachRow(statement: .selectExpression(withKey: key), handleRow: { (entity: ExpressionEntity) in
                 entities.append(entity)
             })
         case .expression(let languageCode, let scriptCode, let regionCode):
@@ -138,15 +138,25 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             throw Error.existingExpressionWithID(existing.id)
         }
         
-        let id = UUID()
-        var insert = ExpressionEntity(expression)
-        insert.uuid = id.uuidString
+        // TODO: handle existing expressions with new translations.
+        if let existingEntity = try? db.expressionEntity(withKey: expression.key), !expression.key.isEmpty {
+            if case .cascade = action as? InsertEntity {
+                try expression.translations.forEach { (translation) in
+                    _ = try createTranslation(translation, action: InsertEntity.foreignKey(existingEntity.id))
+                }
+            }
+            
+            return UUID(uuidString: existingEntity.uuid) ?? .zero
+        }
         
-        try db.execute(statement: .insertExpression(insert))
+        let id = UUID()
+        var entity = ExpressionEntity(expression)
+        entity.uuid = id.uuidString
+        
+        try db.execute(statement: .insertExpression(entity))
         let primaryKey = db.lastInsertRowID()
         
         if case .cascade = action as? InsertEntity {
-            // Create any provided translations
             try expression.translations.forEach { (translation) in
                 _ = try createTranslation(translation, action: InsertEntity.foreignKey(primaryKey))
             }

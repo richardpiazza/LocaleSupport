@@ -93,7 +93,7 @@ extension SQLiteStatement {
         )
     }
     
-    static func selectExpression(withName name: String) -> Self {
+    static func selectExpression(withKey key: String) -> Self {
         .init(
             .SELECT(
                 .column(SQLiteCatalog.ExpressionEntity.id),
@@ -106,7 +106,7 @@ extension SQLiteStatement {
             ),
             .FROM_TABLE(SQLiteCatalog.ExpressionEntity.self),
             .WHERE(
-                .column(SQLiteCatalog.ExpressionEntity.name, op: .equal, value: name)
+                .column(SQLiteCatalog.ExpressionEntity.key, op: .equal, value: key)
             ),
             .LIMIT(1)
         )
