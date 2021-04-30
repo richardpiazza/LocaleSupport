@@ -1,3 +1,4 @@
+import LocaleSupport
 import ArgumentParser
 import Foundation
 

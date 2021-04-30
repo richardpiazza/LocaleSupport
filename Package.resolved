@@ -42,8 +42,8 @@
         "repositoryURL": "https://github.com/richardpiazza/Statement.git",
         "state": {
           "branch": null,
-          "revision": "e04ee4ab6a917a13417e9aae0a6b87f60c4cf14d",
-          "version": "0.2.0"
+          "revision": "eab61b67d7ab223cd0bb5d2cc1693e0fbee609ff",
+          "version": "0.3.0"
         }
       },
       {
@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/apple/swift-argument-parser",
         "state": {
           "branch": null,
-          "revision": "92646c0cdbaca076c8d3d0207891785b3379cbff",
-          "version": "0.3.1"
+          "revision": "9564d61b08a5335ae0a36f789a7d71493eacadfc",
+          "version": "0.3.2"
         }
       },
       {

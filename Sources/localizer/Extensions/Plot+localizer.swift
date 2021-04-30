@@ -1,5 +1,6 @@
 import Plot
 import HTMLString
+import TranslationCatalog
 
 extension HTML {
     static func make(with expressions: [Expression]) -> Self {
@@ -52,7 +53,7 @@ extension Node where Context == HTML.BodyContext {
             .p(
                 .text("ID: \(expression.id)"),
                 .br(),
-                .text("Comment: \(expression.comment ?? "")"),
+                .text("Context: \(expression.context ?? "")"),
                 .br(),
                 .text("Feature: \(expression.feature ?? "")")
             ),
@@ -63,7 +64,7 @@ extension Node where Context == HTML.BodyContext {
                     .th("Localization")
                 ),
                 .forEach(values) {
-                    .if($0.language == expression.defaultLanguage, .defaultValue($0), else: .value($0))
+                    .if($0.languageCode == expression.defaultLanguage, .defaultValue($0), else: .value($0))
                 }
             )
         )
@@ -79,7 +80,7 @@ extension Node where Context == HTML.TableContext {
                 .text("\(translation.id)")
             ),
             .td(
-                .text(translation.designator)
+                .text(translation.localeIdentifier)
             ),
             .td(
                 .raw(translation.value.addingASCIIEntities())
@@ -96,7 +97,7 @@ extension Node where Context == HTML.TableContext {
             ),
             .td(
                 .b(
-                    .text(translation.designator)
+                    .text(translation.localeIdentifier)
                 )
             ),
             .td(

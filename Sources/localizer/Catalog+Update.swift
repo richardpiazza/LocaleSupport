@@ -1,5 +1,7 @@
 import ArgumentParser
 import Foundation
+import LocaleSupport
+import TranslationCatalog
 
 extension Catalog {
     struct Update: ParsableCommand {
@@ -10,8 +12,8 @@ extension Catalog {
             version: "1.0.0",
             shouldDisplay: true,
             subcommands: [
-                ExpressionEntity.self,
-                TranslationEntity.self
+                ExpressionCommand.self,
+                TranslationCommand.self
             ],
             defaultSubcommand: nil,
             helpNames: .shortAndLong
@@ -20,7 +22,7 @@ extension Catalog {
 }
 
 extension Catalog.Update {
-    struct ExpressionEntity: ParsableCommand {
+    struct ExpressionCommand: ParsableCommand {
         
         static var configuration: CommandConfiguration = .init(
             commandName: "expression",
@@ -36,22 +38,28 @@ extension Catalog.Update {
         @Argument(help: "Unique ID of the Expression.")
         var id: Expression.ID
         
-        @Option(help: "Key that identifies a collection of translations.")
+        @Option(help: "Unique key that identifies the expression in translation files.")
+        var key: String?
+        
+        @Option(help: "Name that identifies a collection of translations.")
         var name: String?
         
         @Option(help: "The default/development language code.")
         var defaultLanguage: LanguageCode?
         
         @Option(help: "Contextual information that guides translators.")
-        var comment: String?
+        var context: String?
         
         @Option(help: "Optional grouping identifier.")
         var feature: String?
         
-        @Option(help: "Overrides the default support directory path for the catalog database.")
-        var catalogPath: String?
-        
         func validate() throws {
+            if let key = self.key {
+                guard !key.isEmpty else {
+                    throw ValidationError("Must provide a non-empty 'key'.")
+                }
+            }
+            
             if let name = self.name {
                 guard !name.isEmpty else {
                     throw ValidationError("Must provide a non-empty 'name'.")
@@ -60,37 +68,37 @@ extension Catalog.Update {
         }
         
         func run() throws {
-            let path = try catalogPath ?? FileManager.default.catalogURL().path
-            let db = try SQLiteDatabase(path: path)
+            let catalog = try SQLiteCatalog()
             
-            guard let _ = try? db.expression(id) else {
-                print("No Expression found with id '\(id)'.")
-                return
+            let expression = try catalog.expression(id)
+            
+            if let key = self.key, expression.key != key {
+                try catalog.updateExpression(expression.id, action: SQLiteCatalog.ExpressionUpdate.key(key))
             }
             
-            if let name = self.name {
-                try db.updateExpression(id, .name(name))
+            if let name = self.name, expression.name != name {
+                try catalog.updateExpression(expression.id, action: SQLiteCatalog.ExpressionUpdate.name(name))
             }
             
-            if let defaultLanguage = self.defaultLanguage {
-                try db.updateExpression(id, .defaultLanguage(defaultLanguage))
+            if let language = self.defaultLanguage, expression.defaultLanguage != language {
+                try catalog.updateExpression(expression.id, action: SQLiteCatalog.ExpressionUpdate.defaultLanguage(language))
             }
             
-            if let comment = self.comment {
-                let value = (comment.isEmpty) ? nil : comment
-                try db.updateExpression(id, .comment(value))
+            if let context = self.context, expression.context != context {
+                let value = context.isEmpty ? nil : context
+                try catalog.updateExpression(expression.id, action: SQLiteCatalog.ExpressionUpdate.context(value))
             }
             
-            if let feature = self.feature {
-                let value = (feature.isEmpty) ? nil : feature
-                try db.updateExpression(id, .feature(value))
+            if let feature = self.feature, expression.feature != feature {
+                let value = feature.isEmpty ? nil : feature
+                try catalog.updateExpression(expression.id, action: SQLiteCatalog.ExpressionUpdate.feature(value))
             }
         }
     }
 }
 
 extension Catalog.Update {
-    struct TranslationEntity: ParsableCommand {
+    struct TranslationCommand: ParsableCommand {
         
         static var configuration: CommandConfiguration = .init(
             commandName: "translation",
@@ -104,13 +112,13 @@ extension Catalog.Update {
         )
         
         @Argument(help: "Unique ID of the Translation.")
-        var id: Translation.ID
-        
-        @Option(help: "ID of the Expression to which this translation links.")
-        var expression: Expression.ID?
+        var id: TranslationCatalog.Translation.ID
         
         @Option(help: "Language of the translation.")
         var language: LanguageCode?
+        
+        @Option(help: "Script code specifier.")
+        var script: ScriptCode?
         
         @Option(help: "Region code specifier.")
         var region: RegionCode?
@@ -118,39 +126,39 @@ extension Catalog.Update {
         @Option(help: "The translated string.")
         var value: String?
         
-        @Flag(help: "Remove the region specifier from the translation.")
+        @Flag(help: "Forcefully drop the 'ScriptCode'. Does nothing when 'script' value provided.")
+        var dropScript: Bool = false
+        
+        @Flag(help: "Forcefully drop the 'RegionCode'. Does nothing when 'region' value provided.")
         var dropRegion: Bool = false
         
-        @Option(help: "Overrides the default support directory path for the catalog database.")
-        var catalogPath: String?
-        
         func run() throws {
-            let path = try catalogPath ?? FileManager.default.catalogURL().path
-            let db = try SQLiteDatabase(path: path)
+            let catalog = try SQLiteCatalog()
             
-            guard let _ = try? db.translation(id) else {
-                print("No Translation found with id '\(id)'.")
-                return
+            let translation = try catalog.translation(id)
+            
+            if let language = self.language, translation.languageCode != language {
+                try catalog.updateTranslation(translation.id, action: SQLiteCatalog.TranslationUpdate.language(language))
             }
             
-            if let expressionID = expression {
-                try db.updateTranslation(id, .expressionID(expressionID))
+            if let script = self.script, translation.scriptCode != script {
+                try catalog.updateTranslation(translation.id, action: SQLiteCatalog.TranslationUpdate.script(script))
             }
             
-            if let language = self.language {
-                try db.updateTranslation(id, .language(language))
+            if let region = self.region, translation.regionCode != region {
+                try catalog.updateTranslation(translation.id, action: SQLiteCatalog.TranslationUpdate.region(region))
             }
             
-            if let region = self.region {
-                try db.updateTranslation(id, .region(region))
+            if let value = self.value, translation.value != value {
+                try catalog.updateTranslation(translation.id, action: SQLiteCatalog.TranslationUpdate.value(value))
             }
             
-            if let value = self.value {
-                try db.updateTranslation(id, .value(value))
+            if dropScript && script == nil {
+                try catalog.updateTranslation(translation.id, action: SQLiteCatalog.TranslationUpdate.script(nil))
             }
             
-            if dropRegion {
-                try db.updateTranslation(id, .region(nil))
+            if dropRegion && region == nil {
+                try catalog.updateTranslation(translation.id, action: SQLiteCatalog.TranslationUpdate.region(nil))
             }
         }
     }

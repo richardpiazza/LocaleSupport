@@ -1,3 +1,4 @@
+import LocaleSupport
 import Foundation
 
 struct Configuration: Codable {

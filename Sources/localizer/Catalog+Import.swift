@@ -1,5 +1,7 @@
 import Foundation
 import ArgumentParser
+import LocaleSupport
+import TranslationCatalog
 
 extension Catalog {
     struct Import: ParsableCommand {
@@ -42,14 +44,14 @@ extension Catalog {
         @Option(help: "The source of the file 'android' or 'apple'.")
         var format: Format?
         
+        @Option(help: "The script code for the translations in the imported file.")
+        var script: ScriptCode?
+        
         @Option(help: "The region code for the translations in the imported file.")
         var region: RegionCode?
         
         @Option(help: "The 'default' Language for the expressions being imported.")
         var defaultLanguage: LanguageCode = .default
-        
-        @Option(help: "Overrides the default support directory path for the catalog database.")
-        var catalogPath: String?
         
         func validate() throws {
             guard !filename.isEmpty else {
@@ -65,35 +67,20 @@ extension Catalog {
                 throw ValidationError("Import format could not be determined. Use '--format' to specify.")
             }
             
-            let path = try catalogPath ?? FileManager.default.catalogURL().path
-            let db = try SQLiteDatabase(path: path)
+            let catalog = try SQLiteCatalog()
             
             let expressions: [Expression]
             switch fileFormat {
             case .android:
                 let android = try StringsXml.make(contentsOf: url)
-                expressions = android.expressions(language: language, region: region)
+                expressions = android.expressions(defaultLanguage: defaultLanguage, language: language, script: script, region: region)
             case .apple:
                 let dictionary = try Dictionary(contentsOf: url)
-                expressions = dictionary.expressions(language: language, region: region)
+                expressions = dictionary.expressions(defaultLanguage: defaultLanguage, language: language, script: script, region: region)
             }
             
             try expressions.forEach({
-                let name = $0.name
-                
-                do {
-                    try db.insertExpression($0)
-                } catch SQLiteDatabase.Error.statement(let action, let statement, let error) {
-                    print("===== \(action.uppercased()) =====")
-                    print(statement)
-                    print("-----")
-                    print(error.localizedDescription)
-                    print("=====")
-                }
-                
-                $0.translations.forEach { (translation) in
-                    print("Importing tag '\(name)' \(translation.designator): '\(translation.value)'")
-                }
+                _ = try catalog.createExpression($0, action: SQLiteCatalog.InsertEntity.cascade)
             })
         }
     }

@@ -1,5 +1,7 @@
 import ArgumentParser
 import Foundation
+import LocaleSupport
+import TranslationCatalog
 
 extension Catalog {
     struct Insert: ParsableCommand {
@@ -10,8 +12,8 @@ extension Catalog {
             version: "1.0.0",
             shouldDisplay: true,
             subcommands: [
-                ExpressionEntity.self,
-                TranslationEntity.self
+                ExpressionCommand.self,
+                TranslationCommand.self
             ],
             defaultSubcommand: nil,
             helpNames: .shortAndLong
@@ -20,7 +22,7 @@ extension Catalog {
 }
 
 extension Catalog.Insert {
-    struct ExpressionEntity: ParsableCommand {
+    struct ExpressionCommand: ParsableCommand {
         
         static var configuration: CommandConfiguration = .init(
             commandName: "expression",
@@ -33,40 +35,52 @@ extension Catalog.Insert {
             helpNames: .shortAndLong
         )
         
-        @Argument(help: "Key that identifies a collection of translations.")
+        @Argument(help: "Unique key that identifies the expression in translation files.")
+        var key: String
+        
+        @Argument(help: "Name that identifies a collection of translations.")
         var name: String
         
         @Option(help: "The default/development language code.")
         var defaultLanguage: LanguageCode = .default
         
         @Option(help: "Contextual information that guides translators.")
-        var comment: String?
+        var context: String?
         
         @Option(help: "Optional grouping identifier.")
         var feature: String?
         
-        @Option(help: "Overrides the default support directory path for the catalog database.")
-        var catalogPath: String?
-        
         func validate() throws {
+            guard !key.isEmpty else {
+                throw ValidationError("Must provide a non-empty 'key'.")
+            }
+            
             guard !name.isEmpty else {
                 throw ValidationError("Must provide a non-empty 'name'.")
             }
         }
         
         func run() throws {
-            let path = try catalogPath ?? FileManager.default.catalogURL().path
-            let db = try SQLiteDatabase(path: path)
+            let catalog = try SQLiteCatalog()
             
-            let expression = Expression(name: name, languageCode: defaultLanguage, comment: comment, feature: feature)
-            let id = try db.insertExpression(expression)
+            let expression = Expression(
+                uuid: .zero,
+                key: key,
+                name: name,
+                defaultLanguage: defaultLanguage,
+                context: context,
+                feature: feature,
+                translations: []
+            )
+            
+            let id = try catalog.createExpression(expression, action: SQLiteCatalog.InsertEntity.nothing)
             print("Inserted Expression [\(id)] '\(expression.name)'")
         }
     }
 }
 
 extension Catalog.Insert {
-    struct TranslationEntity: ParsableCommand {
+    struct TranslationCommand: ParsableCommand {
         
         static var configuration: CommandConfiguration = .init(
             commandName: "translation",
@@ -88,18 +102,25 @@ extension Catalog.Insert {
         @Argument(help: "The translated string.")
         var value: String
         
+        @Option(help: "Script code specifier.")
+        var script: ScriptCode?
+        
         @Option(help: "Region code specifier.")
         var region: RegionCode?
         
-        @Option(help: "Overrides the default support directory path for the catalog database.")
-        var catalogPath: String?
-        
         func run() throws {
-            let path = try catalogPath ?? FileManager.default.catalogURL().path
-            let db = try SQLiteDatabase(path: path)
+            let catalog = try SQLiteCatalog()
             
-            let translation = Translation(expressionID: expression, language: language, region: region, value: value)
-            let id = try db.insertTranslation(translation)
+            let translation = Translation(
+                uuid: .zero,
+                expressionID: expression,
+                languageCode: language,
+                scriptCode: script,
+                regionCode: region,
+                value: value
+            )
+            
+            let id = try catalog.createTranslation(translation, action: SQLiteCatalog.InsertEntity.nothing)
             print("Inserted Translation [\(id)] '\(value)'")
         }
     }

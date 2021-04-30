@@ -1,5 +1,6 @@
 import ArgumentParser
 import Foundation
+import TranslationCatalog
 
 extension Catalog {
     struct Delete: ParsableCommand {
@@ -36,19 +37,9 @@ extension Catalog.Delete {
         @Argument(help: "Unique ID of the Expression.")
         var id: Expression.ID
         
-        @Option(help: "Overrides the default support directory path for the catalog database.")
-        var catalogPath: String?
-        
         func run() throws {
-            let path = try catalogPath ?? FileManager.default.catalogURL().path
-            let db = try SQLiteDatabase(path: path)
-            
-            guard let _ = try? db.expression(id) else {
-                print("No Expression found with id '\(id)'.")
-                return
-            }
-            
-            try db.deleteExpression(id)
+            let catalog = try SQLiteCatalog()
+            try catalog.deleteExpression(id, action: SQLiteCatalog.DeleteEntity.cascade)
         }
     }
 }
@@ -68,21 +59,11 @@ extension Catalog.Delete {
         )
         
         @Argument(help: "Unique ID of the Translation.")
-        var id: Translation.ID
-        
-        @Option(help: "Overrides the default support directory path for the catalog database.")
-        var catalogPath: String?
+        var id: TranslationCatalog.Translation.ID
         
         func run() throws {
-            let path = try catalogPath ?? FileManager.default.catalogURL().path
-            let db = try SQLiteDatabase(path: path)
-            
-            guard let _ = try? db.translation(id) else {
-                print("No Translation found with id '\(id)'.")
-                return
-            }
-            
-            try db.deleteTranslation(id)
+            let catalog = try SQLiteCatalog()
+            try catalog.deleteTranslation(id, action: SQLiteCatalog.DeleteEntity.nothing)
         }
     }
 }

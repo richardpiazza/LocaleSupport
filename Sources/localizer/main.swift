@@ -1,4 +1,5 @@
 import ArgumentParser
+import LocaleSupport
 
 try Configuration.load(.default)
 
