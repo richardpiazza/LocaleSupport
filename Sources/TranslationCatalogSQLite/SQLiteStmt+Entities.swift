@@ -53,6 +53,10 @@ extension SQLiteStmt {
         )
     }
     
+    var projectExpressionEntity: SQLiteCatalog.ProjectExpressionEntity {
+        .init(projectID: columnInt(position: 0), expressionID: columnInt(position: 1))
+    }
+    
     var expressionEntity: SQLiteCatalog.ExpressionEntity {
         .init(
             id: columnInt(position: 0),

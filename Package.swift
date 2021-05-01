@@ -22,6 +22,10 @@ let package = Package(
             name: "TranslationCatalog",
             targets: ["TranslationCatalog"]
         ),
+        .library(
+            name: "TranslationCatalogSQLite",
+            targets: ["TranslationCatalogSQLite"]
+        ),
         .executable(
             name: "localizer",
             targets: ["localizer"]
@@ -68,17 +72,25 @@ let package = Package(
             dependencies: ["LocaleSupport"]
         ),
         .target(
+            name: "TranslationCatalogSQLite",
+            dependencies: [
+                "LocaleSupport",
+                "TranslationCatalog",
+                "Statement",
+                .product(name: "StatementSQLite", package: "Statement"),
+                "PerfectSQLite"
+            ]
+        ),
+        .target(
             name: "localizer",
             dependencies: [
                 "LocaleSupport",
                 "TranslationCatalog",
+                "TranslationCatalogSQLite",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 "XMLCoder",
-                "PerfectSQLite",
                 "Plot",
                 "HTMLString",
-                "Statement",
-                .product(name: "StatementSQLite", package: "Statement"),
             ]
         ),
         .target(

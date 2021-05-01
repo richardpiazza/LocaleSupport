@@ -2,6 +2,7 @@ import ArgumentParser
 import Foundation
 import LocaleSupport
 import TranslationCatalog
+import TranslationCatalogSQLite
 
 extension Catalog {
     struct Insert: ParsableCommand {
@@ -47,10 +48,10 @@ extension Catalog.Insert {
         func run() throws {
             print("Inserting Project '\(name)'…")
             
-            let catalog = try SQLiteCatalog()
+            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
             
             let entity = Project(uuid: .zero, name: name, expressions: [])
-            let id = try catalog.createProject(entity, action: SQLiteCatalog.InsertEntity.nothing)
+            let id = try catalog.createProject(entity)
             print("Project '\(name)' inserted with ID '\(id)'.")
         }
     }
@@ -94,7 +95,7 @@ extension Catalog.Insert {
         }
         
         func run() throws {
-            let catalog = try SQLiteCatalog()
+            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
             
             let expression = Expression(
                 uuid: .zero,
@@ -106,7 +107,7 @@ extension Catalog.Insert {
                 translations: []
             )
             
-            let id = try catalog.createExpression(expression, action: SQLiteCatalog.InsertEntity.nothing)
+            let id = try catalog.createExpression(expression)
             print("Inserted Expression [\(id)] '\(expression.name)'")
         }
     }
@@ -142,7 +143,7 @@ extension Catalog.Insert {
         var region: RegionCode?
         
         func run() throws {
-            let catalog = try SQLiteCatalog()
+            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
             
             let translation = Translation(
                 uuid: .zero,
@@ -153,7 +154,7 @@ extension Catalog.Insert {
                 value: value
             )
             
-            let id = try catalog.createTranslation(translation, action: SQLiteCatalog.InsertEntity.nothing)
+            let id = try catalog.createTranslation(translation)
             print("Inserted Translation [\(id)] '\(value)'")
         }
     }

@@ -2,6 +2,7 @@ import Foundation
 import ArgumentParser
 import LocaleSupport
 import TranslationCatalog
+import TranslationCatalogSQLite
 
 extension Catalog {
     struct Import: ParsableCommand {
@@ -67,7 +68,7 @@ extension Catalog {
                 throw ValidationError("Import format could not be determined. Use '--format' to specify.")
             }
             
-            let catalog = try SQLiteCatalog()
+            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
             
             let expressions: [Expression]
             switch fileFormat {
@@ -80,7 +81,7 @@ extension Catalog {
             }
             
             try expressions.forEach({
-                _ = try catalog.createExpression($0, action: SQLiteCatalog.InsertEntity.cascade)
+                try catalog.createExpression($0)
             })
         }
     }

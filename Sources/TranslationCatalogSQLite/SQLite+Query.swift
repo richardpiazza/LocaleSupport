@@ -21,6 +21,12 @@ extension SQLite {
         }
     }
     
+    func forEachRow(statement: SQLiteStatement, handleRow: (SQLiteCatalog.ProjectExpressionEntity) throws -> ()) throws {
+        try forEachRow(statement: statement.render()) { (stmt, index) in
+            try handleRow(stmt.projectExpressionEntity)
+        }
+    }
+    
     func forEachRow(statement: SQLiteStatement, handleRow: (SQLiteCatalog.ExpressionEntity) throws -> ()) throws {
         try forEachRow(statement: statement.render()) { (stmt, index) in
             try handleRow(stmt.expressionEntity)

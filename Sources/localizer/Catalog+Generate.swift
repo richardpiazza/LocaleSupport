@@ -2,6 +2,7 @@ import ArgumentParser
 import Foundation
 import Plot
 import TranslationCatalog
+import TranslationCatalogSQLite
 
 extension Catalog {
     struct Generate: ParsableCommand {
@@ -28,7 +29,7 @@ extension Catalog {
         var format: Format
         
         func run() throws {
-            let catalog = try SQLiteCatalog()
+            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
             let expressions = try catalog.expressions().sorted(by: { $0.name < $1.name })
             
             switch format {

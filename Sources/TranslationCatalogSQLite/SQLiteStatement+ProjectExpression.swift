@@ -15,6 +15,12 @@ extension SQLiteStatement {
 
 // MARK: - ProjectExpression (Queries)
 extension SQLiteStatement {
+    static func selectProjectExpression(projectID: Int, expressionID: Int) -> Self {
+        SQLiteStatement(
+            
+        )
+    }
+    
     static func insertProjectExpression(projectID: Int, expressionID: Int) -> Self {
         SQLiteStatement(
             .INSERT_INTO(

@@ -3,6 +3,7 @@ import Foundation
 import Plot
 import LocaleSupport
 import TranslationCatalog
+import TranslationCatalogSQLite
 
 extension Catalog {
     struct Export: ParsableCommand {
@@ -50,7 +51,7 @@ extension Catalog {
         var catalogPath: String?
         
         func run() throws {
-            let catalog = try SQLiteCatalog()
+            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
             
             var expressions: [Expression]
             if format == .apple && !forceRegionMatch {

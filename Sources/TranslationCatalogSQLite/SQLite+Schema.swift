@@ -36,8 +36,7 @@ extension SQLite {
         return schemaVersion
     }
     
-    convenience init(schema: SchemaVersion = .current) throws {
-        let path = try FileManager.default.catalogURL().path
+    convenience init(path: String, schema: SchemaVersion = .current) throws {
         try self.init(path)
         try migrateSchema(from: schemaVersion, to: schema)
     }

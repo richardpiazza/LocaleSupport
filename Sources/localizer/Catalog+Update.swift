@@ -2,6 +2,7 @@ import ArgumentParser
 import Foundation
 import LocaleSupport
 import TranslationCatalog
+import TranslationCatalogSQLite
 
 extension Catalog {
     struct Update: ParsableCommand {
@@ -50,7 +51,7 @@ extension Catalog.Update {
         }
         
         func run() throws {
-            let catalog = try SQLiteCatalog()
+            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
             let project = try catalog.project(id)
             
             print("Updating Project '\(project.name) [\(project.uuid.uuidString)]'…")
@@ -108,7 +109,7 @@ extension Catalog.Update {
         }
         
         func run() throws {
-            let catalog = try SQLiteCatalog()
+            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
             
             let expression = try catalog.expression(id)
             
@@ -173,7 +174,7 @@ extension Catalog.Update {
         var dropRegion: Bool = false
         
         func run() throws {
-            let catalog = try SQLiteCatalog()
+            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
             
             let translation = try catalog.translation(id)
             

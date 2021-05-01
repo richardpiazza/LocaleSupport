@@ -5,7 +5,7 @@ import StatementSQLite
 import LocaleSupport
 import TranslationCatalog
 
-internal extension SQLiteCatalog {
+extension SQLiteCatalog {
     struct ProjectEntity: Table, Identifiable {
         
         enum CodingKeys: String, CodingKey {

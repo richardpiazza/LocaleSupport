@@ -1,6 +1,7 @@
 import ArgumentParser
 import Foundation
 import TranslationCatalog
+import TranslationCatalogSQLite
 
 extension Catalog {
     struct Delete: ParsableCommand {
@@ -38,8 +39,8 @@ extension Catalog.Delete {
         var id: Expression.ID
         
         func run() throws {
-            let catalog = try SQLiteCatalog()
-            try catalog.deleteExpression(id, action: SQLiteCatalog.DeleteEntity.cascade)
+            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
+            try catalog.deleteExpression(id)
         }
     }
 }
@@ -62,8 +63,8 @@ extension Catalog.Delete {
         var id: TranslationCatalog.Translation.ID
         
         func run() throws {
-            let catalog = try SQLiteCatalog()
-            try catalog.deleteTranslation(id, action: SQLiteCatalog.DeleteEntity.nothing)
+            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
+            try catalog.deleteTranslation(id)
         }
     }
 }
