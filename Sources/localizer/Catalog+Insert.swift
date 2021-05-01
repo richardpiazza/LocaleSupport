@@ -22,6 +22,39 @@ extension Catalog {
 }
 
 extension Catalog.Insert {
+    struct ProjectCommand: ParsableCommand {
+        
+        static var configuration: CommandConfiguration = .init(
+            commandName: "project",
+            abstract: "Add a Project to the catalog.",
+            discussion: "",
+            version: "1.0.0",
+            shouldDisplay: true,
+            subcommands: [],
+            defaultSubcommand: nil,
+            helpNames: .shortAndLong
+        )
+        
+        @Argument(help: "Name that identifies a collection of expressions.")
+        var name: String
+        
+        func validate() throws {
+            guard !name.isEmpty else {
+                throw ValidationError("Must provide a non-empty 'name'.")
+            }
+        }
+        
+        func run() throws {
+            print("Inserting Project '\(name)'…")
+            
+            let catalog = try SQLiteCatalog()
+            
+            let entity = Project(uuid: .zero, name: name, expressions: [])
+            let id = try catalog.createProject(entity, action: SQLiteCatalog.InsertEntity.nothing)
+            print("Project '\(name)' inserted with ID '\(id)'.")
+        }
+    }
+    
     struct ExpressionCommand: ParsableCommand {
         
         static var configuration: CommandConfiguration = .init(

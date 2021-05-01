@@ -22,6 +22,46 @@ extension Catalog {
 }
 
 extension Catalog.Update {
+    struct ProjectCommand: ParsableCommand {
+        
+        static var configuration: CommandConfiguration = .init(
+            commandName: "project",
+            abstract: "Update a Project in the catalog.",
+            discussion: "",
+            version: "1.0.0",
+            shouldDisplay: true,
+            subcommands: [],
+            defaultSubcommand: nil,
+            helpNames: .shortAndLong
+        )
+        
+        @Argument(help: "Unique ID of the Project.")
+        var id: Project.ID
+        
+        @Option(help: "Name that identifies a collection of expressions.")
+        var name: String?
+        
+        func validate() throws {
+            if let name = self.name {
+                guard !name.isEmpty else {
+                    throw ValidationError("Must provide a non-empty 'name'.")
+                }
+            }
+        }
+        
+        func run() throws {
+            let catalog = try SQLiteCatalog()
+            let project = try catalog.project(id)
+            
+            print("Updating Project '\(project.name) [\(project.uuid.uuidString)]'…")
+            
+            if let name = self.name {
+                try catalog.updateProject(project, action: SQLiteCatalog.ProjectUpdate.name(name))
+                print("Set Name to '\(name)'.")
+            }
+        }
+    }
+    
     struct ExpressionCommand: ParsableCommand {
         
         static var configuration: CommandConfiguration = .init(

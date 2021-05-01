@@ -128,15 +128,13 @@ extension SQLiteCatalog.ProjectEntity {
         uuid = project.uuid.uuidString
         name = project.name
     }
-}
-
-extension Project {
-    init?(_ project: SQLiteCatalog.ProjectEntity, expressions: [SQLiteCatalog.ExpressionEntity]) {
-        guard let primaryKey = UUID(uuidString: project.uuid) else {
-            return nil
+    
+    func project(with expressions: [Expression] = []) throws -> Project {
+        guard let id = UUID(uuidString: uuid) else {
+            throw SQLiteCatalog.Error.unhandledConversion
         }
         
-        self.init(uuid: primaryKey, name: project.name, expressions: expressions.compactMap({ Expression($0) }))
+        return Project(uuid: id, name: name, expressions: expressions)
     }
 }
 
@@ -149,26 +147,16 @@ extension SQLiteCatalog.ExpressionEntity {
         context = expression.context
         feature = expression.feature
     }
-}
-
-extension Expression {
-    init?(_ expression: SQLiteCatalog.ExpressionEntity, translations: [SQLiteCatalog.TranslationEntity] = []) {
-        guard let primaryKey = UUID(uuidString: expression.uuid) else {
-            return nil
+    
+    func expression(with translations: [TranslationCatalog.Translation] = []) throws -> Expression {
+        guard let id = UUID(uuidString: uuid) else {
+            throw SQLiteCatalog.Error.unhandledConversion
         }
-        guard let language = LanguageCode(rawValue: expression.defaultLanguage) else {
-            return nil
+        guard let languageCode = LanguageCode(rawValue: defaultLanguage) else {
+            throw SQLiteCatalog.Error.unhandledConversion
         }
         
-        self.init(
-            uuid: primaryKey,
-            key: expression.key,
-            name: expression.name,
-            defaultLanguage: language,
-            context: expression.context,
-            feature: expression.feature,
-            translations: translations.compactMap({ TranslationCatalog.Translation($0, expressionUUID: expression.uuid) })
-        )
+        return Expression(uuid: id, key: key, name: name, defaultLanguage: languageCode, context: context, feature: feature, translations: translations)
     }
 }
 
@@ -180,26 +168,22 @@ extension SQLiteCatalog.TranslationEntity {
         region = translation.regionCode?.rawValue
         value = translation.value
     }
-}
-
-extension TranslationCatalog.Translation {
-    init?(_ translation: SQLiteCatalog.TranslationEntity, expressionUUID: String) {
-        guard let primaryKey = UUID(uuidString: translation.uuid) else {
-            return nil
+    
+    func translation(with expressionID: String) throws -> TranslationCatalog.Translation {
+        guard let id = UUID(uuidString: uuid) else {
+            throw SQLiteCatalog.Error.unhandledConversion
         }
-        
-        guard let foreignKey = UUID(uuidString: expressionUUID) else {
-            return nil
+        guard let foreignID = UUID(uuidString: expressionID) else {
+            throw SQLiteCatalog.Error.unhandledConversion
         }
-        
-        guard let language = LanguageCode(rawValue: translation.language) else {
-            return nil
+        guard let languageCode = LanguageCode(rawValue: language) else {
+            throw SQLiteCatalog.Error.unhandledConversion
         }
         
         let scriptCode: ScriptCode?
-        if let script = translation.script {
+        if let script = script {
             guard let code = ScriptCode(rawValue: script) else {
-                return nil
+                throw SQLiteCatalog.Error.unhandledConversion
             }
             scriptCode = code
         } else {
@@ -207,15 +191,15 @@ extension TranslationCatalog.Translation {
         }
         
         let regionCode: RegionCode?
-        if let region = translation.region {
+        if let region = region {
             guard let code = RegionCode(rawValue: region) else {
-                return nil
+                throw SQLiteCatalog.Error.unhandledConversion
             }
             regionCode = code
         } else {
             regionCode = nil
         }
         
-        self.init(uuid: primaryKey, expressionID: foreignKey, languageCode: language, scriptCode: scriptCode, regionCode: regionCode, value: translation.value)
+        return TranslationCatalog.Translation(uuid: id, expressionID: foreignID, languageCode: languageCode, scriptCode: scriptCode, regionCode: regionCode, value: value)
     }
 }

@@ -5,50 +5,6 @@ import PerfectSQLite
 
 public class SQLiteCatalog: TranslationCatalog.Catalog {
     
-    public enum DeleteEntity: CatalogAction {
-        case nothing
-        case cascade
-    }
-    
-    public enum InsertEntity: CatalogAction {
-        case nothing
-        case cascade
-        case foreignKey(Int)
-    }
-    
-    public enum ExpressionUpdate: CatalogAction {
-        case key(String)
-        case name(String)
-        case defaultLanguage(LanguageCode)
-        case context(String?)
-        case feature(String?)
-    }
-    
-    public enum TranslationUpdate: CatalogAction {
-        case language(LanguageCode)
-        case script(ScriptCode?)
-        case region(RegionCode?)
-        case value(String)
-    }
-    
-    // TODO: Split into entity queries?
-    public enum Query: CatalogQuery {
-        case expressionKey(String)
-        case expression(LanguageCode, ScriptCode?, RegionCode?)
-        case translation(Expression.ID, LanguageCode, ScriptCode?, RegionCode?)
-    }
-    
-    public enum Error: Swift.Error {
-        case invalidAction(CatalogAction)
-        case invalidQuery(CatalogQuery)
-        case invalidProjectID(Project.ID)
-        case invalidExpressionID(Expression.ID)
-        case existingExpressionWithID(Expression.ID)
-        case invalidTranslationID(TranslationCatalog.Translation.ID)
-        case existingTranslationWithID(TranslationCatalog.Translation.ID)
-        case unhandledConversion
-    }
-    
     private let db: SQLite
     
     public init() throws {
@@ -59,52 +15,115 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
         db.close()
     }
     
+    // MARK: - Project
     public func projects() throws -> [Project] {
-        preconditionFailure("Not Implemented")
+        try db.projectEntities().map({ try $0.project() })
+    }
+    
+    public func projects(matching query: CatalogQuery) throws -> [Project] {
+        guard let _query = query as? SQLiteCatalog.Query else {
+            throw Error.invalidQuery(query)
+        }
+        
+        var output: [Project] = []
+        
+        switch _query {
+        case .cascade:
+            let projectEntities = try db.projectEntities()
+            try projectEntities.forEach { p in
+                let expressionEntities = try db.expressionEntities(withProjectID: p.id)
+                var expressions: [Expression] = []
+                try expressionEntities.forEach { e in
+                    let translationEntities = try db.translationEntities(withExpressionID: e.id)
+                    let translations = try translationEntities.map({ try $0.translation(with: e.uuid) })
+                    expressions.append(try e.expression(with: translations))
+                }
+                
+                output.append(try p.project(with: expressions))
+            }
+        default:
+            break
+        }
+        
+        return output
     }
     
     public func project(_ id: Project.ID) throws -> Project {
-        preconditionFailure("Not Implemented")
+        try project(matching: Query.primaryID(id))
     }
     
     public func project(matching query: CatalogQuery) throws -> Project {
-        preconditionFailure("Not Implemented")
+        guard let _query = query as? SQLiteCatalog.Query else {
+            throw Error.invalidQuery(query)
+        }
+        
+        switch _query {
+        case .primaryKey(let id):
+            guard let entity = try db.projectEntity(withID: id) else {
+                throw Error.invalidPrimaryKey(id)
+            }
+            
+            return try entity.project()
+        case .primaryID(let uuid):
+            guard let entity = try db.projectEntity(withUUID: uuid) else {
+                throw Error.invalidProjectID(uuid)
+            }
+            
+            return try entity.project()
+        default:
+            break
+        }
+        
+        throw Error.invalidQuery(query)
     }
     
     public func createProject(_ project: Project, action: CatalogAction) throws -> Project.ID {
-        preconditionFailure("Not Implemented")
+        if let existing = try? self.project(project.id), project.id != .zero {
+            throw Error.invalidProjectID(existing.id)
+        }
+        
+        let id = UUID()
+        var entity = ProjectEntity(project)
+        entity.uuid = id.uuidString
+        
+        try db.doWithTransaction {
+            try db.execute(statement: .insertProject(entity))
+        }
+        
+        return id
     }
     
     public func updateProject(_ project: Project, action: CatalogAction) throws {
-        preconditionFailure("Not Implemented")
+        guard let entity = try db.projectEntity(withUUID: project.id) else {
+            throw Error.invalidProjectID(project.id)
+        }
+        
+        guard let update = action as? ProjectUpdate else {
+            throw Error.invalidAction(action)
+        }
+        
+        switch update {
+        case .name(let name):
+            try db.doWithTransaction {
+                try db.execute(statement: .updateProject(entity.id, name: name))
+            }
+        }
     }
     
     public func deleteProject(_ id: Project.ID, action: CatalogAction) throws {
-        preconditionFailure("Not Implemented")
+        guard let entity = try db.projectEntity(withUUID: id) else {
+            throw Error.invalidProjectID(id)
+        }
+        
+        try db.doWithTransaction {
+            try db.execute(statement: .deleteProjectExpressions(projectID: entity.id))
+            try db.execute(statement: .deleteProject(entity.id))
+        }
     }
     
+    // MARK: - Expression
     public func expressions() throws -> [Expression] {
-        let entities = try db.expressionEntities()
-        return try entities.compactMap({
-            let translations = try db.translationEntities(forExpression: $0.id)
-            return Expression($0, translations: translations)
-        })
-    }
-    
-    public func expression(_ id: Expression.ID) throws -> Expression {
-        guard let entity = try db.expressionEntity(withUUID: id) else {
-            throw Error.invalidExpressionID(id)
-        }
-        
-        guard let expression = Expression(entity) else {
-            throw Error.unhandledConversion
-        }
-        
-        return expression
-    }
-    
-    public func expressions(for project: Project.ID) throws -> [Expression] {
-        preconditionFailure("Not Implemented")
+        try db.expressionEntities().map({ try $0.expression() })
     }
     
     public func expressions(matching query: CatalogQuery) throws -> [Expression] {
@@ -112,25 +131,54 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             throw Error.invalidQuery(query)
         }
         
-        var entities: [ExpressionEntity] = []
+        var output: [Expression] = []
         
         switch typedQuery {
-        case .expressionKey(let key):
-            try db.forEachRow(statement: .selectExpression(withKey: key), handleRow: { (entity: ExpressionEntity) in
-                entities.append(entity)
-            })
+        case .cascade:
+            let expressionEntities = try db.expressionEntities()
+            try expressionEntities.forEach { e in
+                let translationEntities = try db.translationEntities(withExpressionID: e.id)
+                let translations = try translationEntities.map({ try $0.translation(with: e.uuid) })
+                output.append(try e.expression(with: translations))
+            }
         case .expression(let languageCode, let scriptCode, let regionCode):
             try db.forEachRow(statement: .selectExpressionsWith(languageCode: languageCode, scriptCode: scriptCode, regionCode: regionCode), handleRow: { (entity: ExpressionEntity) in
-                entities.append(entity)
+                output.append(try entity.expression())
             })
-        case .translation:
+        default:
             break
         }
         
-        return try entities.compactMap({
-            let translations = try db.translationEntities(forExpression: $0.id)
-            return Expression($0, translations: translations)
-        })
+        return output
+    }
+    
+    public func expression(_ id: Expression.ID) throws -> Expression {
+        try expression(matching: Query.primaryID(id))
+    }
+    
+    public func expression(matching query: CatalogQuery) throws -> Expression {
+        guard let _query = query as? SQLiteCatalog.Query else {
+            throw Error.invalidQuery(query)
+        }
+        
+        switch _query {
+        case .primaryKey(let id):
+            guard let entity = try db.expressionEntity(withID: id) else {
+                throw Error.invalidPrimaryKey(id)
+            }
+            
+            return try entity.expression()
+        case .primaryID(let uuid):
+            guard let entity = try db.expressionEntity(withUUID: uuid) else {
+                throw Error.invalidExpressionID(uuid)
+            }
+            
+            return try entity.expression()
+        default:
+            break
+        }
+        
+        throw Error.invalidQuery(query)
     }
     
     public func createExpression(_ expression: Expression, action: CatalogAction) throws -> Expression.ID {
@@ -138,7 +186,6 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             throw Error.existingExpressionWithID(existing.id)
         }
         
-        // TODO: handle existing expressions with new translations.
         if let existingEntity = try? db.expressionEntity(withKey: expression.key), !expression.key.isEmpty {
             if case .cascade = action as? InsertEntity {
                 try expression.translations.forEach { (translation) in
@@ -174,7 +221,21 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             throw Error.invalidAction(action)
         }
         
-        try db.execute(statement: .updateExpression(entity.id, update))
+        switch update {
+        case .key(let key) where key != entity.key:
+            try db.execute(statement: .updateExpression(entity.id, key: key))
+        case .name(let name) where name != entity.name:
+            try db.execute(statement: .updateExpression(entity.id, name: name))
+        case .defaultLanguage(let languageCode) where languageCode.rawValue != entity.defaultLanguage:
+            try db.execute(statement: .updateExpression(entity.id, defaultLanguage: languageCode))
+        case .context(let context) where context != entity.context:
+            try db.execute(statement: .updateExpression(entity.id, context: context))
+        case .feature(let feature) where feature != entity.feature:
+            try db.execute(statement: .updateExpression(entity.id, feature: feature))
+        default:
+            // Update requested where action values are already equivalent
+            break
+        }
     }
     
     public func deleteExpression(_ id: Expression.ID, action: CatalogAction) throws {
@@ -182,49 +243,28 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             throw Error.invalidExpressionID(id)
         }
         
-        try db.execute(statement: .deleteTranslations(withExpressionID: entity.id))
-        try db.execute(statement: .deleteExpression(entity.id))
+        try db.doWithTransaction {
+            try db.execute(statement: .deleteTranslations(withExpressionID: entity.id))
+            try db.execute(statement: .deleteExpression(entity.id))
+        }
     }
     
+    // MARK: - Translation
     public func translations() throws -> [TranslationCatalog.Translation] {
+        // A bit of annoying implementation detail: Since the SQLite database is using a Integer foreign key,
+        // in order to map the entity to the struct, a double query needs to be performed.
+        // Storing the expression uuid on the translation entity would be one was to counter this.
+        
         let expressionEntities = try db.expressionEntities()
         let translationEntities = try db.translationEntities()
         
         var output: [TranslationCatalog.Translation] = []
-        translationEntities.forEach({ (entity) in
+        try translationEntities.forEach({ (entity) in
             if let expression = expressionEntities.first(where: { $0.id == entity.expressionID }) {
-                if let translation = TranslationCatalog.Translation(entity, expressionUUID: expression.uuid) {
-                    output.append(translation)
-                }
+                output.append(try entity.translation(with: expression.uuid))
             }
         })
         return output
-    }
-    
-    public func translation(_ id: TranslationCatalog.Translation.ID) throws -> TranslationCatalog.Translation {
-        guard let entity = try db.translationEntity(withUUID: id) else {
-            throw Error.invalidTranslationID(id)
-        }
-        
-        let expression = try? db.expressionEntity(withID: entity.expressionID)
-        let expressionID = UUID(uuidString: expression?.uuid ?? "") ?? .zero
-        
-        guard let translation = TranslationCatalog.Translation(entity, expressionUUID: expressionID.uuidString) else {
-            throw Error.unhandledConversion
-        }
-        
-        return translation
-    }
-    
-    public func translations(for expression: Expression.ID) throws -> [TranslationCatalog.Translation] {
-        guard let entity = try db.expressionEntity(withUUID: expression) else {
-            throw Error.invalidExpressionID(expression)
-        }
-        
-        let entities = try db.translationEntities(forExpression: entity.id)
-        return entities.compactMap({
-            TranslationCatalog.Translation($0, expressionUUID: entity.uuid)
-        })
     }
     
     public func translations(matching query: CatalogQuery) throws -> [TranslationCatalog.Translation] {
@@ -232,22 +272,60 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             throw Error.invalidQuery(query)
         }
         
-        var entities: [TranslationEntity] = []
-        var expressionID: Expression.ID
+        var output: [TranslationCatalog.Translation] = []
         
         switch typedQuery {
+        case .foreignID(let expressionUUID):
+            guard let expressionEntity = try db.expressionEntity(withUUID: expressionUUID) else {
+                throw Error.invalidExpressionID(expressionUUID)
+            }
+            
+            let entities = try db.translationEntities(withExpressionID: expressionEntity.id)
+            try entities.forEach({
+                output.append(try $0.translation(with: expressionEntity.uuid))
+            })
         case .translation(let expression, let language, let script, let region):
-            expressionID = expression
             try db.forEachRow(statement: .selectTranslationsFor(expression, languageCode: language, scriptCode: script, regionCode: region), handleRow: { (entity: TranslationEntity) in
-                entities.append(entity)
+                output.append(try entity.translation(with: expression.uuidString))
             })
         default:
-            return []
+            break
         }
         
-        return entities.compactMap({
-            TranslationCatalog.Translation($0, expressionUUID: expressionID.uuidString)
-        })
+        return output
+    }
+    
+    public func translation(_ id: TranslationCatalog.Translation.ID) throws -> TranslationCatalog.Translation {
+        try translation(matching: Query.primaryID(id))
+    }
+    
+    public func translation(matching query: CatalogQuery) throws -> TranslationCatalog.Translation {
+        guard let _query = query as? SQLiteCatalog.Query else {
+            throw Error.invalidQuery(query)
+        }
+        
+        let entity: TranslationEntity
+        
+        switch _query {
+        case .primaryKey(let id):
+            guard let _entity = try db.translationEntity(withID: id) else {
+                throw Error.invalidPrimaryKey(id)
+            }
+            entity = _entity
+        case .primaryID(let uuid):
+            guard let _entity = try db.translationEntity(withUUID: uuid) else {
+                throw Error.invalidTranslationID(uuid)
+            }
+            entity = _entity
+        default:
+            throw Error.invalidQuery(query)
+        }
+        
+        guard let expressionEntity = try db.expressionEntity(withID: entity.expressionID) else {
+            throw Error.invalidPrimaryKey(entity.expressionID)
+        }
+        
+        return try entity.translation(with: expressionEntity.uuid)
     }
     
     public func createTranslation(_ translation: TranslationCatalog.Translation, action: CatalogAction) throws -> TranslationCatalog.Translation.ID {
@@ -286,7 +364,19 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             throw Error.invalidAction(action)
         }
         
-        try db.execute(statement: .updateTranslation(entity.id, update))
+        switch update {
+        case .language(let languageCode) where languageCode.rawValue != entity.language:
+            try db.execute(statement: .updateTranslation(entity.id, languageCode: languageCode))
+        case .script(let scriptCode) where scriptCode?.rawValue != entity.script:
+            try db.execute(statement: .updateTranslation(entity.id, scriptCode: scriptCode))
+        case .region(let regionCode) where regionCode?.rawValue != entity.region:
+            try db.execute(statement: .updateTranslation(entity.id, regionCode: regionCode))
+        case .value(let value) where value != entity.value:
+            try db.execute(statement: .updateTranslation(entity.id, value: value))
+        default:
+            // Update requested where action values are already equivalent
+            break
+        }
     }
     
     public func deleteTranslation(_ id: TranslationCatalog.Translation.ID, action: CatalogAction) throws {
