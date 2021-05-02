@@ -29,7 +29,7 @@ extension Catalog {
         var format: Format
         
         func run() throws {
-            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
+            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
             let expressions = try catalog.expressions().sorted(by: { $0.name < $1.name })
             
             switch format {

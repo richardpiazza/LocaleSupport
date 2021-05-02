@@ -1,7 +1,6 @@
 import Foundation
 import LocaleSupport
 import TranslationCatalog
-import PerfectSQLite
 
 public extension SQLiteCatalog {
     
@@ -11,31 +10,42 @@ public extension SQLiteCatalog {
         case invalidPrimaryKey(Int)
         case invalidProjectID(Project.ID)
         case invalidExpressionID(Expression.ID)
+        case invalidTranslationID(TranslationCatalog.Translation.ID)
+        case invalidStringValue(String)
         case existingExpressionWithID(Expression.ID)
         case existingExpressionWithKey(String)
-        case invalidTranslationID(TranslationCatalog.Translation.ID)
         case existingTranslationWithID(TranslationCatalog.Translation.ID)
+        case unhandledQuery(CatalogQuery)
         case unhandledConversion
     }
     
-    enum Query: CatalogQuery {
-        case cascade
+    enum ProjectQuery: CatalogQuery {
+        case hierarchy
         case primaryKey(Int)
-        case primaryID(UUID)
-        case foreignKey(Int)
-        case foreignID(UUID)
-        case expression(LanguageCode, ScriptCode?, RegionCode?)
-        case translation(Expression.ID, LanguageCode, ScriptCode?, RegionCode?)
+        case id(Project.ID)
+        case named(String)
     }
     
-    enum InsertEntity: CatalogUpdate {
-        case nothing
-        case cascade
-        case foreignKey(Int)
+    enum ExpressionQuery: CatalogQuery {
+        case hierarchy
+        case primaryKey(Int)
+        case id(Expression.ID)
+        case key(String)
+        case named(String)
+        case having(LanguageCode, ScriptCode?, RegionCode?)
+    }
+    
+    enum TranslationQuery: CatalogQuery {
+        case primaryKey(Int)
+        case id(TranslationCatalog.Translation.ID)
+        case expressionID(Expression.ID)
+        case having(Expression.ID, LanguageCode, ScriptCode?, RegionCode?)
     }
     
     enum ProjectUpdate: CatalogUpdate {
         case name(String)
+        case linkExpression(Expression.ID)
+        case unlinkExpression(Expression.ID)
     }
     
     enum ExpressionUpdate: CatalogUpdate {
@@ -44,6 +54,8 @@ public extension SQLiteCatalog {
         case defaultLanguage(LanguageCode)
         case context(String?)
         case feature(String?)
+        case linkProject(Project.ID)
+        case unlinkProject(Project.ID)
     }
     
     enum TranslationUpdate: CatalogUpdate {

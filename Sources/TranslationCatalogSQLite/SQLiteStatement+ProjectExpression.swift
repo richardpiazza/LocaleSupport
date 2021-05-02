@@ -7,7 +7,7 @@ extension SQLiteStatement {
     static var createProjectExpressionEntity: Self {
         .init(
             .CREATE(
-                .SCHEMA(SQLiteCatalog.ProjectExpressionEntity.self, ifNotExists: true)
+                .SCHEMA(ProjectExpressionEntity.self, ifNotExists: true)
             )
         )
     }
@@ -24,9 +24,9 @@ extension SQLiteStatement {
     static func insertProjectExpression(projectID: Int, expressionID: Int) -> Self {
         SQLiteStatement(
             .INSERT_INTO(
-                SQLiteCatalog.ProjectExpressionEntity.self,
-              .column(SQLiteCatalog.ProjectExpressionEntity.projectID),
-              .column(SQLiteCatalog.ProjectExpressionEntity.expressionID)
+                ProjectExpressionEntity.self,
+              .column(ProjectExpressionEntity.projectID),
+              .column(ProjectExpressionEntity.expressionID)
             ),
             .VALUES(
                 .value(projectID),
@@ -38,12 +38,12 @@ extension SQLiteStatement {
     static func deleteProjectExpression(projectID: Int, expressionID: Int) -> Self {
         SQLiteStatement(
             .DELETE(
-                .FROM(SQLiteCatalog.ProjectExpressionEntity.self)
+                .FROM(ProjectExpressionEntity.self)
             ),
             .WHERE(
                 .AND(
-                    .column(SQLiteCatalog.ProjectExpressionEntity.projectID, op: .equal, value: projectID),
-                    .column(SQLiteCatalog.ProjectExpressionEntity.expressionID, op: .equal, value: expressionID)
+                    .column(ProjectExpressionEntity.projectID, op: .equal, value: projectID),
+                    .column(ProjectExpressionEntity.expressionID, op: .equal, value: expressionID)
                 )
             ),
             .LIMIT(1)
@@ -53,10 +53,10 @@ extension SQLiteStatement {
     static func deleteProjectExpressions(projectID: Int) -> Self {
         SQLiteStatement(
             .DELETE(
-                .FROM(SQLiteCatalog.ProjectExpressionEntity.self)
+                .FROM(ProjectExpressionEntity.self)
             ),
             .WHERE(
-                .column(SQLiteCatalog.ProjectExpressionEntity.projectID, op: .equal, value: projectID)
+                .column(ProjectExpressionEntity.projectID, op: .equal, value: projectID)
             )
         )
     }
@@ -64,10 +64,10 @@ extension SQLiteStatement {
     static func deleteProjectExpressions(expressionID: Int) -> Self {
         SQLiteStatement(
             .DELETE(
-                .FROM(SQLiteCatalog.ProjectExpressionEntity.self)
+                .FROM(ProjectExpressionEntity.self)
             ),
             .WHERE(
-                .column(SQLiteCatalog.ProjectExpressionEntity.expressionID, op: .equal, value: expressionID)
+                .column(ProjectExpressionEntity.expressionID, op: .equal, value: expressionID)
             )
         )
     }

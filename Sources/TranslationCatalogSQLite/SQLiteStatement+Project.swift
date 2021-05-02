@@ -7,7 +7,7 @@ extension SQLiteStatement {
     static var createProjectEntity: Self {
         .init(
             .CREATE(
-                .SCHEMA(SQLiteCatalog.ProjectEntity.self, ifNotExists: true)
+                .SCHEMA(ProjectEntity.self, ifNotExists: true)
             )
         )
     }
@@ -18,12 +18,12 @@ extension SQLiteStatement {
     static var selectAllFromProject: Self {
         .init(
             .SELECT(
-                .column(SQLiteCatalog.ProjectEntity.id),
-                .column(SQLiteCatalog.ProjectEntity.uuid),
-                .column(SQLiteCatalog.ProjectEntity.name)
+                .column(ProjectEntity.id),
+                .column(ProjectEntity.uuid),
+                .column(ProjectEntity.name)
             ),
             .FROM(
-                .TABLE(SQLiteCatalog.ProjectEntity.self)
+                .TABLE(ProjectEntity.self)
             )
         )
     }
@@ -31,41 +31,78 @@ extension SQLiteStatement {
     static func selectProject(withID id: Int) -> Self {
         .init(
             .SELECT(
-                .column(SQLiteCatalog.ProjectEntity.id),
-                .column(SQLiteCatalog.ProjectEntity.uuid),
-                .column(SQLiteCatalog.ProjectEntity.name)
+                .column(ProjectEntity.id),
+                .column(ProjectEntity.uuid),
+                .column(ProjectEntity.name)
             ),
             .FROM(
-                .TABLE(SQLiteCatalog.ProjectEntity.self)
+                .TABLE(ProjectEntity.self)
             ),
             .WHERE(
-                .column(SQLiteCatalog.ProjectEntity.id, op: .equal, value: id)
-            )
+                .column(ProjectEntity.id, op: .equal, value: id)
+            ),
+            .LIMIT(1)
         )
     }
     
     static func selectProject(withID id: Project.ID) -> Self {
         .init(
             .SELECT(
-                .column(SQLiteCatalog.ProjectEntity.id),
-                .column(SQLiteCatalog.ProjectEntity.uuid),
-                .column(SQLiteCatalog.ProjectEntity.name)
+                .column(ProjectEntity.id),
+                .column(ProjectEntity.uuid),
+                .column(ProjectEntity.name)
             ),
             .FROM(
-                .TABLE(SQLiteCatalog.ProjectEntity.self)
+                .TABLE(ProjectEntity.self)
             ),
             .WHERE(
-                .column(SQLiteCatalog.ProjectEntity.uuid, op: .equal, value: id)
+                .column(ProjectEntity.uuid, op: .equal, value: id)
+            ),
+            .LIMIT(1)
+        )
+    }
+    
+    static func selectProject(withName name: String) -> Self {
+        .init(
+            .SELECT(
+                .column(ProjectEntity.id),
+                .column(ProjectEntity.uuid),
+                .column(ProjectEntity.name)
+            ),
+            .FROM(
+                .TABLE(ProjectEntity.self)
+            ),
+            .WHERE(
+                .column(ProjectEntity.name, op: .equal, value: name)
+            ),
+            .LIMIT(1)
+        )
+    }
+    
+    static func selectProjects(withNameLike name: String) -> Self {
+        .init(
+            .SELECT(
+                .column(ProjectEntity.id),
+                .column(ProjectEntity.uuid),
+                .column(ProjectEntity.name)
+            ),
+            .FROM(
+                .TABLE(ProjectEntity.self)
+            ),
+            .WHERE(
+                .column(ProjectEntity.name, tablePrefix: true),
+                .raw("LIKE"),
+                .value("%\(name)%")
             )
         )
     }
     
-    static func insertProject(_ project: SQLiteCatalog.ProjectEntity) -> Self {
+    static func insertProject(_ project: ProjectEntity) -> Self {
         SQLiteStatement(
             .INSERT_INTO(
-                SQLiteCatalog.ProjectEntity.self,
-                .column(SQLiteCatalog.ProjectEntity.uuid),
-                .column(SQLiteCatalog.ProjectEntity.name)
+                ProjectEntity.self,
+                .column(ProjectEntity.uuid),
+                .column(ProjectEntity.name)
             ),
             .VALUES(
                 .value(project.uuid),
@@ -77,13 +114,13 @@ extension SQLiteStatement {
     static func updateProject(_ id: Int, name: String) -> Self {
         SQLiteStatement(
             .UPDATE(
-                .TABLE(SQLiteCatalog.ProjectEntity.self)
+                .TABLE(ProjectEntity.self)
             ),
             .SET(
-                .column(SQLiteCatalog.ProjectEntity.name, op: .equal, value: name)
+                .column(ProjectEntity.name, op: .equal, value: name)
             ),
             .WHERE(
-                .column(SQLiteCatalog.ProjectEntity.id, op: .equal, value: id)
+                .column(ProjectEntity.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
@@ -92,10 +129,10 @@ extension SQLiteStatement {
     static func deleteProject(_ id: Int) -> Self {
         SQLiteStatement(
             .DELETE(
-                .FROM(SQLiteCatalog.ProjectEntity.self)
+                .FROM(ProjectEntity.self)
             ),
             .WHERE(
-                .column(SQLiteCatalog.ProjectEntity.id, op: .equal, value: id)
+                .column(ProjectEntity.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )

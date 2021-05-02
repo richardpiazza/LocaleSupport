@@ -13,6 +13,7 @@ extension Catalog {
             version: "1.0.0",
             shouldDisplay: true,
             subcommands: [
+                ProjectCommand.self,
                 ExpressionCommand.self,
                 TranslationCommand.self
             ],
@@ -42,6 +43,12 @@ extension Catalog.Update {
         @Option(help: "Name that identifies a collection of expressions.")
         var name: String?
         
+        @Option(help: "Adds an expression to a project.")
+        var linkExpression: Expression.ID?
+        
+        @Option(help: "Remove an expression from a project.")
+        var unlinkExpression: Expression.ID?
+        
         func validate() throws {
             if let name = self.name {
                 guard !name.isEmpty else {
@@ -51,14 +58,24 @@ extension Catalog.Update {
         }
         
         func run() throws {
-            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
+            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
             let project = try catalog.project(id)
             
             print("Updating Project '\(project.name) [\(project.uuid.uuidString)]'…")
             
             if let name = self.name {
-                try catalog.updateProject(project, action: SQLiteCatalog.ProjectUpdate.name(name))
+                try catalog.updateProject(project.id, action: SQLiteCatalog.ProjectUpdate.name(name))
                 print("Set Name to '\(name)'.")
+            }
+            
+            if let link = linkExpression {
+                try catalog.updateProject(project.id, action: SQLiteCatalog.ProjectUpdate.linkExpression(link))
+                print("Created link to expression '\(link.uuidString)'.")
+            }
+            
+            if let unlink = unlinkExpression {
+                try catalog.updateProject(project.id, action: SQLiteCatalog.ProjectUpdate.unlinkExpression(unlink))
+                print("Removed link from expression '\(unlink.uuidString)'.")
             }
         }
     }
@@ -94,6 +111,12 @@ extension Catalog.Update {
         @Option(help: "Optional grouping identifier.")
         var feature: String?
         
+        @Option(help: "Adds the expression to a project.")
+        var linkProject: Project.ID?
+        
+        @Option(help: "Remove the expression from a project.")
+        var unlinkProject: Project.ID?
+        
         func validate() throws {
             if let key = self.key {
                 guard !key.isEmpty else {
@@ -109,7 +132,7 @@ extension Catalog.Update {
         }
         
         func run() throws {
-            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
+            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
             
             let expression = try catalog.expression(id)
             
@@ -133,6 +156,14 @@ extension Catalog.Update {
             if let feature = self.feature, expression.feature != feature {
                 let value = feature.isEmpty ? nil : feature
                 try catalog.updateExpression(expression.id, action: SQLiteCatalog.ExpressionUpdate.feature(value))
+            }
+            
+            if let link = linkProject {
+                try catalog.updateExpression(expression.id, action: SQLiteCatalog.ExpressionUpdate.linkProject(link))
+            }
+            
+            if let unlink = unlinkProject {
+                try catalog.updateExpression(expression.id, action: SQLiteCatalog.ExpressionUpdate.unlinkProject(unlink))
             }
         }
     }
@@ -174,7 +205,7 @@ extension Catalog.Update {
         var dropRegion: Bool = false
         
         func run() throws {
-            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
+            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
             
             let translation = try catalog.translation(id)
             

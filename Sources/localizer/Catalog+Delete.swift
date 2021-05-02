@@ -39,7 +39,7 @@ extension Catalog.Delete {
         var id: Expression.ID
         
         func run() throws {
-            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
+            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
             try catalog.deleteExpression(id)
         }
     }
@@ -63,7 +63,7 @@ extension Catalog.Delete {
         var id: TranslationCatalog.Translation.ID
         
         func run() throws {
-            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
+            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
             try catalog.deleteTranslation(id)
         }
     }

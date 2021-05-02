@@ -68,7 +68,7 @@ extension Catalog {
                 throw ValidationError("Import format could not be determined. Use '--format' to specify.")
             }
             
-            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
+            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
             
             let expressions: [Expression]
             switch fileFormat {

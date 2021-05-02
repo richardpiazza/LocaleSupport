@@ -9,7 +9,7 @@ extension SQLiteStatement {
     static var createTranslationEntity: Self {
         .init(
             .CREATE(
-                .SCHEMA(SQLiteCatalog.TranslationEntity.self, ifNotExists: true)
+                .SCHEMA(TranslationEntity.self, ifNotExists: true)
             )
         )
     }
@@ -17,15 +17,15 @@ extension SQLiteStatement {
     static var translationTable_addScriptCode: Self {
         .init(
             .ALTER_TABLE(
-                SQLiteCatalog.TranslationEntity.self,
-                .ADD_COLUMN(SQLiteCatalog.TranslationEntity.script)
+                TranslationEntity.self,
+                .ADD_COLUMN(TranslationEntity.script)
             )
         )
     }
     
     static var translationTable_addUUID: Self {
         .init(
-            .ALTER_TABLE(SQLiteCatalog.TranslationEntity.self, .ADD_COLUMN(SQLiteCatalog.TranslationEntity.uuid))
+            .ALTER_TABLE(TranslationEntity.self, .ADD_COLUMN(TranslationEntity.uuid))
         )
     }
 }
@@ -35,51 +35,51 @@ extension SQLiteStatement {
     static var selectAllFromTranslation: Self {
         .init(
             .SELECT(
-                .column(SQLiteCatalog.TranslationEntity.id),
-                .column(SQLiteCatalog.TranslationEntity.uuid),
-                .column(SQLiteCatalog.TranslationEntity.expressionID),
-                .column(SQLiteCatalog.TranslationEntity.language),
-                .column(SQLiteCatalog.TranslationEntity.script),
-                .column(SQLiteCatalog.TranslationEntity.region),
-                .column(SQLiteCatalog.TranslationEntity.value)
+                .column(TranslationEntity.id),
+                .column(TranslationEntity.uuid),
+                .column(TranslationEntity.expressionID),
+                .column(TranslationEntity.language),
+                .column(TranslationEntity.script),
+                .column(TranslationEntity.region),
+                .column(TranslationEntity.value)
             ),
-            .FROM_TABLE(SQLiteCatalog.TranslationEntity.self)
+            .FROM_TABLE(TranslationEntity.self)
         )
     }
     
-    static func selectTranslation(_ id: Int) -> Self {
+    static func selectTranslation(withID id: Int) -> Self {
         .init(
             .SELECT(
-                .column(SQLiteCatalog.TranslationEntity.id),
-                .column(SQLiteCatalog.TranslationEntity.uuid),
-                .column(SQLiteCatalog.TranslationEntity.expressionID),
-                .column(SQLiteCatalog.TranslationEntity.language),
-                .column(SQLiteCatalog.TranslationEntity.script),
-                .column(SQLiteCatalog.TranslationEntity.region),
-                .column(SQLiteCatalog.TranslationEntity.value)
+                .column(TranslationEntity.id),
+                .column(TranslationEntity.uuid),
+                .column(TranslationEntity.expressionID),
+                .column(TranslationEntity.language),
+                .column(TranslationEntity.script),
+                .column(TranslationEntity.region),
+                .column(TranslationEntity.value)
             ),
-            .FROM_TABLE(SQLiteCatalog.TranslationEntity.self),
+            .FROM_TABLE(TranslationEntity.self),
             .WHERE(
-                .column(SQLiteCatalog.TranslationEntity.id, op: .equal, value: id)
+                .column(TranslationEntity.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
     }
     
-    static func selectTranslation(_ id: TranslationCatalog.Translation.ID) -> Self {
+    static func selectTranslation(withID id: TranslationCatalog.Translation.ID) -> Self {
         .init(
             .SELECT(
-                .column(SQLiteCatalog.TranslationEntity.id),
-                .column(SQLiteCatalog.TranslationEntity.uuid),
-                .column(SQLiteCatalog.TranslationEntity.expressionID),
-                .column(SQLiteCatalog.TranslationEntity.language),
-                .column(SQLiteCatalog.TranslationEntity.script),
-                .column(SQLiteCatalog.TranslationEntity.region),
-                .column(SQLiteCatalog.TranslationEntity.value)
+                .column(TranslationEntity.id),
+                .column(TranslationEntity.uuid),
+                .column(TranslationEntity.expressionID),
+                .column(TranslationEntity.language),
+                .column(TranslationEntity.script),
+                .column(TranslationEntity.region),
+                .column(TranslationEntity.value)
             ),
-            .FROM_TABLE(SQLiteCatalog.TranslationEntity.self),
+            .FROM_TABLE(TranslationEntity.self),
             .WHERE(
-                .column(SQLiteCatalog.TranslationEntity.uuid, op: .equal, value: id)
+                .column(TranslationEntity.uuid, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
@@ -88,18 +88,18 @@ extension SQLiteStatement {
     static func selectTranslationsFor(_ expressionID: Int) -> Self {
         .init(
             .SELECT(
-                .column(SQLiteCatalog.TranslationEntity.id),
-                .column(SQLiteCatalog.TranslationEntity.uuid),
-                .column(SQLiteCatalog.TranslationEntity.expressionID),
-                .column(SQLiteCatalog.TranslationEntity.language),
-                .column(SQLiteCatalog.TranslationEntity.script),
-                .column(SQLiteCatalog.TranslationEntity.region),
-                .column(SQLiteCatalog.TranslationEntity.value)
+                .column(TranslationEntity.id),
+                .column(TranslationEntity.uuid),
+                .column(TranslationEntity.expressionID),
+                .column(TranslationEntity.language),
+                .column(TranslationEntity.script),
+                .column(TranslationEntity.region),
+                .column(TranslationEntity.value)
             ),
-            .FROM_TABLE(SQLiteCatalog.TranslationEntity.self),
+            .FROM_TABLE(TranslationEntity.self),
             .WHERE(
                 .AND(
-                    .column(SQLiteCatalog.TranslationEntity.expressionID, op: .equal, value: expressionID)
+                    .column(TranslationEntity.expressionID, op: .equal, value: expressionID)
                 )
             )
         )
@@ -108,38 +108,38 @@ extension SQLiteStatement {
     static func selectTranslationsFor(_ expressionID: Expression.ID, languageCode: LanguageCode?, scriptCode: ScriptCode?, regionCode: RegionCode?) -> Self {
         .init(
             .SELECT(
-                .column(SQLiteCatalog.TranslationEntity.id),
-                .column(SQLiteCatalog.TranslationEntity.uuid),
-                .column(SQLiteCatalog.TranslationEntity.expressionID),
-                .column(SQLiteCatalog.TranslationEntity.language),
-                .column(SQLiteCatalog.TranslationEntity.script),
-                .column(SQLiteCatalog.TranslationEntity.region),
-                .column(SQLiteCatalog.TranslationEntity.value)
+                .column(TranslationEntity.id),
+                .column(TranslationEntity.uuid),
+                .column(TranslationEntity.expressionID),
+                .column(TranslationEntity.language),
+                .column(TranslationEntity.script),
+                .column(TranslationEntity.region),
+                .column(TranslationEntity.value)
             ),
-            .FROM_TABLE(SQLiteCatalog.TranslationEntity.self),
+            .FROM_TABLE(TranslationEntity.self),
             .WHERE(
                 .AND(
-                    .column(SQLiteCatalog.TranslationEntity.expressionID, op: .equal, value: expressionID),
-                    .unwrap(languageCode, transform: { .column(SQLiteCatalog.TranslationEntity.language, op: .equal, value: $0.rawValue) }),
-                    .unwrap(scriptCode, transform: { .column(SQLiteCatalog.TranslationEntity.script, op: .equal, value: $0.rawValue) }),
-                    .unwrap(regionCode, transform: { .column(SQLiteCatalog.TranslationEntity.region, op: .equal, value: $0.rawValue) }),
-                    .if(languageCode != nil && regionCode == nil, .column(SQLiteCatalog.TranslationEntity.region, op: .equal, value: NSNull())),
-                    .if(languageCode != nil && scriptCode == nil, .column(SQLiteCatalog.TranslationEntity.script, op: .equal, value: NSNull()))
+                    .column(TranslationEntity.expressionID, op: .equal, value: expressionID),
+                    .unwrap(languageCode, transform: { .column(TranslationEntity.language, op: .equal, value: $0.rawValue) }),
+                    .unwrap(scriptCode, transform: { .column(TranslationEntity.script, op: .equal, value: $0.rawValue) }),
+                    .unwrap(regionCode, transform: { .column(TranslationEntity.region, op: .equal, value: $0.rawValue) }),
+                    .if(languageCode != nil && regionCode == nil, .column(TranslationEntity.region, op: .equal, value: NSNull())),
+                    .if(languageCode != nil && scriptCode == nil, .column(TranslationEntity.script, op: .equal, value: NSNull()))
                 )
             )
         )
     }
     
-    static func insertTranslation(_ translation: SQLiteCatalog.TranslationEntity) -> Self {
+    static func insertTranslation(_ translation: TranslationEntity) -> Self {
         .init(
             .INSERT_INTO(
-                SQLiteCatalog.TranslationEntity.self,
-                .column(SQLiteCatalog.TranslationEntity.uuid),
-                .column(SQLiteCatalog.TranslationEntity.expressionID),
-                .column(SQLiteCatalog.TranslationEntity.language),
-                .column(SQLiteCatalog.TranslationEntity.region),
-                .column(SQLiteCatalog.TranslationEntity.value),
-                .column(SQLiteCatalog.TranslationEntity.script)
+                TranslationEntity.self,
+                .column(TranslationEntity.uuid),
+                .column(TranslationEntity.expressionID),
+                .column(TranslationEntity.language),
+                .column(TranslationEntity.region),
+                .column(TranslationEntity.value),
+                .column(TranslationEntity.script)
             ),
             .VALUES(
                 .value(translation.uuid),
@@ -155,13 +155,13 @@ extension SQLiteStatement {
     static func updateTranslation(_ id: Int, languageCode: LanguageCode) -> Self {
         SQLiteStatement(
             .UPDATE(
-                .TABLE(SQLiteCatalog.TranslationEntity.self)
+                .TABLE(TranslationEntity.self)
             ),
             .SET(
-                .column(SQLiteCatalog.TranslationEntity.language, op: .equal, value: languageCode.rawValue)
+                .column(TranslationEntity.language, op: .equal, value: languageCode.rawValue)
             ),
             .WHERE(
-                .column(SQLiteCatalog.TranslationEntity.id, op: .equal, value: id)
+                .column(TranslationEntity.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
@@ -170,17 +170,17 @@ extension SQLiteStatement {
     static func updateTranslation(_ id: Int, scriptCode: ScriptCode?) -> Self {
         SQLiteStatement(
             .UPDATE(
-                .TABLE(SQLiteCatalog.TranslationEntity.self)
+                .TABLE(TranslationEntity.self)
             ),
             .SET(
                 .if(
                     (scriptCode != nil),
-                    .column(SQLiteCatalog.TranslationEntity.script, op: .equal, value: scriptCode!.rawValue),
-                    else: .column(SQLiteCatalog.TranslationEntity.script, op: .equal, value: NSNull())
+                    .column(TranslationEntity.script, op: .equal, value: scriptCode!.rawValue),
+                    else: .column(TranslationEntity.script, op: .equal, value: NSNull())
                 )
             ),
             .WHERE(
-                .column(SQLiteCatalog.TranslationEntity.id, op: .equal, value: id)
+                .column(TranslationEntity.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
@@ -189,17 +189,17 @@ extension SQLiteStatement {
     static func updateTranslation(_ id: Int, regionCode: RegionCode?) -> Self {
         SQLiteStatement(
             .UPDATE(
-                .TABLE(SQLiteCatalog.TranslationEntity.self)
+                .TABLE(TranslationEntity.self)
             ),
             .SET(
                 .if(
                     (regionCode != nil),
-                    .column(SQLiteCatalog.TranslationEntity.region, op: .equal, value: regionCode!.rawValue),
-                    else: .column(SQLiteCatalog.TranslationEntity.region, op: .equal, value: NSNull())
+                    .column(TranslationEntity.region, op: .equal, value: regionCode!.rawValue),
+                    else: .column(TranslationEntity.region, op: .equal, value: NSNull())
                 )
             ),
             .WHERE(
-                .column(SQLiteCatalog.TranslationEntity.id, op: .equal, value: id)
+                .column(TranslationEntity.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
@@ -208,13 +208,13 @@ extension SQLiteStatement {
     static func updateTranslation(_ id: Int, value: String) -> Self {
         SQLiteStatement(
             .UPDATE(
-                .TABLE(SQLiteCatalog.TranslationEntity.self)
+                .TABLE(TranslationEntity.self)
             ),
             .SET(
-                .column(SQLiteCatalog.TranslationEntity.value, op: .equal, value: value)
+                .column(TranslationEntity.value, op: .equal, value: value)
             ),
             .WHERE(
-                .column(SQLiteCatalog.TranslationEntity.id, op: .equal, value: id)
+                .column(TranslationEntity.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
@@ -222,9 +222,9 @@ extension SQLiteStatement {
     
     static func deleteTranslation(_ id: Int) -> Self {
         .init(
-            .DELETE_FROM(SQLiteCatalog.TranslationEntity.self),
+            .DELETE_FROM(TranslationEntity.self),
             .WHERE(
-                .column(SQLiteCatalog.TranslationEntity.id, op: .equal, value: id)
+                .column(TranslationEntity.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
@@ -232,9 +232,9 @@ extension SQLiteStatement {
     
     static func deleteTranslations(withExpressionID id: Int) -> Self {
         .init(
-            .DELETE_FROM(SQLiteCatalog.TranslationEntity.self),
+            .DELETE_FROM(TranslationEntity.self),
             .WHERE(
-                .column(SQLiteCatalog.TranslationEntity.expressionID, op: .equal, value: id)
+                .column(TranslationEntity.expressionID, op: .equal, value: id)
             )
         )
     }

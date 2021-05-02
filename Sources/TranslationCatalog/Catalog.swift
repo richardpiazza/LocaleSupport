@@ -4,18 +4,31 @@ import LocaleSupport
 /// Interface providing storage and retrieval of the `Expression`s and associated `Translation`s.
 public protocol Catalog {
     // MARK: - Project
+    
     /// Retrieve all `Project`s in the catalog.
-    ///
-    /// ## SQLiteCatalog Notes
-    ///
-    /// This presents only a _shallow_ copy of the entities. In order to retrieve a _deep_ hierarchy, use `projects(matching:)` with
-    /// the `SQLiteCatalog.Query.cascade` option.
     func projects() throws -> [Project]
+    /// Retrieve all `Project`s that match the provided query parameters
+    ///
+    /// - parameter query: Parameters that filter the results
     func projects(matching query: CatalogQuery) throws -> [Project]
+    /// Retrieve a single project for the provided identifier.
+    ///
+    /// - parameter id: The unique identifier for the `Project`
     func project(_ id: Project.ID) throws -> Project
+    /// Retrieves the first `Project` matching the query
+    ///
+    /// - parameter query: Parameters that filter the results
     func project(matching query: CatalogQuery) throws -> Project
+    /// Inserts a `Project` into the catalog.
+    ///
+    /// - parameter project: The entity to insert.
+    /// - returns The unique identifier created for the new entity.
     @discardableResult func createProject(_ project: Project) throws -> Project.ID
-    func updateProject(_ project: Project, action: CatalogUpdate) throws
+    /// Modifies a `Project` in the catalog.
+    ///
+    /// - parameter id: The unique identifier for the `Project`
+    /// - parameter action: The update to perform on the entity matching the provided id.
+    func updateProject(_ id: Project.ID, action: CatalogUpdate) throws
     /// Removes a `Project` from the catalog.
     ///
     /// This should remove the `Project` only. Any `Expression`s that were linked to the project should remain intact, as expressions
@@ -30,11 +43,6 @@ public protocol Catalog {
     func expression(_ id: Expression.ID) throws -> Expression
     func expression(matching query: CatalogQuery) throws -> Expression
     /// Insert a `Expression` into the catalog.
-    ///
-    /// ## SQLiteCatalog Notes:
-    ///
-    /// * If a `Expression.ID` is specified (non-zero), and a matching entity is found, the insert will fail.
-    /// * If an entity with a matching `Expression.key` is found, the insert will fail. (Keys must be unique)
     ///
     /// - parameter expression: The entity to insert.
     /// - returns The unique identifier created for the new entity.
@@ -54,11 +62,6 @@ public protocol Catalog {
     func translation(_ id: Translation.ID) throws -> Translation
     func translation(matching query: CatalogQuery) throws -> Translation
     /// Insert a `Translation` into the catalog.
-    ///
-    /// ## SQLiteCatalog Notes:
-    ///
-    /// * A `Expression` with `Translation.expressionID` must already exist, or the insert will fail.
-    /// * If a `Translation.ID` is specified (non-zero), and a matching entity is found, the insert will fail.
     ///
     /// - parameter translation: The entity to insert.
     /// - returns The unique identifier created for the new entity.

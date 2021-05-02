@@ -9,7 +9,7 @@ extension SQLiteStatement {
     static var createExpressionEntity: Self {
         .init(
             .CREATE(
-                .SCHEMA(SQLiteCatalog.ExpressionEntity.self, ifNotExists: true)
+                .SCHEMA(ExpressionEntity.self, ifNotExists: true)
             )
         )
     }
@@ -17,56 +17,129 @@ extension SQLiteStatement {
 
 // MARK: - Expression (Queries)
 extension SQLiteStatement {
+    // MARK: Select Expressions
     static var selectAllFromExpression: Self {
         .init(
             .SELECT(
-                .column(SQLiteCatalog.ExpressionEntity.id),
-                .column(SQLiteCatalog.ExpressionEntity.uuid),
-                .column(SQLiteCatalog.ExpressionEntity.key),
-                .column(SQLiteCatalog.ExpressionEntity.name),
-                .column(SQLiteCatalog.ExpressionEntity.defaultLanguage),
-                .column(SQLiteCatalog.ExpressionEntity.context),
-                .column(SQLiteCatalog.ExpressionEntity.feature)
+                .column(ExpressionEntity.id),
+                .column(ExpressionEntity.uuid),
+                .column(ExpressionEntity.key),
+                .column(ExpressionEntity.name),
+                .column(ExpressionEntity.defaultLanguage),
+                .column(ExpressionEntity.context),
+                .column(ExpressionEntity.feature)
             ),
-            .FROM_TABLE(SQLiteCatalog.ExpressionEntity.self)
+            .FROM_TABLE(ExpressionEntity.self)
         )
     }
     
     static func selectExpressions(withProjectID id: Int) -> Self {
         .init(
             .SELECT(
-                .column(SQLiteCatalog.ExpressionEntity.id),
-                .column(SQLiteCatalog.ExpressionEntity.uuid),
-                .column(SQLiteCatalog.ExpressionEntity.key),
-                .column(SQLiteCatalog.ExpressionEntity.name),
-                .column(SQLiteCatalog.ExpressionEntity.defaultLanguage),
-                .column(SQLiteCatalog.ExpressionEntity.context),
-                .column(SQLiteCatalog.ExpressionEntity.feature)
+                .column(ExpressionEntity.id),
+                .column(ExpressionEntity.uuid),
+                .column(ExpressionEntity.key),
+                .column(ExpressionEntity.name),
+                .column(ExpressionEntity.defaultLanguage),
+                .column(ExpressionEntity.context),
+                .column(ExpressionEntity.feature)
             ),
             .FROM(
-                .TABLE(SQLiteCatalog.ExpressionEntity.self),
-                .JOIN(SQLiteCatalog.ProjectExpressionEntity.self, on: SQLiteCatalog.ExpressionEntity.id, equals: SQLiteCatalog.ProjectExpressionEntity.expressionID)
+                .TABLE(ExpressionEntity.self),
+                .JOIN(ProjectExpressionEntity.self, on: ExpressionEntity.id, equals: ProjectExpressionEntity.expressionID)
             ),
             .WHERE(
-                .column(SQLiteCatalog.ProjectExpressionEntity.projectID, op: .equal, value: id)
+                .column(ProjectExpressionEntity.projectID, op: .equal, value: id)
             )
         )
     }
     
+    static func selectExpressions(withKeyLike key: String) -> Self {
+        .init(
+            .SELECT(
+                .column(ExpressionEntity.id),
+                .column(ExpressionEntity.uuid),
+                .column(ExpressionEntity.key),
+                .column(ExpressionEntity.name),
+                .column(ExpressionEntity.defaultLanguage),
+                .column(ExpressionEntity.context),
+                .column(ExpressionEntity.feature)
+            ),
+            .FROM(
+                .TABLE(ExpressionEntity.self),
+                .JOIN(ProjectExpressionEntity.self, on: ExpressionEntity.id, equals: ProjectExpressionEntity.expressionID)
+            ),
+            .WHERE(
+                .column(ExpressionEntity.key, tablePrefix: true),
+                .raw("LIKE"),
+                .value("%\(key)%")
+            )
+        )
+    }
+    
+    static func selectExpressions(withNameLike name: String) -> Self {
+        .init(
+            .SELECT(
+                .column(ExpressionEntity.id),
+                .column(ExpressionEntity.uuid),
+                .column(ExpressionEntity.key),
+                .column(ExpressionEntity.name),
+                .column(ExpressionEntity.defaultLanguage),
+                .column(ExpressionEntity.context),
+                .column(ExpressionEntity.feature)
+            ),
+            .FROM(
+                .TABLE(ExpressionEntity.self),
+                .JOIN(ProjectExpressionEntity.self, on: ExpressionEntity.id, equals: ProjectExpressionEntity.expressionID)
+            ),
+            .WHERE(
+                .column(ExpressionEntity.name, tablePrefix: true),
+                .raw("LIKE"),
+                .value("%\(name)%")
+            )
+        )
+    }
+    
+    static func selectExpressionsWith(languageCode: LanguageCode, scriptCode: ScriptCode?, regionCode: RegionCode?) -> Self {
+        .init(
+            .SELECT(
+                .column(ExpressionEntity.id),
+                .column(ExpressionEntity.uuid),
+                .column(ExpressionEntity.key),
+                .column(ExpressionEntity.name),
+                .column(ExpressionEntity.defaultLanguage),
+                .column(ExpressionEntity.context),
+                .column(ExpressionEntity.feature)
+            ),
+            .FROM(
+                .TABLE(ExpressionEntity.self),
+                .JOIN(TranslationEntity.self, on: TranslationEntity.expressionID, equals: ExpressionEntity.id)
+            ),
+            .WHERE(
+                .AND(
+                    .column(TranslationEntity.language, op: .equal, value: languageCode.rawValue),
+                    .unwrap(scriptCode, transform: { .column(TranslationEntity.script, op: .equal, value: $0.rawValue) }),
+                    .unwrap(regionCode, transform: { .column(TranslationEntity.region, op: .equal, value: $0.rawValue) })
+                )
+            )
+        )
+    }
+    
+    // MARK: Select Expression
     static func selectExpression(withID id: Int) -> Self {
         .init(
             .SELECT(
-                .column(SQLiteCatalog.ExpressionEntity.id),
-                .column(SQLiteCatalog.ExpressionEntity.uuid),
-                .column(SQLiteCatalog.ExpressionEntity.key),
-                .column(SQLiteCatalog.ExpressionEntity.name),
-                .column(SQLiteCatalog.ExpressionEntity.defaultLanguage),
-                .column(SQLiteCatalog.ExpressionEntity.context),
-                .column(SQLiteCatalog.ExpressionEntity.feature)
+                .column(ExpressionEntity.id),
+                .column(ExpressionEntity.uuid),
+                .column(ExpressionEntity.key),
+                .column(ExpressionEntity.name),
+                .column(ExpressionEntity.defaultLanguage),
+                .column(ExpressionEntity.context),
+                .column(ExpressionEntity.feature)
             ),
-            .FROM_TABLE(SQLiteCatalog.ExpressionEntity.self),
+            .FROM_TABLE(ExpressionEntity.self),
             .WHERE(
-                .column(SQLiteCatalog.ExpressionEntity.id, op: .equal, value: id)
+                .column(ExpressionEntity.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
@@ -75,17 +148,17 @@ extension SQLiteStatement {
     static func selectExpression(withID id: Expression.ID) -> Self {
         .init(
             .SELECT(
-                .column(SQLiteCatalog.ExpressionEntity.id),
-                .column(SQLiteCatalog.ExpressionEntity.uuid),
-                .column(SQLiteCatalog.ExpressionEntity.key),
-                .column(SQLiteCatalog.ExpressionEntity.name),
-                .column(SQLiteCatalog.ExpressionEntity.defaultLanguage),
-                .column(SQLiteCatalog.ExpressionEntity.context),
-                .column(SQLiteCatalog.ExpressionEntity.feature)
+                .column(ExpressionEntity.id),
+                .column(ExpressionEntity.uuid),
+                .column(ExpressionEntity.key),
+                .column(ExpressionEntity.name),
+                .column(ExpressionEntity.defaultLanguage),
+                .column(ExpressionEntity.context),
+                .column(ExpressionEntity.feature)
             ),
-            .FROM_TABLE(SQLiteCatalog.ExpressionEntity.self),
+            .FROM_TABLE(ExpressionEntity.self),
             .WHERE(
-                .column(SQLiteCatalog.ExpressionEntity.uuid, op: .equal, value: id)
+                .column(ExpressionEntity.uuid, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
@@ -94,32 +167,33 @@ extension SQLiteStatement {
     static func selectExpression(withKey key: String) -> Self {
         .init(
             .SELECT(
-                .column(SQLiteCatalog.ExpressionEntity.id),
-                .column(SQLiteCatalog.ExpressionEntity.uuid),
-                .column(SQLiteCatalog.ExpressionEntity.key),
-                .column(SQLiteCatalog.ExpressionEntity.name),
-                .column(SQLiteCatalog.ExpressionEntity.defaultLanguage),
-                .column(SQLiteCatalog.ExpressionEntity.context),
-                .column(SQLiteCatalog.ExpressionEntity.feature)
+                .column(ExpressionEntity.id),
+                .column(ExpressionEntity.uuid),
+                .column(ExpressionEntity.key),
+                .column(ExpressionEntity.name),
+                .column(ExpressionEntity.defaultLanguage),
+                .column(ExpressionEntity.context),
+                .column(ExpressionEntity.feature)
             ),
-            .FROM_TABLE(SQLiteCatalog.ExpressionEntity.self),
+            .FROM_TABLE(ExpressionEntity.self),
             .WHERE(
-                .column(SQLiteCatalog.ExpressionEntity.key, op: .equal, value: key)
+                .column(ExpressionEntity.key, op: .equal, value: key)
             ),
             .LIMIT(1)
         )
     }
     
-    static func insertExpression(_ expression: SQLiteCatalog.ExpressionEntity) -> Self {
+    // MARK: Insert Expression
+    static func insertExpression(_ expression: ExpressionEntity) -> Self {
         .init(
             .INSERT_INTO(
-                SQLiteCatalog.ExpressionEntity.self,
-                .column(SQLiteCatalog.ExpressionEntity.uuid),
-                .column(SQLiteCatalog.ExpressionEntity.key),
-                .column(SQLiteCatalog.ExpressionEntity.name),
-                .column(SQLiteCatalog.ExpressionEntity.defaultLanguage),
-                .column(SQLiteCatalog.ExpressionEntity.context),
-                .column(SQLiteCatalog.ExpressionEntity.feature)
+                ExpressionEntity.self,
+                .column(ExpressionEntity.uuid),
+                .column(ExpressionEntity.key),
+                .column(ExpressionEntity.name),
+                .column(ExpressionEntity.defaultLanguage),
+                .column(ExpressionEntity.context),
+                .column(ExpressionEntity.feature)
             ),
             .VALUES(
                 .value(expression.uuid),
@@ -132,16 +206,17 @@ extension SQLiteStatement {
         )
     }
     
+    // MARK: Update Expression
     static func updateExpression(_ id: Int, key: String) -> Self {
         SQLiteStatement(
             .UPDATE(
-                .TABLE(SQLiteCatalog.ExpressionEntity.self)
+                .TABLE(ExpressionEntity.self)
             ),
             .SET(
-                .column(SQLiteCatalog.ExpressionEntity.key, op: .equal, value: key)
+                .column(ExpressionEntity.key, op: .equal, value: key)
             ),
             .WHERE(
-                .column(SQLiteCatalog.ExpressionEntity.id, op: .equal, value: id)
+                .column(ExpressionEntity.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
@@ -150,13 +225,13 @@ extension SQLiteStatement {
     static func updateExpression(_ id: Int, name: String) -> Self {
         SQLiteStatement(
             .UPDATE(
-                .TABLE(SQLiteCatalog.ExpressionEntity.self)
+                .TABLE(ExpressionEntity.self)
             ),
             .SET(
-                .column(SQLiteCatalog.ExpressionEntity.name, op: .equal, value: name)
+                .column(ExpressionEntity.name, op: .equal, value: name)
             ),
             .WHERE(
-                .column(SQLiteCatalog.ExpressionEntity.id, op: .equal, value: id)
+                .column(ExpressionEntity.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
@@ -165,13 +240,13 @@ extension SQLiteStatement {
     static func updateExpression(_ id: Int, defaultLanguage: LanguageCode) -> Self {
         SQLiteStatement(
             .UPDATE(
-                .TABLE(SQLiteCatalog.ExpressionEntity.self)
+                .TABLE(ExpressionEntity.self)
             ),
             .SET(
-                .column(SQLiteCatalog.ExpressionEntity.defaultLanguage, op: .equal, value: defaultLanguage.rawValue)
+                .column(ExpressionEntity.defaultLanguage, op: .equal, value: defaultLanguage.rawValue)
             ),
             .WHERE(
-                .column(SQLiteCatalog.ExpressionEntity.id, op: .equal, value: id)
+                .column(ExpressionEntity.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
@@ -180,17 +255,17 @@ extension SQLiteStatement {
     static func updateExpression(_ id: Int, context: String?) -> Self {
         SQLiteStatement(
             .UPDATE(
-                .TABLE(SQLiteCatalog.ExpressionEntity.self)
+                .TABLE(ExpressionEntity.self)
             ),
             .SET(
                 .if(
                     (context != nil && !context!.isEmpty),
-                    .column(SQLiteCatalog.ExpressionEntity.context, op: .equal, value: context!),
-                    else: .column(SQLiteCatalog.ExpressionEntity.context, op: .equal, value: NSNull())
+                    .column(ExpressionEntity.context, op: .equal, value: context!),
+                    else: .column(ExpressionEntity.context, op: .equal, value: NSNull())
                 )
             ),
             .WHERE(
-                .column(SQLiteCatalog.ExpressionEntity.id, op: .equal, value: id)
+                .column(ExpressionEntity.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
@@ -199,52 +274,28 @@ extension SQLiteStatement {
     static func updateExpression(_ id: Int, feature: String?) -> Self {
         SQLiteStatement(
             .UPDATE(
-                .TABLE(SQLiteCatalog.ExpressionEntity.self)
+                .TABLE(ExpressionEntity.self)
             ),
             .SET(
                 .if(
                     (feature != nil && !feature!.isEmpty),
-                    .column(SQLiteCatalog.ExpressionEntity.feature, op: .equal, value: feature!),
-                    else: .column(SQLiteCatalog.ExpressionEntity.feature, op: .equal, value: NSNull())
+                    .column(ExpressionEntity.feature, op: .equal, value: feature!),
+                    else: .column(ExpressionEntity.feature, op: .equal, value: NSNull())
                 )
             ),
             .WHERE(
-                .column(SQLiteCatalog.ExpressionEntity.id, op: .equal, value: id)
+                .column(ExpressionEntity.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )
     }
     
-    static func selectExpressionsWith(languageCode: LanguageCode, scriptCode: ScriptCode?, regionCode: RegionCode?) -> Self {
-        .init(
-            .SELECT(
-                .column(SQLiteCatalog.ExpressionEntity.id),
-                .column(SQLiteCatalog.ExpressionEntity.uuid),
-                .column(SQLiteCatalog.ExpressionEntity.key),
-                .column(SQLiteCatalog.ExpressionEntity.name),
-                .column(SQLiteCatalog.ExpressionEntity.defaultLanguage),
-                .column(SQLiteCatalog.ExpressionEntity.context),
-                .column(SQLiteCatalog.ExpressionEntity.feature)
-            ),
-            .FROM(
-                .TABLE(SQLiteCatalog.ExpressionEntity.self),
-                .JOIN(SQLiteCatalog.TranslationEntity.self, on: SQLiteCatalog.TranslationEntity.expressionID, equals: SQLiteCatalog.ExpressionEntity.id)
-            ),
-            .WHERE(
-                .AND(
-                    .column(SQLiteCatalog.TranslationEntity.language, op: .equal, value: languageCode.rawValue),
-                    .unwrap(scriptCode, transform: { .column(SQLiteCatalog.TranslationEntity.script, op: .equal, value: $0.rawValue) }),
-                    .unwrap(regionCode, transform: { .column(SQLiteCatalog.TranslationEntity.region, op: .equal, value: $0.rawValue) })
-                )
-            )
-        )
-    }
-    
+    // MARK: Delete Expression
     static func deleteExpression(_ id: Int) -> Self {
         .init(
-            .DELETE_FROM(SQLiteCatalog.ExpressionEntity.self),
+            .DELETE_FROM(ExpressionEntity.self),
             .WHERE(
-                .column(SQLiteCatalog.ExpressionEntity.id, op: .equal, value: id)
+                .column(ExpressionEntity.id, op: .equal, value: id)
             ),
             .LIMIT(1)
         )

@@ -51,13 +51,13 @@ extension Catalog {
         var catalogPath: String?
         
         func run() throws {
-            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
+            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
             
             var expressions: [Expression]
             if format == .apple && !forceRegionMatch {
-                expressions = try catalog.expressions(matching: SQLiteCatalog.Query.expression(language, nil, nil))
+                expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.having(language, nil, nil))
             } else {
-                expressions = try catalog.expressions(matching: SQLiteCatalog.Query.expression(language, script, region))
+                expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.having(language, script, region))
             }
             
             switch format {

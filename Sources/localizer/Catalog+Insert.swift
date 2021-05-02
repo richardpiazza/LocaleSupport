@@ -13,6 +13,7 @@ extension Catalog {
             version: "1.0.0",
             shouldDisplay: true,
             subcommands: [
+                ProjectCommand.self,
                 ExpressionCommand.self,
                 TranslationCommand.self
             ],
@@ -48,7 +49,7 @@ extension Catalog.Insert {
         func run() throws {
             print("Inserting Project '\(name)'…")
             
-            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
+            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
             
             let entity = Project(uuid: .zero, name: name, expressions: [])
             let id = try catalog.createProject(entity)
@@ -95,7 +96,7 @@ extension Catalog.Insert {
         }
         
         func run() throws {
-            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
+            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
             
             let expression = Expression(
                 uuid: .zero,
@@ -143,7 +144,7 @@ extension Catalog.Insert {
         var region: RegionCode?
         
         func run() throws {
-            let catalog = try SQLiteCatalog(path: try FileManager.default.catalogURL().path)
+            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
             
             let translation = Translation(
                 uuid: .zero,
