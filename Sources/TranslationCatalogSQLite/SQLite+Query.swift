@@ -2,58 +2,20 @@ import TranslationCatalog
 import StatementSQLite
 import PerfectSQLite
 
-extension SQLite {
-    func execute(statement: SQLiteStatement) throws {
-        try execute(statement: statement.render())
-    }
-    
-    func execute(statement: SQLiteStatement, doBindings: (SQLiteStmt) throws -> ()) throws {
-        try execute(statement: statement.render(), doBindings: doBindings)
-    }
-    
-    func forEachRow(statement: SQLiteStatement, handleRow: (SQLiteStmt, Int) throws -> ()) throws {
-        try forEachRow(statement: statement.render(), handleRow: handleRow)
-    }
-    
-    func forEachRow(statement: SQLiteStatement, handleRow: (ProjectEntity) throws -> ()) throws {
-        try forEachRow(statement: statement.render()) { (stmt, index) in
-            try handleRow(stmt.projectEntity)
-        }
-    }
-    
-    func forEachRow(statement: SQLiteStatement, handleRow: (ProjectExpressionEntity) throws -> ()) throws {
-        try forEachRow(statement: statement.render()) { (stmt, index) in
-            try handleRow(stmt.projectExpressionEntity)
-        }
-    }
-    
-    func forEachRow(statement: SQLiteStatement, handleRow: (ExpressionEntity) throws -> ()) throws {
-        try forEachRow(statement: statement.render()) { (stmt, index) in
-            try handleRow(stmt.expressionEntity)
-        }
-    }
-    
-    func forEachRow(statement: SQLiteStatement, handleRow: (TranslationEntity) throws -> ()) throws {
-        try forEachRow(statement: statement.render()) { (stmt, index) in
-            try handleRow(stmt.translationEntity)
-        }
-    }
-}
-
 // MARK: - `Project` Entity
 extension SQLite {
-    func projectEntities(_ statement: SQLiteStatement = .selectAllFromProject) throws -> [ProjectEntity] {
+    func projectEntities(statement: String) throws -> [ProjectEntity] {
         var output: [ProjectEntity] = []
-        try forEachRow(statement: statement, handleRow: { (entity: ProjectEntity) in
-            output.append(entity)
+        try forEachRow(statement: statement, handleRow: { (stmt, index) in
+            output.append(stmt.projectEntity)
         })
         return output
     }
     
-    func projectEntity(_ statement: SQLiteStatement) throws -> ProjectEntity? {
+    func projectEntity(statement: String) throws -> ProjectEntity? {
         var output: ProjectEntity?
-        try forEachRow(statement: statement, handleRow: { (entity: ProjectEntity) in
-            output = entity
+        try forEachRow(statement: statement, handleRow: { (stmt, index) in
+            output = stmt.projectEntity
         })
         return output
     }
@@ -61,10 +23,10 @@ extension SQLite {
 
 // MARK: - `ProjectExpression` Entity
 extension SQLite {
-    func projectExpressionEntity(projectID: Int, expressionID: Int) throws -> ProjectExpressionEntity? {
+    func projectExpressionEntity(statement: String) throws -> ProjectExpressionEntity? {
         var output: ProjectExpressionEntity?
-        try forEachRow(statement: .selectProjectExpression(projectID: projectID, expressionID: expressionID)) { (entity: ProjectExpressionEntity) in
-            output = entity
+        try forEachRow(statement: statement) { (stmt, index) in
+            output = stmt.projectExpressionEntity
         }
         return output
     }
@@ -72,19 +34,19 @@ extension SQLite {
 
 // MARK: - `Expression` Entity
 extension SQLite {
-    func expressionEntities(_ statement: SQLiteStatement = .selectAllFromExpression) throws -> [ExpressionEntity] {
+    func expressionEntities(statement: String) throws -> [ExpressionEntity] {
         var output: [ExpressionEntity] = []
-        try forEachRow(statement: statement, handleRow: { (entity: ExpressionEntity) in
-            output.append(entity)
+        try forEachRow(statement: statement, handleRow: { (stmt, index) in
+            output.append(stmt.expressionEntity)
         })
         
         return output
     }
     
-    func expressionEntity(_ statement: SQLiteStatement) throws -> ExpressionEntity? {
+    func expressionEntity(statement: String) throws -> ExpressionEntity? {
         var output: ExpressionEntity?
-        try forEachRow(statement: statement) { (entity: ExpressionEntity) in
-            output = entity
+        try forEachRow(statement: statement) { (stmt, index) in
+            output = stmt.expressionEntity
         }
         return output
     }
@@ -92,18 +54,18 @@ extension SQLite {
 
 // MARK: - `Translation` Entity
 extension SQLite {
-    func translationEntities(_ statement: SQLiteStatement = .selectAllFromTranslation) throws -> [TranslationEntity] {
+    func translationEntities(statement: String) throws -> [TranslationEntity] {
         var output: [TranslationEntity] = []
-        try forEachRow(statement: .selectAllFromTranslation, handleRow: { (entity: TranslationEntity) in
-            output.append(entity)
+        try forEachRow(statement: statement, handleRow: { (stmt, index) in
+            output.append(stmt.translationEntity)
         })
         return output
     }
     
-    func translationEntity(_ statement: SQLiteStatement) throws -> TranslationEntity? {
+    func translationEntity(statement: String) throws -> TranslationEntity? {
         var output: TranslationEntity?
-        try forEachRow(statement: statement, handleRow: { (entity: TranslationEntity) in
-            output = entity
+        try forEachRow(statement: statement, handleRow: { (stmt, index) in
+            output = stmt.translationEntity
         })
         return output
     }

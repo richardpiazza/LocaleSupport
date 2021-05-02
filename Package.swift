@@ -57,7 +57,8 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/richardpiazza/Statement.git",
-            .upToNextMinor(from: "0.3.0")
+            .branch("feature/logical-set")
+//            .upToNextMinor(from: "0.3.0")
         ),
     ],
     targets: [

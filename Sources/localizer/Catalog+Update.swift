@@ -49,6 +49,9 @@ extension Catalog.Update {
         @Option(help: "Remove an expression from a project.")
         var unlinkExpression: Expression.ID?
         
+        @Flag(help: "Outputs detailed execution")
+        var noisy: Bool = false
+        
         func validate() throws {
             if let name = self.name {
                 guard !name.isEmpty else {
@@ -59,6 +62,12 @@ extension Catalog.Update {
         
         func run() throws {
             let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
+            if noisy {
+                catalog.statementHook = { (sql) in
+                    print("======SQL======\n\(sql)\n======___======\n")
+                }
+            }
+            
             let project = try catalog.project(id)
             
             print("Updating Project '\(project.name) [\(project.uuid.uuidString)]'…")
@@ -117,6 +126,9 @@ extension Catalog.Update {
         @Option(help: "Remove the expression from a project.")
         var unlinkProject: Project.ID?
         
+        @Flag(help: "Outputs detailed execution")
+        var noisy: Bool = false
+        
         func validate() throws {
             if let key = self.key {
                 guard !key.isEmpty else {
@@ -133,6 +145,11 @@ extension Catalog.Update {
         
         func run() throws {
             let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
+            if noisy {
+                catalog.statementHook = { (sql) in
+                    print("======SQL======\n\(sql)\n======___======\n")
+                }
+            }
             
             let expression = try catalog.expression(id)
             
@@ -204,8 +221,16 @@ extension Catalog.Update {
         @Flag(help: "Forcefully drop the 'RegionCode'. Does nothing when 'region' value provided.")
         var dropRegion: Bool = false
         
+        @Flag(help: "Outputs detailed execution")
+        var noisy: Bool = false
+        
         func run() throws {
             let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
+            if noisy {
+                catalog.statementHook = { (sql) in
+                    print("======SQL======\n\(sql)\n======___======\n")
+                }
+            }
             
             let translation = try catalog.translation(id)
             

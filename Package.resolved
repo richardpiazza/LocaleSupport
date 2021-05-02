@@ -41,9 +41,9 @@
         "package": "Statement",
         "repositoryURL": "https://github.com/richardpiazza/Statement.git",
         "state": {
-          "branch": null,
-          "revision": "eab61b67d7ab223cd0bb5d2cc1693e0fbee609ff",
-          "version": "0.3.0"
+          "branch": "feature/logical-set",
+          "revision": "2d9c9cbd209d0954d408a9bbc4905f82ac5581c7",
+          "version": null
         }
       },
       {

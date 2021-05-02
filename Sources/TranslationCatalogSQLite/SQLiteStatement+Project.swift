@@ -90,9 +90,7 @@ extension SQLiteStatement {
                 .TABLE(ProjectEntity.self)
             ),
             .WHERE(
-                .column(ProjectEntity.name, tablePrefix: true),
-                .raw("LIKE"),
-                .value("%\(name)%")
+                .column(ProjectEntity.name, op: .like, value: "%\(name)%")
             )
         )
     }

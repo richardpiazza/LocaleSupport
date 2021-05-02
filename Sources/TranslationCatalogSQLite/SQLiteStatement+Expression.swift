@@ -66,19 +66,16 @@ extension SQLiteStatement {
                 .column(ExpressionEntity.feature)
             ),
             .FROM(
-                .TABLE(ExpressionEntity.self),
-                .JOIN(ProjectExpressionEntity.self, on: ExpressionEntity.id, equals: ProjectExpressionEntity.expressionID)
+                .TABLE(ExpressionEntity.self)
             ),
             .WHERE(
-                .column(ExpressionEntity.key, tablePrefix: true),
-                .raw("LIKE"),
-                .value("%\(key)%")
+                .column(ExpressionEntity.key, op: .like, value: "%\(key)%")
             )
         )
     }
     
     static func selectExpressions(withNameLike name: String) -> Self {
-        .init(
+        SQLiteStatement(
             .SELECT(
                 .column(ExpressionEntity.id),
                 .column(ExpressionEntity.uuid),
@@ -89,13 +86,10 @@ extension SQLiteStatement {
                 .column(ExpressionEntity.feature)
             ),
             .FROM(
-                .TABLE(ExpressionEntity.self),
-                .JOIN(ProjectExpressionEntity.self, on: ExpressionEntity.id, equals: ProjectExpressionEntity.expressionID)
+                .TABLE(ExpressionEntity.self)
             ),
             .WHERE(
-                .column(ExpressionEntity.name, tablePrefix: true),
-                .raw("LIKE"),
-                .value("%\(name)%")
+                .column(ExpressionEntity.name, op: .like, value: "%\(name)%")
             )
         )
     }
@@ -158,7 +152,7 @@ extension SQLiteStatement {
             ),
             .FROM_TABLE(ExpressionEntity.self),
             .WHERE(
-                .column(ExpressionEntity.uuid, op: .equal, value: id)
+                .column(ExpressionEntity.uuid, op: .equal, value: id.uuidString)
             ),
             .LIMIT(1)
         )
@@ -213,7 +207,10 @@ extension SQLiteStatement {
                 .TABLE(ExpressionEntity.self)
             ),
             .SET(
-                .column(ExpressionEntity.key, op: .equal, value: key)
+                .comparison(op: .equal, segments: [
+                    Segment<SQLiteStatement.SetContext>.column(ExpressionEntity.key),
+                    .value(key)
+                ])
             ),
             .WHERE(
                 .column(ExpressionEntity.id, op: .equal, value: id)
@@ -228,7 +225,10 @@ extension SQLiteStatement {
                 .TABLE(ExpressionEntity.self)
             ),
             .SET(
-                .column(ExpressionEntity.name, op: .equal, value: name)
+                .comparison(op: .equal, segments: [
+                    Segment<SQLiteStatement.SetContext>.column(ExpressionEntity.name),
+                    .value(name)
+                ])
             ),
             .WHERE(
                 .column(ExpressionEntity.id, op: .equal, value: id)
@@ -243,7 +243,10 @@ extension SQLiteStatement {
                 .TABLE(ExpressionEntity.self)
             ),
             .SET(
-                .column(ExpressionEntity.defaultLanguage, op: .equal, value: defaultLanguage.rawValue)
+                .comparison(op: .equal, segments: [
+                    Segment<SQLiteStatement.SetContext>.column(ExpressionEntity.defaultLanguage),
+                    .value(defaultLanguage.rawValue)
+                ])
             ),
             .WHERE(
                 .column(ExpressionEntity.id, op: .equal, value: id)
@@ -260,8 +263,15 @@ extension SQLiteStatement {
             .SET(
                 .if(
                     (context != nil && !context!.isEmpty),
-                    .column(ExpressionEntity.context, op: .equal, value: context!),
-                    else: .column(ExpressionEntity.context, op: .equal, value: NSNull())
+                    .comparison(op: .equal, segments: [
+                        Segment<SQLiteStatement.SetContext>.column(ExpressionEntity.context),
+                        .value(context!)
+                    ]),
+                    else:
+                        .comparison(op: .equal, segments: [
+                            Segment<SQLiteStatement.SetContext>.column(ExpressionEntity.context),
+                            .value(NSNull())
+                        ])
                 )
             ),
             .WHERE(
@@ -279,8 +289,15 @@ extension SQLiteStatement {
             .SET(
                 .if(
                     (feature != nil && !feature!.isEmpty),
-                    .column(ExpressionEntity.feature, op: .equal, value: feature!),
-                    else: .column(ExpressionEntity.feature, op: .equal, value: NSNull())
+                    .comparison(op: .equal, segments: [
+                        Segment<SQLiteStatement.SetContext>.column(ExpressionEntity.feature),
+                        .value(feature!)
+                    ]),
+                    else:
+                        .comparison(op: .equal, segments: [
+                            Segment<SQLiteStatement.SetContext>.column(ExpressionEntity.feature),
+                            .value(NSNull())
+                        ])
                 )
             ),
             .WHERE(

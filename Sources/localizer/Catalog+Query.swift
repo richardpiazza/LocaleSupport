@@ -13,8 +13,7 @@ extension Catalog {
             shouldDisplay: true,
             subcommands: [
                 ProjectCommand.self,
-                ExpressionCommand.self,
-//                TranslationCommand.self
+                ExpressionCommand.self
             ],
             defaultSubcommand: nil,
             helpNames: .shortAndLong
@@ -39,6 +38,9 @@ extension Catalog.Query {
         @Option(help: "Partial name search")
         var named: String?
         
+        @Flag(help: "Outputs detailed execution")
+        var noisy: Bool = false
+        
         func validate() throws {
             if let named = self.named {
                 guard !named.isEmpty else {
@@ -49,6 +51,11 @@ extension Catalog.Query {
         
         func run() throws {
             let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
+            if noisy {
+                catalog.statementHook = { (sql) in
+                    print("======SQL======\n\(sql)\n======___======\n")
+                }
+            }
             
             var projects: [Project] = []
             
@@ -58,24 +65,12 @@ extension Catalog.Query {
                 projects = try catalog.projects()
             }
             
-            printHeader(nameLength: projects.nameLength)
-            projects.forEach { project in
-                printProject(project)
+            var table = MarkdownTable("Project.ID", "Name")
+            projects.forEach {
+                table.addContent($0.id.uuidString, $0.name)
             }
-        }
-        
-        private func printHeader(nameLength: Int) {
-            print(
-                "| " +
-                "Project.ID".padding(toLength: UUID.zero.uuidString.count, withPad: " ", startingAt: 0) +
-                " | " +
-                "Name".padding(toLength: max(nameLength, 4), withPad: " ", startingAt: 0) +
-                " |"
-            )
-        }
-        
-        private func printProject(_ project: Project) {
-            print("| \(project.id.uuidString) | \(project.name) |")
+            
+            print(table)
         }
     }
     
@@ -98,6 +93,9 @@ extension Catalog.Query {
         @Option(help: "A descriptive human-readable identification.")
         var named: String?
         
+        @Flag(help: "Outputs detailed execution")
+        var noisy: Bool = false
+        
         func validate() throws {
             if let named = self.named {
                 guard !named.isEmpty else {
@@ -108,6 +106,11 @@ extension Catalog.Query {
         
         func run() throws {
             let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
+            if noisy {
+                catalog.statementHook = { (sql) in
+                    print("======SQL======\n\(sql)\n======___======\n")
+                }
+            }
             
             var expressions: [Expression] = []
             
@@ -119,30 +122,11 @@ extension Catalog.Query {
                 expressions = try catalog.expressions()
             }
             
-            printHeader(keyLength: 0, nameLength: 0)
-            expressions.forEach { expression in
-                printExpression(expression)
+            var table = MarkdownTable("Expression.ID", "Key", "Name", "Default Language", "Context", "Feature")
+            expressions.forEach {
+                table.addContent($0.id.uuidString, $0.key, $0.name, $0.defaultLanguage.rawValue, ($0.context ?? ""), ($0.feature ?? ""))
             }
-        }
-        
-        private func printHeader(keyLength: Int, nameLength: Int) {
-            print(
-                "| " +
-                "Expression.ID".padding(toLength: UUID.zero.uuidString.count, withPad: " ", startingAt: 0) +
-                " | " +
-                "Key".padding(toLength: keyLength, withPad: " ", startingAt: 0) +
-                " | " +
-                "Name".padding(toLength: nameLength, withPad: " ", startingAt: 0) +
-                " |"
-            )
-        }
-        
-        private func printExpression(_ expression: Expression) {
-//            print("| \(project.id.uuidString) | \(project.name) |")
+            print(table)
         }
     }
-}
-
-extension Array where Element == Project {
-    var nameLength: Int { Swift.max(map { $0.name.count }.max() ?? 0, 4) }
 }
