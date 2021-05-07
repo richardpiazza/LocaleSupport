@@ -24,7 +24,7 @@ extension Catalog {
 }
 
 extension Catalog.Update {
-    struct ProjectCommand: ParsableCommand {
+    struct ProjectCommand: CatalogCommand {
         
         static var configuration: CommandConfiguration = .init(
             commandName: "project",
@@ -49,6 +49,9 @@ extension Catalog.Update {
         @Option(help: "Remove an expression from a project.")
         var unlinkExpression: Expression.ID?
         
+        @Option(help: "Path to catalog to use in place of the application library.")
+        var path: String?
+        
         @Flag(help: "Outputs detailed execution")
         var noisy: Bool = false
         
@@ -61,7 +64,7 @@ extension Catalog.Update {
         }
         
         func run() throws {
-            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
+            let catalog = try SQLiteCatalog(url: try catalogURL())
             if noisy {
                 catalog.statementHook = { (sql) in
                     print("======SQL======\n\(sql)\n======___======\n")
@@ -89,7 +92,7 @@ extension Catalog.Update {
         }
     }
     
-    struct ExpressionCommand: ParsableCommand {
+    struct ExpressionCommand: CatalogCommand {
         
         static var configuration: CommandConfiguration = .init(
             commandName: "expression",
@@ -126,6 +129,9 @@ extension Catalog.Update {
         @Option(help: "Remove the expression from a project.")
         var unlinkProject: Project.ID?
         
+        @Option(help: "Path to catalog to use in place of the application library.")
+        var path: String?
+        
         @Flag(help: "Outputs detailed execution")
         var noisy: Bool = false
         
@@ -144,7 +150,7 @@ extension Catalog.Update {
         }
         
         func run() throws {
-            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
+            let catalog = try SQLiteCatalog(url: try catalogURL())
             if noisy {
                 catalog.statementHook = { (sql) in
                     print("======SQL======\n\(sql)\n======___======\n")
@@ -187,7 +193,7 @@ extension Catalog.Update {
 }
 
 extension Catalog.Update {
-    struct TranslationCommand: ParsableCommand {
+    struct TranslationCommand: CatalogCommand {
         
         static var configuration: CommandConfiguration = .init(
             commandName: "translation",
@@ -221,11 +227,14 @@ extension Catalog.Update {
         @Flag(help: "Forcefully drop the 'RegionCode'. Does nothing when 'region' value provided.")
         var dropRegion: Bool = false
         
+        @Option(help: "Path to catalog to use in place of the application library.")
+        var path: String?
+        
         @Flag(help: "Outputs detailed execution")
         var noisy: Bool = false
         
         func run() throws {
-            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
+            let catalog = try SQLiteCatalog(url: try catalogURL())
             if noisy {
                 catalog.statementHook = { (sql) in
                     print("======SQL======\n\(sql)\n======___======\n")

@@ -6,7 +6,7 @@ import TranslationCatalog
 import TranslationCatalogSQLite
 
 extension Catalog {
-    struct Export: ParsableCommand {
+    struct Export: CatalogCommand {
         
         enum Format: String, ExpressibleByArgument {
             case android
@@ -47,11 +47,11 @@ extension Catalog {
         @Flag(help: "Limit content to the explicitly defined RegionCode.")
         var forceRegionMatch: Bool = false
         
-        @Option(help: "Overrides the default support directory path for the catalog database.")
-        var catalogPath: String?
+        @Option(help: "Path to catalog to use in place of the application library.")
+        var path: String?
         
         func run() throws {
-            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
+            let catalog = try SQLiteCatalog(url: try catalogURL())
             
             var expressions: [Expression]
             if format == .apple && !forceRegionMatch {

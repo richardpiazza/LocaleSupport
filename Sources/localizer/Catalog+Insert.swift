@@ -24,7 +24,7 @@ extension Catalog {
 }
 
 extension Catalog.Insert {
-    struct ProjectCommand: ParsableCommand {
+    struct ProjectCommand: CatalogCommand {
         
         static var configuration: CommandConfiguration = .init(
             commandName: "project",
@@ -40,6 +40,9 @@ extension Catalog.Insert {
         @Argument(help: "Name that identifies a collection of expressions.")
         var name: String
         
+        @Option(help: "Path to catalog to use in place of the application library.")
+        var path: String?
+        
         func validate() throws {
             guard !name.isEmpty else {
                 throw ValidationError("Must provide a non-empty 'name'.")
@@ -49,7 +52,7 @@ extension Catalog.Insert {
         func run() throws {
             print("Inserting Project '\(name)'…")
             
-            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
+            let catalog = try SQLiteCatalog(url: try catalogURL())
             
             let entity = Project(uuid: .zero, name: name, expressions: [])
             let id = try catalog.createProject(entity)
@@ -57,7 +60,7 @@ extension Catalog.Insert {
         }
     }
     
-    struct ExpressionCommand: ParsableCommand {
+    struct ExpressionCommand: CatalogCommand {
         
         static var configuration: CommandConfiguration = .init(
             commandName: "expression",
@@ -85,6 +88,9 @@ extension Catalog.Insert {
         @Option(help: "Optional grouping identifier.")
         var feature: String?
         
+        @Option(help: "Path to catalog to use in place of the application library.")
+        var path: String?
+        
         func validate() throws {
             guard !key.isEmpty else {
                 throw ValidationError("Must provide a non-empty 'key'.")
@@ -96,7 +102,7 @@ extension Catalog.Insert {
         }
         
         func run() throws {
-            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
+            let catalog = try SQLiteCatalog(url: try catalogURL())
             
             let expression = Expression(
                 uuid: .zero,
@@ -115,7 +121,7 @@ extension Catalog.Insert {
 }
 
 extension Catalog.Insert {
-    struct TranslationCommand: ParsableCommand {
+    struct TranslationCommand: CatalogCommand {
         
         static var configuration: CommandConfiguration = .init(
             commandName: "translation",
@@ -143,8 +149,11 @@ extension Catalog.Insert {
         @Option(help: "Region code specifier.")
         var region: RegionCode?
         
+        @Option(help: "Path to catalog to use in place of the application library.")
+        var path: String?
+        
         func run() throws {
-            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
+            let catalog = try SQLiteCatalog(url: try catalogURL())
             
             let translation = Translation(
                 uuid: .zero,

@@ -1,5 +1,4 @@
 import XCTest
-@testable import localizer
 import class Foundation.Bundle
 
 class LocalizerTestCase: XCTestCase {
@@ -30,5 +29,37 @@ class LocalizerTestCase: XCTestCase {
     var output: String? {
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         return String(data: data, encoding: .utf8)
+    }
+    
+    let fileManager: FileManager = .default
+    let executionId = UUID()
+    var path: String { "\"\(executionId.uuidString).sqlite\"" }
+    
+    func caseUrl() throws -> URL {
+        try fileManager.url(for: path)
+    }
+    
+    func recycle() throws {
+        let url = try caseUrl()
+        guard fileManager.fileExists(atPath: url.path) else {
+            return
+        }
+        
+        try fileManager.removeItem(at: url)
+    }
+}
+
+extension FileManager {
+    func url(for filename: String) throws -> URL {
+        // Absolute Path?
+        let absoluteURL = URL(fileURLWithPath: filename)
+        if fileExists(atPath: absoluteURL.path) {
+            return absoluteURL
+        }
+        
+        // Relative Path?
+        let directory = URL(fileURLWithPath: currentDirectoryPath, isDirectory: true)
+        let relativeURL = directory.appendingPathComponent(filename)
+        return relativeURL
     }
 }

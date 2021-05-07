@@ -5,7 +5,7 @@ import TranslationCatalog
 import TranslationCatalogSQLite
 
 extension Catalog {
-    struct Generate: ParsableCommand {
+    struct Generate: CatalogCommand {
         
         enum Format: String, CaseIterable, ExpressibleByArgument {
             case markdown
@@ -28,8 +28,11 @@ extension Catalog {
         @Argument(help: "The export format")
         var format: Format
         
+        @Option(help: "Path to catalog to use in place of the application library.")
+        var path: String?
+        
         func run() throws {
-            let catalog = try SQLiteCatalog(url: try FileManager.default.catalogURL())
+            let catalog = try SQLiteCatalog(url: try catalogURL())
             let expressions = try catalog.expressions().sorted(by: { $0.name < $1.name })
             
             switch format {
