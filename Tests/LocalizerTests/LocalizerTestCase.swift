@@ -15,25 +15,30 @@ class LocalizerTestCase: XCTestCase {
         #endif
     }
     
-    lazy var pipe: Pipe = {
-        return Pipe()
-    }()
+    let outputPipe: Pipe = Pipe()
+    let errorPipe: Pipe = Pipe()
     
     lazy var process: Process = {
         let process = Process()
         process.executableURL = productsDirectory.appendingPathComponent("localizer")
-        process.standardOutput = pipe
+        process.standardOutput = outputPipe
+        process.standardError = errorPipe
         return process
     }()
     
     var output: String? {
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        let data = outputPipe.fileHandleForReading.readDataToEndOfFile()
+        return String(data: data, encoding: .utf8)
+    }
+    
+    var error: String? {
+        let data = errorPipe.fileHandleForReading.readDataToEndOfFile()
         return String(data: data, encoding: .utf8)
     }
     
     let fileManager: FileManager = .default
     let executionId = UUID()
-    var path: String { "\"\(executionId.uuidString).sqlite\"" }
+    var path: String { "\(executionId.uuidString).sqlite" }
     
     func caseUrl() throws -> URL {
         try fileManager.url(for: path)
