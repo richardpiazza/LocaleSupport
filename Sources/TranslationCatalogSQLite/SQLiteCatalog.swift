@@ -351,10 +351,14 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             try entities.forEach({
                 output.append(try $0.translation(with: expressionEntity.uuid))
             })
-        case .having(let expression, let language, let script, let region):
-            let entities = try db.translationEntities(statement: renderStatement(.selectTranslationsFor(expression, languageCode: language, scriptCode: script, regionCode: region)))
+        case .having(let expressionId, let language, let script, let region):
+            guard let expressionEntity = try db.expressionEntity(statement: renderStatement(.selectExpression(withID: expressionId))) else {
+                throw Error.invalidExpressionID(expressionId)
+            }
+            
+            let entities = try db.translationEntities(statement: renderStatement(.selectTranslationsFor(expressionEntity.id, languageCode: language, scriptCode: script, regionCode: region)))
             try entities.forEach({
-                output.append(try $0.translation(with: expression.uuidString))
+                output.append(try $0.translation(with: expressionEntity.uuid))
             })
         default:
             throw Error.unhandledQuery(query)

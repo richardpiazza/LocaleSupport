@@ -174,6 +174,9 @@ final class CatalogQueryTests: _CatalogTestCase {
     }
     
     func testQueryExpressionsHaving() throws {
+        catalog.statementHook = { (sql) in
+            print(sql)
+        }
         var expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.having(.fr, nil, nil))
         XCTAssertEqual(expressions.count, 3)
         expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.having(.fr, nil, .CA))
@@ -182,7 +185,7 @@ final class CatalogQueryTests: _CatalogTestCase {
     
     func testQueryExpressionId() throws {
         let expression = try catalog.expression(.expression4)
-        XCTAssertEqual(expression.name, "GIT_FQDN")
+        XCTAssertEqual(expression.name, "Fully Qualified Domain Name")
     }
     
     func testQueryExpressionPrimaryKey() throws {

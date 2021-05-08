@@ -105,7 +105,7 @@ extension SQLiteStatement {
         )
     }
     
-    static func selectTranslationsFor(_ expressionID: Expression.ID, languageCode: LanguageCode?, scriptCode: ScriptCode?, regionCode: RegionCode?) -> Self {
+    static func selectTranslationsFor(_ expressionID: Int, languageCode: LanguageCode?, scriptCode: ScriptCode?, regionCode: RegionCode?) -> Self {
         .init(
             .SELECT(
                 .column(TranslationEntity.id),
@@ -122,9 +122,7 @@ extension SQLiteStatement {
                     .column(TranslationEntity.expressionID, op: .equal, value: expressionID),
                     .unwrap(languageCode, transform: { .column(TranslationEntity.language, op: .equal, value: $0.rawValue) }),
                     .unwrap(scriptCode, transform: { .column(TranslationEntity.script, op: .equal, value: $0.rawValue) }),
-                    .unwrap(regionCode, transform: { .column(TranslationEntity.region, op: .equal, value: $0.rawValue) }),
-                    .if(languageCode != nil && regionCode == nil, .column(TranslationEntity.region, op: .equal, value: NSNull())),
-                    .if(languageCode != nil && scriptCode == nil, .column(TranslationEntity.script, op: .equal, value: NSNull()))
+                    .unwrap(regionCode, transform: { .column(TranslationEntity.region, op: .equal, value: $0.rawValue) })
                 )
             )
         )
@@ -173,10 +171,13 @@ extension SQLiteStatement {
                 .TABLE(TranslationEntity.self)
             ),
             .SET(
-                .if(
-                    (scriptCode != nil),
-                    .column(TranslationEntity.script, op: .equal, value: scriptCode!.rawValue),
-                    else: .column(TranslationEntity.script, op: .equal, value: NSNull())
+                .unwrap(
+                    scriptCode,
+                    transform: { value in
+                        .column(TranslationEntity.script, op: .equal, value: value.rawValue)
+                    },
+                    else:
+                        .column(TranslationEntity.script, op: .equal, value: NSNull())
                 )
             ),
             .WHERE(
@@ -192,10 +193,13 @@ extension SQLiteStatement {
                 .TABLE(TranslationEntity.self)
             ),
             .SET(
-                .if(
-                    (regionCode != nil),
-                    .column(TranslationEntity.region, op: .equal, value: regionCode!.rawValue),
-                    else: .column(TranslationEntity.region, op: .equal, value: NSNull())
+                .unwrap(
+                    regionCode,
+                    transform: { value in
+                        .column(TranslationEntity.region, op: .equal, value: value.rawValue)
+                    },
+                    else:
+                        .column(TranslationEntity.region, op: .equal, value: NSNull())
                 )
             ),
             .WHERE(

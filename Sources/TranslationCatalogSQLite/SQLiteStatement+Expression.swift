@@ -96,9 +96,9 @@ extension SQLiteStatement {
     
     static func selectExpressionsWith(languageCode: LanguageCode, scriptCode: ScriptCode?, regionCode: RegionCode?) -> Self {
         .init(
-            .SELECT(
-                .column(ExpressionEntity.id),
-                .column(ExpressionEntity.uuid),
+            .SELECT_DISTINCT(
+                .column(ExpressionEntity.id, tablePrefix: true),
+                .column(ExpressionEntity.uuid, tablePrefix: true),
                 .column(ExpressionEntity.key),
                 .column(ExpressionEntity.name),
                 .column(ExpressionEntity.defaultLanguage),
@@ -261,17 +261,15 @@ extension SQLiteStatement {
                 .TABLE(ExpressionEntity.self)
             ),
             .SET(
-                .if(
-                    (context != nil && !context!.isEmpty),
+                .unwrap(context, transform: { value in
                     .comparison(op: .equal, segments: [
                         Segment<SQLiteStatement.SetContext>.column(ExpressionEntity.context),
-                        .value(context!)
-                    ]),
-                    else:
-                        .comparison(op: .equal, segments: [
-                            Segment<SQLiteStatement.SetContext>.column(ExpressionEntity.context),
-                            .value(NSNull())
-                        ])
+                        .value(value)
+                    ])
+                }, else: .comparison(op: .equal, segments: [
+                        Segment<SQLiteStatement.SetContext>.column(ExpressionEntity.context),
+                        .value(NSNull())
+                    ])
                 )
             ),
             .WHERE(
@@ -287,12 +285,14 @@ extension SQLiteStatement {
                 .TABLE(ExpressionEntity.self)
             ),
             .SET(
-                .if(
-                    (feature != nil && !feature!.isEmpty),
-                    .comparison(op: .equal, segments: [
-                        Segment<SQLiteStatement.SetContext>.column(ExpressionEntity.feature),
-                        .value(feature!)
-                    ]),
+                .unwrap(
+                    feature,
+                    transform: { value in
+                        .comparison(op: .equal, segments: [
+                            Segment<SQLiteStatement.SetContext>.column(ExpressionEntity.feature),
+                            .value(value)
+                        ])
+                    },
                     else:
                         .comparison(op: .equal, segments: [
                             Segment<SQLiteStatement.SetContext>.column(ExpressionEntity.feature),
