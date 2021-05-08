@@ -100,13 +100,18 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
     }
     
     @discardableResult public func createProject(_ project: Project) throws -> Project.ID {
-        if let existing = try? self.project(project.id), project.id != .zero {
-            throw Error.invalidProjectID(existing.id)
+        if project.id != .zero {
+            if let existing = try? self.project(project.id) {
+                throw Error.invalidProjectID(existing.id)
+            }
         }
         
-        let id = UUID()
+        var id = project.id
         var entity = ProjectEntity(project)
-        entity.uuid = id.uuidString
+        if project.id == .zero {
+            id = UUID()
+            entity.uuid = id.uuidString
+        }
         
         try db.doWithTransaction {
             try db.execute(statement: renderStatement(.insertProject(entity)))
@@ -234,17 +239,22 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
     /// - parameter expression: The entity to insert.
     /// - returns The unique identifier created for the new entity.
     @discardableResult public func createExpression(_ expression: Expression) throws -> Expression.ID {
-        if let existing = try? self.expression(expression.id), expression.id != .zero {
-            throw Error.existingExpressionWithID(existing.id)
+        if expression.id != .zero {
+            if let existing = try? self.expression(expression.id) {
+                throw Error.existingExpressionWithID(existing.id)
+            }
         }
         
         if let existingKey = try? db.expressionEntity(statement: renderStatement(.selectExpression(withKey: expression.key))) {
             throw Error.existingExpressionWithKey(existingKey.key)
         }
         
-        let id = UUID()
+        var id = expression.id
         var entity = ExpressionEntity(expression)
-        entity.uuid = id.uuidString
+        if expression.id == .zero {
+            id = UUID()
+            entity.uuid = id.uuidString
+        }
         
         try db.doWithTransaction {
             try db.execute(statement: renderStatement(.insertExpression(entity)))
@@ -398,17 +408,22 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
     /// - parameter translation: The entity to insert.
     /// - returns The unique identifier created for the new entity.
     @discardableResult public func createTranslation(_ translation: TranslationCatalog.Translation) throws -> TranslationCatalog.Translation.ID {
-        if let existing = try? self.translation(translation.id), translation.id != .zero {
-            throw Error.existingTranslationWithID(existing.id)
+        if translation.id != .zero {
+            if let existing = try? self.translation(translation.id) {
+                throw Error.existingTranslationWithID(existing.id)
+            }
         }
         
         guard let expression = try db.expressionEntity(statement: renderStatement(.selectExpression(withID: translation.expressionID))) else {
             throw Error.invalidExpressionID(translation.expressionID)
         }
         
-        let id = UUID()
+        var id = translation.id
         var entity = TranslationEntity(translation)
-        entity.uuid = id.uuidString
+        if translation.id == .zero {
+            id = UUID()
+            entity.uuid = id.uuidString
+        }
         entity.expressionID = expression.id
         
         try db.doWithTransaction {

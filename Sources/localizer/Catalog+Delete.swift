@@ -67,7 +67,7 @@ extension Catalog.Delete {
         
         static var configuration: CommandConfiguration = .init(
             commandName: "expression",
-            abstract: "Delete an Expression from the catalog.",
+            abstract: "Delete a Expression from the catalog.",
             discussion: "",
             version: "1.0.0",
             shouldDisplay: true,

@@ -17,7 +17,19 @@ extension SQLiteStatement {
 extension SQLiteStatement {
     static func selectProjectExpression(projectID: Int, expressionID: Int) -> Self {
         SQLiteStatement(
-            
+            .SELECT(
+                .column(ProjectExpressionEntity.projectID),
+                .column(ProjectExpressionEntity.expressionID)
+            ),
+            .FROM(
+                .TABLE(ProjectExpressionEntity.self)
+            ),
+            .WHERE(
+                .AND(
+                    .column(ProjectExpressionEntity.projectID, op: .equal, value: projectID),
+                    .column(ProjectExpressionEntity.expressionID, op: .equal, value: expressionID)
+                )
+            )
         )
     }
     

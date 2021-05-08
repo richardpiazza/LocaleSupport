@@ -1,4 +1,5 @@
 import XCTest
+import TranslationCatalogSQLite
 
 final class CatalogDeleteProjectTests: LocalizerTestCase {
     

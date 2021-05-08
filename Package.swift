@@ -110,7 +110,7 @@ let package = Package(
         ),
         .testTarget(
             name: "TranslationCatalogTests",
-            dependencies: ["TranslationCatalog"]
+            dependencies: ["TranslationCatalog", "TranslationCatalogSQLite"]
         ),
     ],
     swiftLanguageVersions: [.v5]
