@@ -58,7 +58,7 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             let entities = try db.projectEntities(statement: renderStatement(.selectProjects(withNameLike: named)))
             output = try entities.map({ try $0.project() })
         default:
-            break
+            throw Error.unhandledQuery(query)
         }
         
         return output
@@ -93,10 +93,8 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             
             return try entity.project()
         default:
-            break
+            throw Error.unhandledQuery(query)
         }
-        
-        throw Error.unhandledQuery(query)
     }
     
     @discardableResult public func createProject(_ project: Project) throws -> Project.ID {
@@ -180,6 +178,13 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
                 let translations = try translationEntities.map({ try $0.translation(with: e.uuid) })
                 output.append(try e.expression(with: translations))
             }
+        case .projectID(let projectID):
+            guard let project = try? db.projectEntity(statement: renderStatement(.selectProject(withID: projectID))) else {
+                throw Error.invalidProjectID(projectID)
+            }
+            
+            let entities = try db.expressionEntities(statement: renderStatement(.selectExpressions(withProjectID: project.id)))
+            output = try entities.map({ try $0.expression() })
         case .key(let key):
             let entities = try db.expressionEntities(statement: renderStatement(.selectExpressions(withKeyLike: key)))
             output = try entities.map({ try $0.expression() })
@@ -190,7 +195,7 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             let entities = try db.expressionEntities(statement: renderStatement(.selectExpressionsWith(languageCode: languageCode, scriptCode: scriptCode, regionCode: regionCode)))
             output = try entities.map({ try $0.expression() })
         default:
-            break
+            throw Error.unhandledQuery(query)
         }
         
         return output
@@ -219,10 +224,8 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             
             return try entity.expression()
         default:
-            break
+            throw Error.unhandledQuery(query)
         }
-        
-        throw Error.unhandledQuery(query)
     }
     
     /// Insert a `Expression` into the catalog.
@@ -317,6 +320,7 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
         // A bit of annoying implementation detail: Since the SQLite database is using a Integer foreign key,
         // in order to map the entity to the struct, a double query needs to be performed.
         // Storing the expression uuid on the translation entity would be one was to counter this.
+        // TODO: Render with statement when 'AS' becomes available.
         
         let expressionEntities = try db.expressionEntities(statement: renderStatement(.selectAllFromExpression))
         let translationEntities = try db.translationEntities(statement: renderStatement(.selectAllFromTranslation))
@@ -353,7 +357,7 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
                 output.append(try $0.translation(with: expression.uuidString))
             })
         default:
-            break
+            throw Error.unhandledQuery(query)
         }
         
         return output
@@ -382,7 +386,7 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             }
             entity = _entity
         default:
-            throw Error.invalidQuery(query)
+            throw Error.unhandledQuery(query)
         }
         
         guard let expressionEntity = try db.expressionEntity(statement: renderStatement(.selectExpression(withID: entity.expressionID))) else {

@@ -30,6 +30,7 @@ public extension SQLiteCatalog {
         case hierarchy
         case primaryKey(Int)
         case id(Expression.ID)
+        case projectID(Project.ID)
         case key(String)
         case named(String)
         case having(LanguageCode, ScriptCode?, RegionCode?)
