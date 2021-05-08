@@ -1,7 +1,7 @@
 import XCTest
 import TranslationCatalogSQLite
 
-final class CatalogDeleteProjectTests: LocalizerTestCase {
+final class CatalogDeleteProjectTests: _LocalizerTestCase {
     
     static var allTests = [
         ("testNoParameters", testNoParameters),
@@ -27,8 +27,6 @@ final class CatalogDeleteProjectTests: LocalizerTestCase {
             
             """)
         }
-        
-        try recycle()
     }
     
     func testHelp() throws {
@@ -46,8 +44,6 @@ final class CatalogDeleteProjectTests: LocalizerTestCase {
         default:
             XCTFail("Unexpected dirty exit.")
         }
-        
-        try recycle()
     }
     
     func testInvalidProjectID() throws {
@@ -66,8 +62,6 @@ final class CatalogDeleteProjectTests: LocalizerTestCase {
             
             """)
         }
-        
-        try recycle()
     }
     
     func testUnknownProjectID() throws {
@@ -86,8 +80,6 @@ final class CatalogDeleteProjectTests: LocalizerTestCase {
             
             """)
         }
-        
-        try recycle()
     }
     
     func testUnknownProjectIDDebug() throws {
@@ -116,8 +108,6 @@ final class CatalogDeleteProjectTests: LocalizerTestCase {
             
             """)
         }
-        
-        try recycle()
     }
     
     func testKnownProjectId() throws {
@@ -143,7 +133,5 @@ final class CatalogDeleteProjectTests: LocalizerTestCase {
         default:
             XCTFail("Unexpected dirty exit.")
         }
-        
-        try recycle()
     }
 }

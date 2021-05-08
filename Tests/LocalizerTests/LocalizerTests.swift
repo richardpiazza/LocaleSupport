@@ -1,6 +1,6 @@
 import XCTest
 
-final class LocalizerTests: LocalizerTestCase {
+final class LocalizerTests: _LocalizerTestCase {
     
     static var allTests = [
         ("textExecute", testExecute),

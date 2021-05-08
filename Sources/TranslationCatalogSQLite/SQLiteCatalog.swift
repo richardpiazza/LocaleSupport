@@ -113,12 +113,10 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             entity.uuid = id.uuidString
         }
         
-        try db.doWithTransaction {
-            try db.execute(statement: renderStatement(.insertProject(entity)))
-            let primaryKey = db.lastInsertRowID()
-            try project.expressions.forEach { expression in
-                try insertAndLinkExpression(expression, projectID: primaryKey)
-            }
+        try db.execute(statement: renderStatement(.insertProject(entity)))
+        let primaryKey = db.lastInsertRowID()
+        try project.expressions.forEach { expression in
+            try insertAndLinkExpression(expression, projectID: primaryKey)
         }
         
         return id
@@ -135,9 +133,7 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
         
         switch update {
         case .name(let name):
-            try db.doWithTransaction {
-                try db.execute(statement: renderStatement(.updateProject(entity.id, name: name)))
-            }
+            try db.execute(statement: renderStatement(.updateProject(entity.id, name: name)))
         case .linkExpression(let uuid):
             guard let expression = try db.expressionEntity(statement: renderStatement(.selectExpression(withID: uuid))) else {
                 throw Error.invalidExpressionID(uuid)
@@ -256,13 +252,11 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             entity.uuid = id.uuidString
         }
         
-        try db.doWithTransaction {
-            try db.execute(statement: renderStatement(.insertExpression(entity)))
-            try expression.translations.forEach { (translation) in
-                var t = translation
-                t.expressionID = id
-                try createTranslation(t)
-            }
+        try db.execute(statement: renderStatement(.insertExpression(entity)))
+        try expression.translations.forEach { (translation) in
+            var t = translation
+            t.expressionID = id
+            try createTranslation(t)
         }
         
         return id
@@ -426,9 +420,7 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
         }
         entity.expressionID = expression.id
         
-        try db.doWithTransaction {
-            try db.execute(statement: renderStatement(.insertTranslation(entity)))
-        }
+        try db.execute(statement: renderStatement(.insertTranslation(entity)))
         
         return id
     }

@@ -1,6 +1,6 @@
 import XCTest
 
-final class CatalogGenerateTests: LocalizerTestCase {
+final class CatalogGenerateTests: _LocalizerTestCase {
     
     static var allTests = [
         ("testExecute", testExecute),
@@ -15,8 +15,6 @@ final class CatalogGenerateTests: LocalizerTestCase {
         # Strings
         
         """)
-        
-        try recycle()
     }
     
 }

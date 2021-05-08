@@ -1,7 +1,7 @@
 import XCTest
 import class Foundation.Bundle
 
-class LocalizerTestCase: XCTestCase {
+class _LocalizerTestCase: XCTestCase {
     
     /// Returns path to the built products directory.
     var productsDirectory: URL {
@@ -51,6 +51,11 @@ class LocalizerTestCase: XCTestCase {
         }
         
         try fileManager.removeItem(at: url)
+    }
+    
+    override func tearDownWithError() throws {
+        try recycle()
+        try super.tearDownWithError()
     }
 }
 

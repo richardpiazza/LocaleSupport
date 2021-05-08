@@ -23,4 +23,9 @@ class _CatalogTestCase: XCTestCase {
         
         try fileManager.removeItem(at: url)
     }
+    
+    override func tearDownWithError() throws {
+        try recycle()
+        try super.tearDownWithError()
+    }
 }

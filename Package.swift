@@ -109,8 +109,8 @@ let package = Package(
             resources: [.process("Resources")]
         ),
         .testTarget(
-            name: "TranslationCatalogTests",
-            dependencies: ["TranslationCatalog", "TranslationCatalogSQLite"]
+            name: "TranslationCatalogSQLiteTests",
+            dependencies: ["LocaleSupport", "TranslationCatalog", "TranslationCatalogSQLite"]
         ),
     ],
     swiftLanguageVersions: [.v5]
