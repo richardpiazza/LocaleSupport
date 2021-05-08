@@ -2,7 +2,7 @@ import XCTest
 
 import LocaleSupportTests
 import LocalizerTests
-import TranslationCatalogTests
+import TranslationCatalogSQLiteTests
 
 var tests = [XCTestCaseEntry]()
 tests += LocaleSupportTests.allTests()
