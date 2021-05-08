@@ -144,39 +144,77 @@ final class CatalogQueryTests: _CatalogTestCase {
     }
     
     func testQueryExpressions() throws {
+        let expressions = try catalog.expressions()
+        XCTAssertEqual(expressions.count, 5)
     }
     
     func testQueryExpressionsHierarchy() throws {
+        let expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.hierarchy)
+        XCTAssertEqual(expressions.count, 5)
+        let e1 = try XCTUnwrap(expressions.first(where:{ $0.id == .expression1 }))
+        let e2 = try XCTUnwrap(expressions.first(where:{ $0.id == .expression2 }))
+        let e3 = try XCTUnwrap(expressions.first(where:{ $0.id == .expression3 }))
+        let e4 = try XCTUnwrap(expressions.first(where:{ $0.id == .expression4 }))
+        let e5 = try XCTUnwrap(expressions.first(where:{ $0.id == .expression5 }))
+        XCTAssertEqual(e1.translations.count, 3)
+        XCTAssertEqual(e2.translations.count, 3)
+        XCTAssertEqual(e3.translations.count, 3)
+        XCTAssertEqual(e4.translations.count, 1)
+        XCTAssertEqual(e5.translations.count, 3)
     }
     
     func testQueryExpressionsProjectID() throws {
+        let expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.projectID(.project3))
+        XCTAssertEqual(expressions.count, 2)
     }
     
     func testQueryExpressionsNamed() throws {
+        let expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.named("ull"))
+        XCTAssertEqual(expressions.count, 2)
     }
     
     func testQueryExpressionsHaving() throws {
+        var expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.having(.fr, nil, nil))
+        XCTAssertEqual(expressions.count, 3)
+        expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.having(.fr, nil, .CA))
+        XCTAssertEqual(expressions.count, 1)
     }
     
     func testQueryExpressionId() throws {
+        let expression = try catalog.expression(.expression4)
+        XCTAssertEqual(expression.name, "GIT_FQDN")
     }
     
     func testQueryExpressionPrimaryKey() throws {
+        let expression = try catalog.expression(matching: SQLiteCatalog.ExpressionQuery.primaryKey(2))
+        XCTAssertEqual(expression.key, "BUTTON_DELETE")
     }
     
     func testQueryTranslations() throws {
+        let translations = try catalog.translations()
+        XCTAssertEqual(translations.count, 13)
     }
     
     func testQueryTranslationsExpressionId() throws {
+        let translations = try catalog.translations(matching: SQLiteCatalog.TranslationQuery.expressionID(.expression3))
+        XCTAssertEqual(translations.count, 3)
     }
     
     func testQueryTranslationsHaving() throws {
+        var translations = try catalog.translations(matching: SQLiteCatalog.TranslationQuery.having(.expression5, .fr, nil, nil))
+        XCTAssertEqual(translations.count, 2)
+        translations = try catalog.translations(matching: SQLiteCatalog.TranslationQuery.having(.expression5, .fr, nil, .CA))
+        XCTAssertEqual(translations.count, 1)
     }
     
     func testQueryTranslationId() throws {
+        let translation = try catalog.translation(.translation8)
+        XCTAssertEqual(translation.localeIdentifier, "zh-Hans")
     }
     
     func testQueryTranslationPrimaryKey() throws {
+        let translation = try catalog.translation(matching: SQLiteCatalog.TranslationQuery.primaryKey(9))
+        XCTAssertEqual(translation.regionCode, .BR)
     }
 }
 
