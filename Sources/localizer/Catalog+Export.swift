@@ -19,8 +19,7 @@ extension Catalog {
             discussion: """
             iOS Localization should contain all keys (expressions) for a given language. There is no native fallback
             mechanism to a 'base' language. (i.e. en-GB > en). Given this functionality, when exporting the 'apple'
-            format, all expressions will be included (preferring the region). Use the '--force-region-match' flag to
-            override this behavior.
+            format, all expressions will be included (preferring the script/region).
             """,
             version: "1.0.0",
             shouldDisplay: true,
@@ -35,17 +34,14 @@ extension Catalog {
         @Argument(help: "The language code to use for the strings.")
         var language: LanguageCode
         
-        @Argument(help: "TODO: Implement")
-        var filename: String
-        
         @Option(help: "The script code to use for the strings.")
         var script: ScriptCode?
         
         @Option(help: "The region code to use for the strings.")
         var region: RegionCode?
         
-        @Flag(help: "Limit content to the explicitly defined RegionCode.")
-        var forceRegionMatch: Bool = false
+        @Option(help: "Identifier of the project for which to limit results.")
+        var projectId: Project.ID?
         
         @Option(help: "Path to catalog to use in place of the application library.")
         var path: String?
@@ -54,16 +50,58 @@ extension Catalog {
             let catalog = try SQLiteCatalog(url: try catalogURL())
             
             var expressions: [Expression]
-            if format == .apple && !forceRegionMatch {
-                expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.having(language, nil, nil))
-            } else {
-                expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.having(language, script, region))
-            }
+            var expressionIds: [Expression.ID]
             
             switch format {
             case .android:
+                if let id = projectId {
+                    expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.projectID(id))
+                    let withLanguage = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.having(language, script, region))
+                    expressions.removeAll { expression in
+                        !withLanguage.contains(where: { $0.id == expression.id })
+                    }
+                } else {
+                    expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.having(language, script, region))
+                }
+                
+                expressionIds = expressions.map { $0.id }
+                
+                try expressionIds.enumerated().forEach { (index, id) in
+                    expressions[index].translations = try catalog.translations(matching: SQLiteCatalog.TranslationQuery.having(id, language, script, region))
+                }
+                
                 exportAndroid(expressions)
             case .apple:
+                if let id = projectId {
+                    expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.projectID(id))
+                    let withLanguage = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.having(language, nil, nil))
+                    expressions.removeAll { expression in
+                        !withLanguage.contains(where: { $0.id == expression.id })
+                    }
+                } else {
+                    expressions = try catalog.expressions()
+                }
+                
+                expressionIds = expressions.map { $0.id }
+                
+                for (index, id) in expressionIds.enumerated() {
+                    let preferredTranslations = try catalog.translations(matching: SQLiteCatalog.TranslationQuery.having(id, language, script, region))
+                    if !preferredTranslations.isEmpty {
+                        expressions[index].translations = preferredTranslations
+                        continue
+                    }
+                    
+                    let fallbackTranslations = try catalog.translations(matching: SQLiteCatalog.TranslationQuery.having(id, language, nil, nil))
+                    if !fallbackTranslations.isEmpty {
+                        expressions[index].translations = fallbackTranslations
+                        continue
+                    }
+                    
+                    let defaultLanguage = expressions[index].defaultLanguage
+                    let defaultTranslations = try catalog.translations(matching: SQLiteCatalog.TranslationQuery.having(id, defaultLanguage, nil, nil))
+                    expressions[index].translations = defaultTranslations
+                }
+                
                 exportApple(expressions)
             }
         }
@@ -79,7 +117,7 @@ extension Catalog {
                     return
                 }
                 
-                print("\"\(expression.name)\" = \"\(translation.value)\";")
+                print("\"\(expression.key)\" = \"\(translation.value)\";")
             }
         }
     }

@@ -89,7 +89,7 @@ final class CatalogQueryTests: _CatalogTestCase {
         .init(uuid: .translation12, expressionID: .expression5, languageCode: .fr, scriptCode: nil, regionCode: nil, value: "Le serveur '%@' a rejeté les informations d'identification fournies.")
     }()
     lazy var translation13: TranslationCatalog.Translation = {
-        .init(uuid: .translation13, expressionID: .expression5, languageCode: .fr, scriptCode: nil, regionCode: .CA, value: "Le serveur '%@' a rejeté les informations d'identification fournies.")
+        .init(uuid: .translation13, expressionID: .expression5, languageCode: .fr, scriptCode: nil, regionCode: .CA, value: "Le serveur '%@' a rejeté les informations d'identification fournies, eh.")
     }()
     
     var catalog: SQLiteCatalog!

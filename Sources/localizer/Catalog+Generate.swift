@@ -33,7 +33,7 @@ extension Catalog {
         
         func run() throws {
             let catalog = try SQLiteCatalog(url: try catalogURL())
-            let expressions = try catalog.expressions().sorted(by: { $0.name < $1.name })
+            let expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.hierarchy).sorted(by: { $0.name < $1.name })
             
             switch format {
             case .markdown:
@@ -51,10 +51,11 @@ extension Catalog {
                 \n
                 ## \(expression.name)
                 Id: \(expression.id)
+                Key: \(expression.key)
                 Context: \(expression.context ?? "")
                 Feature: \(expression.feature ?? "")
                 
-                | ID | Language/Region | Localization |
+                | ID | Locale Identifier | Value |
                 | --- | --- | --- |
                 """
                 
