@@ -44,10 +44,20 @@ extension SQLiteStmt {
         
         return RegionCode(rawValue: columnText(position: position))
     }
-}
-
-extension SQLiteStmt {
-    var expressionEntity: SQLiteCatalog.ExpressionEntity {
+    
+    var projectEntity: ProjectEntity {
+        .init(
+            id: columnInt(position: 0),
+            uuid: columnText(position: 1),
+            name: columnText(position: 2)
+        )
+    }
+    
+    var projectExpressionEntity: ProjectExpressionEntity {
+        .init(projectID: columnInt(position: 0), expressionID: columnInt(position: 1))
+    }
+    
+    var expressionEntity: ExpressionEntity {
         .init(
             id: columnInt(position: 0),
             uuid: columnText(position: 1),
@@ -59,7 +69,7 @@ extension SQLiteStmt {
         )
     }
     
-    var translationEntity: SQLiteCatalog.TranslationEntity {
+    var translationEntity: TranslationEntity {
         .init(
             id: columnInt(position: 0),
             uuid: columnText(position: 1),

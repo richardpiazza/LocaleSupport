@@ -13,6 +13,7 @@ struct Catalog: ParsableCommand {
             Import.self,
             Export.self,
             Generate.self,
+            Query.self,
             Insert.self,
             Update.self,
             Delete.self
@@ -20,4 +21,18 @@ struct Catalog: ParsableCommand {
         defaultSubcommand: nil,
         helpNames: .shortAndLong
     )
+}
+
+protocol CatalogCommand: ParsableCommand {
+    var path: String? { get }
+}
+
+extension CatalogCommand {
+    func catalogURL() throws -> URL {
+        if let path = path, !path.isEmpty {
+            return try FileManager.default.url(for: path)
+        } else {
+            return try FileManager.default.catalogURL()
+        }
+    }
 }

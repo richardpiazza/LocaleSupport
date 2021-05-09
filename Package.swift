@@ -22,6 +22,10 @@ let package = Package(
             name: "TranslationCatalog",
             targets: ["TranslationCatalog"]
         ),
+        .library(
+            name: "TranslationCatalogSQLite",
+            targets: ["TranslationCatalogSQLite"]
+        ),
         .executable(
             name: "localizer",
             targets: ["localizer"]
@@ -53,7 +57,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/richardpiazza/Statement.git",
-            .upToNextMinor(from: "0.3.0")
+            .upToNextMinor(from: "0.4.0")
         ),
     ],
     targets: [
@@ -68,17 +72,25 @@ let package = Package(
             dependencies: ["LocaleSupport"]
         ),
         .target(
+            name: "TranslationCatalogSQLite",
+            dependencies: [
+                "LocaleSupport",
+                "TranslationCatalog",
+                "Statement",
+                .product(name: "StatementSQLite", package: "Statement"),
+                "PerfectSQLite"
+            ]
+        ),
+        .target(
             name: "localizer",
             dependencies: [
                 "LocaleSupport",
                 "TranslationCatalog",
+                "TranslationCatalogSQLite",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 "XMLCoder",
-                "PerfectSQLite",
                 "Plot",
                 "HTMLString",
-                "Statement",
-                .product(name: "StatementSQLite", package: "Statement"),
             ]
         ),
         .target(
@@ -96,8 +108,8 @@ let package = Package(
             resources: [.process("Resources")]
         ),
         .testTarget(
-            name: "TranslationCatalogTests",
-            dependencies: ["TranslationCatalog"]
+            name: "TranslationCatalogSQLiteTests",
+            dependencies: ["LocaleSupport", "TranslationCatalog", "TranslationCatalogSQLite"]
         ),
     ],
     swiftLanguageVersions: [.v5]

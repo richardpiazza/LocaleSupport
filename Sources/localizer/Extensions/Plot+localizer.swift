@@ -53,6 +53,8 @@ extension Node where Context == HTML.BodyContext {
             .p(
                 .text("ID: \(expression.id)"),
                 .br(),
+                .text("Key: \(expression.key)"),
+                .br(),
                 .text("Context: \(expression.context ?? "")"),
                 .br(),
                 .text("Feature: \(expression.feature ?? "")")
@@ -60,8 +62,8 @@ extension Node where Context == HTML.BodyContext {
             .table(
                 .tr(
                     .th("ID"),
-                    .th("Language/Region"),
-                    .th("Localization")
+                    .th("Locale Identifier"),
+                    .th("Value")
                 ),
                 .forEach(values) {
                     .if($0.languageCode == expression.defaultLanguage, .defaultValue($0), else: .value($0))
@@ -116,7 +118,7 @@ extension XML {
                 .attribute(named: "xmlns:tools", value: "http://schemas.android.com/tools"),
                 .forEach(expressions) {
                     .element(named: "string", nodes: [
-                        .attribute(named: "name", value: $0.name),
+                        .attribute(named: "name", value: $0.key),
                         .text($0.translations.first?.value ?? "")
                     ])
                 }

@@ -2,9 +2,10 @@ import ArgumentParser
 import Foundation
 import Plot
 import TranslationCatalog
+import TranslationCatalogSQLite
 
 extension Catalog {
-    struct Generate: ParsableCommand {
+    struct Generate: CatalogCommand {
         
         enum Format: String, CaseIterable, ExpressibleByArgument {
             case markdown
@@ -27,9 +28,12 @@ extension Catalog {
         @Argument(help: "The export format")
         var format: Format
         
+        @Option(help: "Path to catalog to use in place of the application library.")
+        var path: String?
+        
         func run() throws {
-            let catalog = try SQLiteCatalog()
-            let expressions = try catalog.expressions().sorted(by: { $0.name < $1.name })
+            let catalog = try SQLiteCatalog(url: try catalogURL())
+            let expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.hierarchy).sorted(by: { $0.name < $1.name })
             
             switch format {
             case .markdown:
@@ -47,10 +51,11 @@ extension Catalog {
                 \n
                 ## \(expression.name)
                 Id: \(expression.id)
+                Key: \(expression.key)
                 Context: \(expression.context ?? "")
                 Feature: \(expression.feature ?? "")
                 
-                | ID | Language/Region | Localization |
+                | ID | Locale Identifier | Value |
                 | --- | --- | --- |
                 """
                 

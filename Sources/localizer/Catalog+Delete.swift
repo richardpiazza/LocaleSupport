@@ -1,6 +1,7 @@
 import ArgumentParser
 import Foundation
 import TranslationCatalog
+import TranslationCatalogSQLite
 
 extension Catalog {
     struct Delete: ParsableCommand {
@@ -11,6 +12,7 @@ extension Catalog {
             version: "1.0.0",
             shouldDisplay: true,
             subcommands: [
+                ProjectEntity.self,
                 ExpressionEntity.self,
                 TranslationEntity.self
             ],
@@ -21,11 +23,51 @@ extension Catalog {
 }
 
 extension Catalog.Delete {
-    struct ExpressionEntity: ParsableCommand {
+    struct ProjectEntity: CatalogCommand {
+        
+        static var configuration: CommandConfiguration = .init(
+            commandName: "project",
+            abstract: "Delete a Project from the catalog.",
+            discussion: "",
+            version: "1.0.0",
+            shouldDisplay: true,
+            subcommands: [],
+            defaultSubcommand: nil,
+            helpNames: .shortAndLong
+        )
+        
+        @Argument(help: "Unique ID of the Project.")
+        var id: Project.ID
+        
+        @Option(help: "Path to catalog to use in place of the application library.")
+        var path: String?
+        
+        @Flag(help: "Outputs additional details about the execution of the command.")
+        var debug: Bool = false
+        
+        func run() throws {
+            let catalog = try SQLiteCatalog(url: try catalogURL())
+            if debug {
+                catalog.statementHook = { (sql) in
+                    print("======SQL======\n\(sql)\n======___======\n")
+                }
+            }
+            
+            guard let project = try? catalog.project(id) else {
+                Self.exit(withError: ValidationError("Unknown Project '\(id)'."))
+            }
+            
+            print("Removing project '\(project.name)' [\(project.id)].")
+            try catalog.deleteProject(id)
+            print("Project '\(project.name)' deleted.")
+        }
+    }
+    
+    struct ExpressionEntity: CatalogCommand {
         
         static var configuration: CommandConfiguration = .init(
             commandName: "expression",
-            abstract: "Delete an Expression from the catalog.",
+            abstract: "Delete a Expression from the catalog.",
             discussion: "",
             version: "1.0.0",
             shouldDisplay: true,
@@ -37,15 +79,16 @@ extension Catalog.Delete {
         @Argument(help: "Unique ID of the Expression.")
         var id: Expression.ID
         
+        @Option(help: "Path to catalog to use in place of the application library.")
+        var path: String?
+        
         func run() throws {
-            let catalog = try SQLiteCatalog()
-            try catalog.deleteExpression(id, action: SQLiteCatalog.DeleteEntity.cascade)
+            let catalog = try SQLiteCatalog(url: try catalogURL())
+            try catalog.deleteExpression(id)
         }
     }
-}
-
-extension Catalog.Delete {
-    struct TranslationEntity: ParsableCommand {
+    
+    struct TranslationEntity: CatalogCommand {
         
         static var configuration: CommandConfiguration = .init(
             commandName: "translation",
@@ -61,9 +104,12 @@ extension Catalog.Delete {
         @Argument(help: "Unique ID of the Translation.")
         var id: TranslationCatalog.Translation.ID
         
+        @Option(help: "Path to catalog to use in place of the application library.")
+        var path: String?
+        
         func run() throws {
-            let catalog = try SQLiteCatalog()
-            try catalog.deleteTranslation(id, action: SQLiteCatalog.DeleteEntity.nothing)
+            let catalog = try SQLiteCatalog(url: try catalogURL())
+            try catalog.deleteTranslation(id)
         }
     }
 }

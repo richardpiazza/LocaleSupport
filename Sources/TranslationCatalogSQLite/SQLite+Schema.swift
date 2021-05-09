@@ -36,8 +36,7 @@ extension SQLite {
         return schemaVersion
     }
     
-    convenience init(schema: SchemaVersion = .current) throws {
-        let path = try FileManager.default.catalogURL().path
+    convenience init(path: String, schema: SchemaVersion = .current) throws {
         try self.init(path)
         try migrateSchema(from: schemaVersion, to: schema)
     }
@@ -77,10 +76,10 @@ extension SQLite {
     
     private func createSchema(_ version: SchemaVersion) throws {
         try doWithTransaction {
-            try execute(statement: .createProjectEntity)
-            try execute(statement: .createExpressionEntity)
-            try execute(statement: .createTranslationEntity)
-            try execute(statement: .createProjectExpressionEntity)
+            try execute(statement: SQLiteStatement.createProjectEntity.render())
+            try execute(statement: SQLiteStatement.createExpressionEntity.render())
+            try execute(statement: SQLiteStatement.createTranslationEntity.render())
+            try execute(statement: SQLiteStatement.createProjectExpressionEntity.render())
             try setSchemaVersion(version)
         }
     }
@@ -99,7 +98,7 @@ extension SQLite {
         switch (from) {
         case .undefined:
             let names = tableNames
-            if names.contains(SQLiteCatalog.ExpressionEntity.schema.name) {
+            if names.contains(ExpressionEntity.schema.name) {
                 try setSchemaVersion(.v1)
             } else {
                 try createSchema(.current)
@@ -108,15 +107,15 @@ extension SQLite {
         case .v1:
             print("Migrating schema from '\(from.rawValue)' to '\(to.rawValue)'.")
             try doWithTransaction {
-                try execute(statement: .translationTable_addScriptCode)
+                try execute(statement: SQLiteStatement.translationTable_addScriptCode.render())
                 try setSchemaVersion(.v2)
             }
         case .v2:
             print("Migrating schema from '\(from.rawValue)' to '\(to.rawValue)'.")
             try doWithTransaction {
                 try addSchemaV3Fields()
-                try execute(statement: .createProjectEntity)
-                try execute(statement: .createProjectExpressionEntity)
+                try execute(statement: SQLiteStatement.createProjectEntity.render())
+                try execute(statement: SQLiteStatement.createProjectExpressionEntity.render())
                 try addExpressionKeyUsingName()
                 try addUUIDsToMissingExpressions()
                 try addUUIDsToMissingTranslations()
@@ -141,7 +140,7 @@ extension SQLite {
     }
     
     private func addExpressionKeyUsingName() throws {
-        let entities = try expressionEntities()
+        let entities = try expressionEntities(statement: SQLiteStatement.selectAllFromExpression.render())
         let needsUpdate = entities.filter({ $0.key.isEmpty })
         try needsUpdate.forEach { entity in
             try execute(statement: "UPDATE expression SET key = '\(entity.name)' WHERE id = \(entity.id) LIMIT 1;")
@@ -149,7 +148,7 @@ extension SQLite {
     }
     
     private func addUUIDsToMissingExpressions() throws {
-        let entities = try expressionEntities()
+        let entities = try expressionEntities(statement: SQLiteStatement.selectAllFromExpression.render())
         let needsUpdate = entities.filter({ $0.uuid.isEmpty })
         try needsUpdate.forEach { entity in
             try execute(statement: """
@@ -162,7 +161,7 @@ extension SQLite {
     }
     
     private func addUUIDsToMissingTranslations() throws {
-        let entities = try translationEntities()
+        let entities = try translationEntities(statement: SQLiteStatement.selectAllFromTranslation.render())
         let needsUpdate = entities.filter({ $0.uuid.isEmpty })
         try needsUpdate.forEach { entity in
             try execute(statement: """
