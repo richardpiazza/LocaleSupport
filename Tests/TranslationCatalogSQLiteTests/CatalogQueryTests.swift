@@ -17,11 +17,13 @@ final class CatalogQueryTests: _CatalogTestCase {
         ("testQueryExpressionsProjectID", testQueryExpressionsProjectID),
         ("testQueryExpressionsNamed", testQueryExpressionsNamed),
         ("testQueryExpressionsHaving", testQueryExpressionsHaving),
+        ("testQueryExpressionsHavingOnly", testQueryExpressionsHavingOnly),
         ("testQueryExpressionId", testQueryExpressionId),
         ("testQueryExpressionPrimaryKey", testQueryExpressionPrimaryKey),
         ("testQueryTranslations", testQueryTranslations),
         ("testQueryTranslationsExpressionId", testQueryTranslationsExpressionId),
         ("testQueryTranslationsHaving", testQueryTranslationsHaving),
+        ("testQueryTranslationsHavingOnly", testQueryTranslationsHavingOnly),
         ("testQueryTranslationId", testQueryTranslationId),
         ("testQueryTranslationPrimaryKey", testQueryTranslationPrimaryKey),
     ]
@@ -174,13 +176,15 @@ final class CatalogQueryTests: _CatalogTestCase {
     }
     
     func testQueryExpressionsHaving() throws {
-        catalog.statementHook = { (sql) in
-            print(sql)
-        }
         var expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.having(.fr, nil, nil))
         XCTAssertEqual(expressions.count, 3)
         expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.having(.fr, nil, .CA))
         XCTAssertEqual(expressions.count, 1)
+    }
+    
+    func testQueryExpressionsHavingOnly() throws {
+        let expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.havingOnly(.fr))
+        XCTAssertEqual(expressions.count, 3)
     }
     
     func testQueryExpressionId() throws {
@@ -207,6 +211,11 @@ final class CatalogQueryTests: _CatalogTestCase {
         var translations = try catalog.translations(matching: SQLiteCatalog.TranslationQuery.having(.expression5, .fr, nil, nil))
         XCTAssertEqual(translations.count, 2)
         translations = try catalog.translations(matching: SQLiteCatalog.TranslationQuery.having(.expression5, .fr, nil, .CA))
+        XCTAssertEqual(translations.count, 1)
+    }
+    
+    func testQueryTranslationsHavingOnly() throws {
+        let translations = try catalog.translations(matching: SQLiteCatalog.TranslationQuery.havingOnly(.expression5, .fr))
         XCTAssertEqual(translations.count, 1)
     }
     

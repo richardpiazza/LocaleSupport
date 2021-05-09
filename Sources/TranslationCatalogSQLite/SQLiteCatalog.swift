@@ -194,6 +194,9 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
         case .having(let languageCode, let scriptCode, let regionCode):
             let entities = try db.expressionEntities(statement: renderStatement(.selectExpressionsWith(languageCode: languageCode, scriptCode: scriptCode, regionCode: regionCode)))
             output = try entities.map({ try $0.expression() })
+        case .havingOnly(let languageCode):
+            let entities = try db.expressionEntities(statement: renderStatement(.selectExpressionsHavingOnly(languageCode: languageCode)))
+            output = try entities.map({ try $0.expression() })
         default:
             throw Error.unhandledQuery(query)
         }
@@ -357,6 +360,15 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             }
             
             let entities = try db.translationEntities(statement: renderStatement(.selectTranslationsFor(expressionEntity.id, languageCode: language, scriptCode: script, regionCode: region)))
+            try entities.forEach({
+                output.append(try $0.translation(with: expressionEntity.uuid))
+            })
+        case .havingOnly(let expressionId, let language):
+            guard let expressionEntity = try db.expressionEntity(statement: renderStatement(.selectExpression(withID: expressionId))) else {
+                throw Error.invalidExpressionID(expressionId)
+            }
+            
+            let entities = try db.translationEntities(statement: renderStatement(.selectTranslationsHavingOnly(expressionEntity.id, languageCode: language)))
             try entities.forEach({
                 output.append(try $0.translation(with: expressionEntity.uuid))
             })

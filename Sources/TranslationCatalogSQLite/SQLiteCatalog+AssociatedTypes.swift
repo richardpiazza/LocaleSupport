@@ -33,14 +33,20 @@ public extension SQLiteCatalog {
         case projectID(Project.ID)
         case key(String)
         case named(String)
+        /// Expressions with Translations the match the LanguageCode as well as the provided script/region.
         case having(LanguageCode, ScriptCode?, RegionCode?)
+        /// Expressions with Translations that only match the provided LanguageCode. (Script == Null & Region == Null)
+        case havingOnly(LanguageCode)
     }
     
     enum TranslationQuery: CatalogQuery {
         case primaryKey(Int)
         case id(TranslationCatalog.Translation.ID)
         case expressionID(Expression.ID)
+        /// Translations that match all of the provided parameters
         case having(Expression.ID, LanguageCode, ScriptCode?, RegionCode?)
+        /// Translations that match only the given parameters (Script == Null & Region == Null)
+        case havingOnly(Expression.ID, LanguageCode)
     }
     
     enum ProjectUpdate: CatalogUpdate {

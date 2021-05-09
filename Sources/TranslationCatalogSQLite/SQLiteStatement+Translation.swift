@@ -98,9 +98,7 @@ extension SQLiteStatement {
             ),
             .FROM_TABLE(TranslationEntity.self),
             .WHERE(
-                .AND(
-                    .column(TranslationEntity.expressionID, op: .equal, value: expressionID)
-                )
+                .column(TranslationEntity.expressionID, op: .equal, value: expressionID)
             )
         )
     }
@@ -123,6 +121,31 @@ extension SQLiteStatement {
                     .unwrap(languageCode, transform: { .column(TranslationEntity.language, op: .equal, value: $0.rawValue) }),
                     .unwrap(scriptCode, transform: { .column(TranslationEntity.script, op: .equal, value: $0.rawValue) }),
                     .unwrap(regionCode, transform: { .column(TranslationEntity.region, op: .equal, value: $0.rawValue) })
+                )
+            )
+        )
+    }
+    
+    static func selectTranslationsHavingOnly(_ expressionID: Int, languageCode: LanguageCode) -> Self {
+        .init(
+            .SELECT(
+                .column(TranslationEntity.id),
+                .column(TranslationEntity.uuid),
+                .column(TranslationEntity.expressionID),
+                .column(TranslationEntity.language),
+                .column(TranslationEntity.script),
+                .column(TranslationEntity.region),
+                .column(TranslationEntity.value)
+            ),
+            .FROM(
+                .TABLE(TranslationEntity.self)
+            ),
+            .WHERE(
+                .AND(
+                    .column(TranslationEntity.expressionID, op: .equal, value: expressionID),
+                    .column(TranslationEntity.language, op: .equal, value: languageCode.rawValue),
+                    .logical(op: .isNull, segments: [Segment<WhereContext>.column(TranslationEntity.script)]),
+                    .logical(op: .isNull, segments: [Segment<WhereContext>.column(TranslationEntity.region)])
                 )
             )
         )
