@@ -226,6 +226,12 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             }
             
             return try entity.expression()
+        case .key(let key):
+            guard let entity = try db.expressionEntity(statement: renderStatement(.selectExpression(withKey: key))) else {
+                throw Error.invalidQuery(query)
+            }
+            
+            return try entity.expression()
         default:
             throw Error.unhandledQuery(query)
         }
