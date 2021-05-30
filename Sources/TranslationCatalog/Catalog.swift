@@ -76,8 +76,3 @@ public protocol Catalog {
     /// - parameter id: The unique identifier for the `Translation`.
     func deleteTranslation(_ id: Translation.ID) throws
 }
-
-/// Associated parameters when performing update operations
-public protocol CatalogUpdate {}
-/// Associated parameters for performing query operations
-public protocol CatalogQuery {}

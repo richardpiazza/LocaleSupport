@@ -76,17 +76,17 @@ extension Catalog.Update {
             print("Updating Project '\(project.name) [\(project.uuid.uuidString)]'…")
             
             if let name = self.name {
-                try catalog.updateProject(project.id, action: SQLiteCatalog.ProjectUpdate.name(name))
+                try catalog.updateProject(project.id, action: GenericProjectUpdate.name(name))
                 print("Set Name to '\(name)'.")
             }
             
             if let link = linkExpression {
-                try catalog.updateProject(project.id, action: SQLiteCatalog.ProjectUpdate.linkExpression(link))
+                try catalog.updateProject(project.id, action: GenericProjectUpdate.linkExpression(link))
                 print("Created link to expression '\(link.uuidString)'.")
             }
             
             if let unlink = unlinkExpression {
-                try catalog.updateProject(project.id, action: SQLiteCatalog.ProjectUpdate.unlinkExpression(unlink))
+                try catalog.updateProject(project.id, action: GenericProjectUpdate.unlinkExpression(unlink))
                 print("Removed link from expression '\(unlink.uuidString)'.")
             }
         }
@@ -160,33 +160,33 @@ extension Catalog.Update {
             let expression = try catalog.expression(id)
             
             if let key = self.key, expression.key != key {
-                try catalog.updateExpression(expression.id, action: SQLiteCatalog.ExpressionUpdate.key(key))
+                try catalog.updateExpression(expression.id, action: GenericExpressionUpdate.key(key))
             }
             
             if let name = self.name, expression.name != name {
-                try catalog.updateExpression(expression.id, action: SQLiteCatalog.ExpressionUpdate.name(name))
+                try catalog.updateExpression(expression.id, action: GenericExpressionUpdate.name(name))
             }
             
             if let language = self.defaultLanguage, expression.defaultLanguage != language {
-                try catalog.updateExpression(expression.id, action: SQLiteCatalog.ExpressionUpdate.defaultLanguage(language))
+                try catalog.updateExpression(expression.id, action: GenericExpressionUpdate.defaultLanguage(language))
             }
             
             if let context = self.context, expression.context != context {
                 let value = context.isEmpty ? nil : context
-                try catalog.updateExpression(expression.id, action: SQLiteCatalog.ExpressionUpdate.context(value))
+                try catalog.updateExpression(expression.id, action: GenericExpressionUpdate.context(value))
             }
             
             if let feature = self.feature, expression.feature != feature {
                 let value = feature.isEmpty ? nil : feature
-                try catalog.updateExpression(expression.id, action: SQLiteCatalog.ExpressionUpdate.feature(value))
+                try catalog.updateExpression(expression.id, action: GenericExpressionUpdate.feature(value))
             }
             
             if let link = linkProject {
-                try catalog.updateExpression(expression.id, action: SQLiteCatalog.ExpressionUpdate.linkProject(link))
+                try catalog.updateProject(link, action: GenericProjectUpdate.linkExpression(expression.id))
             }
             
             if let unlink = unlinkProject {
-                try catalog.updateExpression(expression.id, action: SQLiteCatalog.ExpressionUpdate.unlinkProject(unlink))
+                try catalog.updateProject(unlink, action: GenericProjectUpdate.unlinkExpression(expression.id))
             }
         }
     }
@@ -244,27 +244,27 @@ extension Catalog.Update {
             let translation = try catalog.translation(id)
             
             if let language = self.language, translation.languageCode != language {
-                try catalog.updateTranslation(translation.id, action: SQLiteCatalog.TranslationUpdate.language(language))
+                try catalog.updateTranslation(translation.id, action: GenericTranslationUpdate.language(language))
             }
             
             if let script = self.script, translation.scriptCode != script {
-                try catalog.updateTranslation(translation.id, action: SQLiteCatalog.TranslationUpdate.script(script))
+                try catalog.updateTranslation(translation.id, action: GenericTranslationUpdate.script(script))
             }
             
             if let region = self.region, translation.regionCode != region {
-                try catalog.updateTranslation(translation.id, action: SQLiteCatalog.TranslationUpdate.region(region))
+                try catalog.updateTranslation(translation.id, action: GenericTranslationUpdate.region(region))
             }
             
             if let value = self.value, translation.value != value {
-                try catalog.updateTranslation(translation.id, action: SQLiteCatalog.TranslationUpdate.value(value))
+                try catalog.updateTranslation(translation.id, action: GenericTranslationUpdate.value(value))
             }
             
             if dropScript && script == nil {
-                try catalog.updateTranslation(translation.id, action: SQLiteCatalog.TranslationUpdate.script(nil))
+                try catalog.updateTranslation(translation.id, action: GenericTranslationUpdate.script(nil))
             }
             
             if dropRegion && region == nil {
-                try catalog.updateTranslation(translation.id, action: SQLiteCatalog.TranslationUpdate.region(nil))
+                try catalog.updateTranslation(translation.id, action: GenericTranslationUpdate.region(nil))
             }
         }
     }

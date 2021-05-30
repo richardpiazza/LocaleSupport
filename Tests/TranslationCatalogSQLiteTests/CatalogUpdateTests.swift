@@ -37,7 +37,7 @@ final class CatalogUpdateTests: _CatalogTestCase {
         
         let catalog = try SQLiteCatalog(url: url)
         try preConditions(catalog: catalog)
-        try catalog.updateProject(id, action: SQLiteCatalog.ProjectUpdate.name("Example-2"))
+        try catalog.updateProject(id, action: GenericProjectUpdate.name("Example-2"))
         try postConditions(catalog: catalog)
     }
     
@@ -53,13 +53,13 @@ final class CatalogUpdateTests: _CatalogTestCase {
         }
         
         func postConditions(catalog: SQLiteCatalog) throws {
-            let expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.projectID(projectId))
+            let expressions = try catalog.expressions(matching: GenericExpressionQuery.projectID(projectId))
             XCTAssertEqual(expressions.count, 1)
         }
         
         let catalog = try SQLiteCatalog(url: url)
         try preConditions(catalog: catalog)
-        try catalog.updateProject(projectId, action: SQLiteCatalog.ProjectUpdate.linkExpression(expressionId))
+        try catalog.updateProject(projectId, action: GenericProjectUpdate.linkExpression(expressionId))
         try postConditions(catalog: catalog)
     }
     
@@ -74,13 +74,13 @@ final class CatalogUpdateTests: _CatalogTestCase {
         }
         
         func postConditions(catalog: SQLiteCatalog) throws {
-            let expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.projectID(projectId))
+            let expressions = try catalog.expressions(matching: GenericExpressionQuery.projectID(projectId))
             XCTAssertEqual(expressions.count, 0)
         }
         
         let catalog = try SQLiteCatalog(url: url)
         try preConditions(catalog: catalog)
-        try catalog.updateProject(projectId, action: SQLiteCatalog.ProjectUpdate.unlinkExpression(expressionId))
+        try catalog.updateProject(projectId, action: GenericProjectUpdate.unlinkExpression(expressionId))
         try postConditions(catalog: catalog)
     }
     
@@ -99,7 +99,7 @@ final class CatalogUpdateTests: _CatalogTestCase {
         
         let catalog = try SQLiteCatalog(url: url)
         try preConditions(catalog: catalog)
-        try catalog.updateExpression(expressionId, action: SQLiteCatalog.ExpressionUpdate.key("KEY_ONE"))
+        try catalog.updateExpression(expressionId, action: GenericExpressionUpdate.key("KEY_ONE"))
         try postConditions(catalog: catalog)
     }
     
@@ -118,7 +118,7 @@ final class CatalogUpdateTests: _CatalogTestCase {
         
         let catalog = try SQLiteCatalog(url: url)
         try preConditions(catalog: catalog)
-        try catalog.updateExpression(expressionId, action: SQLiteCatalog.ExpressionUpdate.name("Example"))
+        try catalog.updateExpression(expressionId, action: GenericExpressionUpdate.name("Example"))
         try postConditions(catalog: catalog)
     }
     
@@ -137,7 +137,7 @@ final class CatalogUpdateTests: _CatalogTestCase {
         
         let catalog = try SQLiteCatalog(url: url)
         try preConditions(catalog: catalog)
-        try catalog.updateExpression(expressionId, action: SQLiteCatalog.ExpressionUpdate.defaultLanguage(.fr))
+        try catalog.updateExpression(expressionId, action: GenericExpressionUpdate.defaultLanguage(.fr))
         try postConditions(catalog: catalog)
     }
     
@@ -166,9 +166,9 @@ final class CatalogUpdateTests: _CatalogTestCase {
         
         let catalog = try SQLiteCatalog(url: url)
         try preConditions(catalog: catalog)
-        try catalog.updateExpression(id1, action: SQLiteCatalog.ExpressionUpdate.context("Common"))
-        try catalog.updateExpression(id2, action: SQLiteCatalog.ExpressionUpdate.context(nil))
-        try catalog.updateExpression(id3, action: SQLiteCatalog.ExpressionUpdate.context("General"))
+        try catalog.updateExpression(id1, action: GenericExpressionUpdate.context("Common"))
+        try catalog.updateExpression(id2, action: GenericExpressionUpdate.context(nil))
+        try catalog.updateExpression(id3, action: GenericExpressionUpdate.context("General"))
         try postConditions(catalog: catalog)
     }
     
@@ -197,9 +197,9 @@ final class CatalogUpdateTests: _CatalogTestCase {
         
         let catalog = try SQLiteCatalog(url: url)
         try preConditions(catalog: catalog)
-        try catalog.updateExpression(id1, action: SQLiteCatalog.ExpressionUpdate.feature("Common"))
-        try catalog.updateExpression(id2, action: SQLiteCatalog.ExpressionUpdate.feature(nil))
-        try catalog.updateExpression(id3, action: SQLiteCatalog.ExpressionUpdate.feature("General"))
+        try catalog.updateExpression(id1, action: GenericExpressionUpdate.feature("Common"))
+        try catalog.updateExpression(id2, action: GenericExpressionUpdate.feature(nil))
+        try catalog.updateExpression(id3, action: GenericExpressionUpdate.feature("General"))
         try postConditions(catalog: catalog)
     }
     
@@ -215,13 +215,13 @@ final class CatalogUpdateTests: _CatalogTestCase {
         }
         
         func postConditions(catalog: SQLiteCatalog) throws {
-            let expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.projectID(projectId))
+            let expressions = try catalog.expressions(matching: GenericExpressionQuery.projectID(projectId))
             XCTAssertEqual(expressions.count, 1)
         }
         
         let catalog = try SQLiteCatalog(url: url)
         try preConditions(catalog: catalog)
-        try catalog.updateExpression(expressionId, action: SQLiteCatalog.ExpressionUpdate.linkProject(projectId))
+        try catalog.updateProject(projectId, action: GenericProjectUpdate.linkExpression(expressionId))
         try postConditions(catalog: catalog)
     }
     
@@ -236,13 +236,13 @@ final class CatalogUpdateTests: _CatalogTestCase {
         }
         
         func postConditions(catalog: SQLiteCatalog) throws {
-            let expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.projectID(projectId))
+            let expressions = try catalog.expressions(matching: GenericExpressionQuery.projectID(projectId))
             XCTAssertEqual(expressions.count, 0)
         }
         
         let catalog = try SQLiteCatalog(url: url)
         try preConditions(catalog: catalog)
-        try catalog.updateExpression(expressionId, action: SQLiteCatalog.ExpressionUpdate.unlinkProject(projectId))
+        try catalog.updateProject(projectId, action: GenericProjectUpdate.unlinkExpression(expressionId))
         try postConditions(catalog: catalog)
     }
     
@@ -263,7 +263,7 @@ final class CatalogUpdateTests: _CatalogTestCase {
         
         let catalog = try SQLiteCatalog(url: url)
         try preConditions(catalog: catalog)
-        try catalog.updateTranslation(translationId, action: SQLiteCatalog.TranslationUpdate.language(.fr))
+        try catalog.updateTranslation(translationId, action: GenericTranslationUpdate.language(.fr))
         try postConditions(catalog: catalog)
     }
     
@@ -292,9 +292,9 @@ final class CatalogUpdateTests: _CatalogTestCase {
         
         let catalog = try SQLiteCatalog(url: url)
         try preConditions(catalog: catalog)
-        try catalog.updateTranslation(id1, action: SQLiteCatalog.TranslationUpdate.script(.Deva))
-        try catalog.updateTranslation(id2, action: SQLiteCatalog.TranslationUpdate.script(nil))
-        try catalog.updateTranslation(id3, action: SQLiteCatalog.TranslationUpdate.script(.Hant))
+        try catalog.updateTranslation(id1, action: GenericTranslationUpdate.script(.Deva))
+        try catalog.updateTranslation(id2, action: GenericTranslationUpdate.script(nil))
+        try catalog.updateTranslation(id3, action: GenericTranslationUpdate.script(.Hant))
         try postConditions(catalog: catalog)
     }
     
@@ -323,9 +323,9 @@ final class CatalogUpdateTests: _CatalogTestCase {
         
         let catalog = try SQLiteCatalog(url: url)
         try preConditions(catalog: catalog)
-        try catalog.updateTranslation(id1, action: SQLiteCatalog.TranslationUpdate.region(.AU))
-        try catalog.updateTranslation(id2, action: SQLiteCatalog.TranslationUpdate.region(nil))
-        try catalog.updateTranslation(id3, action: SQLiteCatalog.TranslationUpdate.region(.GB))
+        try catalog.updateTranslation(id1, action: GenericTranslationUpdate.region(.AU))
+        try catalog.updateTranslation(id2, action: GenericTranslationUpdate.region(nil))
+        try catalog.updateTranslation(id3, action: GenericTranslationUpdate.region(.GB))
         try postConditions(catalog: catalog)
     }
     
@@ -346,7 +346,7 @@ final class CatalogUpdateTests: _CatalogTestCase {
         
         let catalog = try SQLiteCatalog(url: url)
         try preConditions(catalog: catalog)
-        try catalog.updateTranslation(translationId, action: SQLiteCatalog.TranslationUpdate.value("Updated"))
+        try catalog.updateTranslation(translationId, action: GenericTranslationUpdate.value("Updated"))
         try postConditions(catalog: catalog)
     }
 }

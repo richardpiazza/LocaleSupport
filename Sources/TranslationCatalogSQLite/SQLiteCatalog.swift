@@ -34,14 +34,9 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
     }
     
     public func projects(matching query: CatalogQuery) throws -> [Project] {
-        guard let _query = query as? SQLiteCatalog.ProjectQuery else {
-            throw Error.invalidQuery(query)
-        }
-        
-        var output: [Project] = []
-        
-        switch _query {
-        case .hierarchy:
+        switch query {
+        case ProjectQuery.hierarchy:
+            var output: [Project] = []
             let projectEntities = try db.projectEntities(statement: renderStatement(.selectAllFromProject))
             try projectEntities.forEach { p in
                 let expressionEntities = try db.expressionEntities(statement: renderStatement(.selectExpressions(withProjectID: p.id)))
@@ -54,39 +49,34 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
                 
                 output.append(try p.project(with: expressions))
             }
-        case .named(let named):
-            let entities = try db.projectEntities(statement: renderStatement(.selectProjects(withNameLike: named)))
-            output = try entities.map({ try $0.project() })
+            return output
+        case ProjectQuery.named(let name), GenericProjectQuery.named(let name):
+            let entities = try db.projectEntities(statement: renderStatement(.selectProjects(withNameLike: name)))
+            return try entities.map({ try $0.project() })
         default:
             throw Error.unhandledQuery(query)
         }
-        
-        return output
     }
     
     public func project(_ id: Project.ID) throws -> Project {
-        try project(matching: ProjectQuery.id(id))
+        try project(matching: GenericProjectQuery.id(id))
     }
     
     public func project(matching query: CatalogQuery) throws -> Project {
-        guard let _query = query as? SQLiteCatalog.ProjectQuery else {
-            throw Error.invalidQuery(query)
-        }
-        
-        switch _query {
-        case .primaryKey(let id):
+        switch query {
+        case ProjectQuery.primaryKey(let id):
             guard let entity = try db.projectEntity(statement: renderStatement(.selectProject(withID: id))) else {
                 throw Error.invalidPrimaryKey(id)
             }
             
             return try entity.project()
-        case .id(let id):
+        case ProjectQuery.id(let id), GenericProjectQuery.id(let id):
             guard let entity = try db.projectEntity(statement: renderStatement(.selectProject(withID: id))) else {
                 throw Error.invalidProjectID(id)
             }
             
             return try entity.project()
-        case .named(let name):
+        case ProjectQuery.named(let name), GenericProjectQuery.named(let name):
             guard let entity = try db.projectEntity(statement: renderStatement(.selectProject(withName: name))) else {
                 throw Error.invalidStringValue(name)
             }
@@ -125,25 +115,23 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             throw Error.invalidProjectID(id)
         }
         
-        guard let update = action as? ProjectUpdate else {
-            throw Error.invalidAction(action)
-        }
-        
-        switch update {
-        case .name(let name):
+        switch action {
+        case ProjectUpdate.name(let name), GenericProjectUpdate.name(let name):
             try db.execute(statement: renderStatement(.updateProject(entity.id, name: name)))
-        case .linkExpression(let uuid):
+        case ProjectUpdate.linkExpression(let uuid), GenericProjectUpdate.linkExpression(let uuid):
             guard let expression = try db.expressionEntity(statement: renderStatement(.selectExpression(withID: uuid))) else {
                 throw Error.invalidExpressionID(uuid)
             }
             
             try linkProject(entity.id, expressionID: expression.id)
-        case .unlinkExpression(let uuid):
+        case ProjectUpdate.unlinkExpression(let uuid), GenericProjectUpdate.unlinkExpression(let uuid):
             guard let expression = try db.expressionEntity(statement: renderStatement(.selectExpression(withID: uuid))) else {
                 throw Error.invalidExpressionID(uuid)
             }
             
             try unlinkProject(entity.id, expressionID: expression.id)
+        default:
+            throw Error.unhandledAction(action)
         }
     }
     
@@ -164,69 +152,59 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
     }
     
     public func expressions(matching query: CatalogQuery) throws -> [Expression] {
-        guard let typedQuery = query as? ExpressionQuery else {
-            throw Error.invalidQuery(query)
-        }
-        
-        var output: [Expression] = []
-        
-        switch typedQuery {
-        case .hierarchy:
+        switch query {
+        case ExpressionQuery.hierarchy:
+            var output: [Expression] = []
             let expressionEntities = try db.expressionEntities(statement: renderStatement(.selectAllFromExpression))
             try expressionEntities.forEach { e in
                 let translationEntities = try db.translationEntities(statement: renderStatement(.selectTranslationsFor(e.id)))
                 let translations = try translationEntities.map({ try $0.translation(with: e.uuid) })
                 output.append(try e.expression(with: translations))
             }
-        case .projectID(let projectID):
+            return output
+        case ExpressionQuery.projectID(let projectID), GenericExpressionQuery.projectID(let projectID):
             guard let project = try? db.projectEntity(statement: renderStatement(.selectProject(withID: projectID))) else {
                 throw Error.invalidProjectID(projectID)
             }
             
             let entities = try db.expressionEntities(statement: renderStatement(.selectExpressions(withProjectID: project.id)))
-            output = try entities.map({ try $0.expression() })
-        case .key(let key):
+            return try entities.map({ try $0.expression() })
+        case ExpressionQuery.key(let key), GenericExpressionQuery.key(let key):
             let entities = try db.expressionEntities(statement: renderStatement(.selectExpressions(withKeyLike: key)))
-            output = try entities.map({ try $0.expression() })
-        case .named(let name):
+            return try entities.map({ try $0.expression() })
+        case ExpressionQuery.named(let name), GenericExpressionQuery.named(let name):
             let entities = try db.expressionEntities(statement: renderStatement(.selectExpressions(withNameLike: name)))
-            output = try entities.map({ try $0.expression() })
-        case .having(let languageCode, let scriptCode, let regionCode):
-            let entities = try db.expressionEntities(statement: renderStatement(.selectExpressionsWith(languageCode: languageCode, scriptCode: scriptCode, regionCode: regionCode)))
-            output = try entities.map({ try $0.expression() })
-        case .havingOnly(let languageCode):
+            return try entities.map({ try $0.expression() })
+        case ExpressionQuery.havingOnly(let languageCode), GenericExpressionQuery.translationsHavingOnly(let languageCode):
             let entities = try db.expressionEntities(statement: renderStatement(.selectExpressionsHavingOnly(languageCode: languageCode)))
-            output = try entities.map({ try $0.expression() })
+            return try entities.map({ try $0.expression() })
+        case ExpressionQuery.having(let languageCode, let scriptCode, let regionCode), GenericExpressionQuery.translationsHaving(let languageCode, let scriptCode, let regionCode):
+            let entities = try db.expressionEntities(statement: renderStatement(.selectExpressionsWith(languageCode: languageCode, scriptCode: scriptCode, regionCode: regionCode)))
+            return try entities.map({ try $0.expression() })
         default:
             throw Error.unhandledQuery(query)
         }
-        
-        return output
     }
     
     public func expression(_ id: Expression.ID) throws -> Expression {
-        try expression(matching: ExpressionQuery.id(id))
+        try expression(matching: GenericExpressionQuery.id(id))
     }
     
     public func expression(matching query: CatalogQuery) throws -> Expression {
-        guard let _query = query as? SQLiteCatalog.ExpressionQuery else {
-            throw Error.invalidQuery(query)
-        }
-        
-        switch _query {
-        case .primaryKey(let id):
+        switch query {
+        case ExpressionQuery.primaryKey(let id):
             guard let entity = try db.expressionEntity(statement: renderStatement(.selectExpression(withID: id))) else {
                 throw Error.invalidPrimaryKey(id)
             }
             
             return try entity.expression()
-        case .id(let uuid):
+        case ExpressionQuery.id(let uuid), GenericExpressionQuery.id(let uuid):
             guard let entity = try db.expressionEntity(statement: renderStatement(.selectExpression(withID: uuid))) else {
                 throw Error.invalidExpressionID(uuid)
             }
             
             return try entity.expression()
-        case .key(let key):
+        case ExpressionQuery.key(let key), GenericExpressionQuery.key(let key):
             guard let entity = try db.expressionEntity(statement: renderStatement(.selectExpression(withKey: key))) else {
                 throw Error.invalidQuery(query)
             }
@@ -279,36 +257,51 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             throw Error.invalidExpressionID(id)
         }
         
-        guard let update = action as? SQLiteCatalog.ExpressionUpdate else {
-            throw Error.invalidAction(action)
-        }
-        
-        switch update {
-        case .key(let key) where key != entity.key:
+        switch action {
+        case ExpressionUpdate.key(let key), GenericExpressionUpdate.key(let key):
+            guard key != entity.key else {
+                return
+            }
+            
             try db.execute(statement: renderStatement(.updateExpression(entity.id, key: key)))
-        case .name(let name) where name != entity.name:
+        case ExpressionUpdate.name(let name), GenericExpressionUpdate.name(let name):
+            guard name != entity.name else {
+                return
+            }
+            
             try db.execute(statement: renderStatement(.updateExpression(entity.id, name: name)))
-        case .defaultLanguage(let languageCode) where languageCode.rawValue != entity.defaultLanguage:
+        case ExpressionUpdate.defaultLanguage(let languageCode), GenericExpressionUpdate.defaultLanguage(let languageCode):
+            guard languageCode.rawValue != entity.defaultLanguage else {
+                return
+            }
+            
             try db.execute(statement: renderStatement(.updateExpression(entity.id, defaultLanguage: languageCode)))
-        case .context(let context) where context != entity.context:
+        case ExpressionUpdate.context(let context), GenericExpressionUpdate.context(let context):
+            guard context != entity.context else {
+                return
+            }
+            
             try db.execute(statement: renderStatement(.updateExpression(entity.id, context: context)))
-        case .feature(let feature) where feature != entity.feature:
+        case ExpressionUpdate.feature(let feature), GenericExpressionUpdate.feature(let feature):
+            guard feature != entity.feature else {
+                return
+            }
+            
             try db.execute(statement: renderStatement(.updateExpression(entity.id, feature: feature)))
-        case .linkProject(let uuid):
+        case ExpressionUpdate.linkProject(let uuid):
             guard let project = try db.projectEntity(statement: renderStatement(.selectProject(withID: uuid))) else {
                 throw Error.invalidProjectID(uuid)
             }
             
             try linkProject(project.id, expressionID: entity.id)
-        case .unlinkProject(let uuid):
+        case ExpressionUpdate.unlinkProject(let uuid):
             guard let project = try db.projectEntity(statement: renderStatement(.selectProject(withID: uuid))) else {
                 throw Error.invalidProjectID(uuid)
             }
             
             try unlinkProject(project.id, expressionID: entity.id)
         default:
-            // Update requested where action values are already equivalent
-            break
+            throw Error.unhandledAction(action)
         }
     }
     
@@ -344,65 +337,47 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
     }
     
     public func translations(matching query: CatalogQuery) throws -> [TranslationCatalog.Translation] {
-        guard let typedQuery = query as? TranslationQuery else {
-            throw Error.invalidQuery(query)
-        }
-        
-        var output: [TranslationCatalog.Translation] = []
-        
-        switch typedQuery {
-        case .expressionID(let expressionUUID):
+        switch query {
+        case TranslationQuery.expressionID(let expressionUUID), GenericTranslationQuery.expressionID(let expressionUUID):
             guard let expressionEntity = try db.expressionEntity(statement: renderStatement(.selectExpression(withID: expressionUUID))) else {
                 throw Error.invalidExpressionID(expressionUUID)
             }
             
             let entities = try db.translationEntities(statement: renderStatement(.selectTranslationsFor(expressionEntity.id)))
-            try entities.forEach({
-                output.append(try $0.translation(with: expressionEntity.uuid))
-            })
-        case .having(let expressionId, let language, let script, let region):
-            guard let expressionEntity = try db.expressionEntity(statement: renderStatement(.selectExpression(withID: expressionId))) else {
-                throw Error.invalidExpressionID(expressionId)
-            }
-            
-            let entities = try db.translationEntities(statement: renderStatement(.selectTranslationsFor(expressionEntity.id, languageCode: language, scriptCode: script, regionCode: region)))
-            try entities.forEach({
-                output.append(try $0.translation(with: expressionEntity.uuid))
-            })
-        case .havingOnly(let expressionId, let language):
+            return try entities.map({ try $0.translation(with: expressionEntity.uuid) })
+        case TranslationQuery.havingOnly(let expressionId, let language), GenericTranslationQuery.havingOnly(let expressionId, let language):
             guard let expressionEntity = try db.expressionEntity(statement: renderStatement(.selectExpression(withID: expressionId))) else {
                 throw Error.invalidExpressionID(expressionId)
             }
             
             let entities = try db.translationEntities(statement: renderStatement(.selectTranslationsHavingOnly(expressionEntity.id, languageCode: language)))
-            try entities.forEach({
-                output.append(try $0.translation(with: expressionEntity.uuid))
-            })
+            return try entities.map({ try $0.translation(with: expressionEntity.uuid) })
+        case TranslationQuery.having(let expressionId, let language, let script, let region), GenericTranslationQuery.having(let expressionId, let language, let script, let region):
+            guard let expressionEntity = try db.expressionEntity(statement: renderStatement(.selectExpression(withID: expressionId))) else {
+                throw Error.invalidExpressionID(expressionId)
+            }
+            
+            let entities = try db.translationEntities(statement: renderStatement(.selectTranslationsFor(expressionEntity.id, languageCode: language, scriptCode: script, regionCode: region)))
+            return try entities.map({ try $0.translation(with: expressionEntity.uuid) })
         default:
             throw Error.unhandledQuery(query)
         }
-        
-        return output
     }
     
     public func translation(_ id: TranslationCatalog.Translation.ID) throws -> TranslationCatalog.Translation {
-        try translation(matching: TranslationQuery.id(id))
+        try translation(matching: GenericTranslationQuery.id(id))
     }
     
     public func translation(matching query: CatalogQuery) throws -> TranslationCatalog.Translation {
-        guard let _query = query as? SQLiteCatalog.TranslationQuery else {
-            throw Error.invalidQuery(query)
-        }
-        
         let entity: TranslationEntity
         
-        switch _query {
-        case .primaryKey(let id):
+        switch query {
+        case TranslationQuery.primaryKey(let id):
             guard let _entity = try db.translationEntity(statement: renderStatement(.selectTranslation(withID: id))) else {
                 throw Error.invalidPrimaryKey(id)
             }
             entity = _entity
-        case .id(let uuid):
+        case TranslationQuery.id(let uuid), GenericTranslationQuery.id(let uuid):
             guard let _entity = try db.translationEntity(statement: renderStatement(.selectTranslation(withID: uuid))) else {
                 throw Error.invalidTranslationID(uuid)
             }
@@ -456,22 +431,33 @@ public class SQLiteCatalog: TranslationCatalog.Catalog {
             throw Error.invalidTranslationID(id)
         }
         
-        guard let update = action as? SQLiteCatalog.TranslationUpdate else {
-            throw Error.invalidAction(action)
-        }
-        
-        switch update {
-        case .language(let languageCode) where languageCode.rawValue != entity.language:
+        switch action {
+        case TranslationUpdate.language(let languageCode), GenericTranslationUpdate.language(let languageCode):
+            guard languageCode.rawValue != entity.language else {
+                return
+            }
+            
             try db.execute(statement: renderStatement(.updateTranslation(entity.id, languageCode: languageCode)))
-        case .script(let scriptCode) where scriptCode?.rawValue != entity.script:
+        case TranslationUpdate.script(let scriptCode), GenericTranslationUpdate.script(let scriptCode):
+            guard scriptCode?.rawValue != entity.script else {
+                return
+            }
+            
             try db.execute(statement: renderStatement(.updateTranslation(entity.id, scriptCode: scriptCode)))
-        case .region(let regionCode) where regionCode?.rawValue != entity.region:
+        case TranslationUpdate.region(let regionCode), GenericTranslationUpdate.region(let regionCode):
+            guard regionCode?.rawValue != entity.region else {
+                return
+            }
+            
             try db.execute(statement: renderStatement(.updateTranslation(entity.id, regionCode: regionCode)))
-        case .value(let value) where value != entity.value:
+        case TranslationUpdate.value(let value), GenericTranslationUpdate.value(let value):
+            guard value != entity.value else {
+                return
+            }
+            
             try db.execute(statement: renderStatement(.updateTranslation(entity.id, value: value)))
         default:
-            // Update requested where action values are already equivalent
-            break
+            throw Error.unhandledAction(action)
         }
     }
     

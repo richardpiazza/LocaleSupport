@@ -100,7 +100,7 @@ extension Catalog {
         }
         
         private func importTranslations(_ expression: Expression, into catalog: SQLiteCatalog) {
-            guard let id = try? catalog.expression(matching: SQLiteCatalog.ExpressionQuery.key(expression.key)).id else {
+            guard let id = try? catalog.expression(matching: GenericExpressionQuery.key(expression.key)).id else {
                 return
             }
             

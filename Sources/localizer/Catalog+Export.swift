@@ -55,26 +55,26 @@ extension Catalog {
             switch format {
             case .android:
                 if let id = projectId {
-                    expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.projectID(id))
-                    let withLanguage = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.having(language, script, region))
+                    expressions = try catalog.expressions(matching: GenericExpressionQuery.projectID(id))
+                    let withLanguage = try catalog.expressions(matching: GenericExpressionQuery.translationsHaving(language, script, region))
                     expressions.removeAll { expression in
                         !withLanguage.contains(where: { $0.id == expression.id })
                     }
                 } else {
-                    expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.having(language, script, region))
+                    expressions = try catalog.expressions(matching: GenericExpressionQuery.translationsHaving(language, script, region))
                 }
                 
                 expressionIds = expressions.map { $0.id }
                 
                 try expressionIds.enumerated().forEach { (index, id) in
-                    expressions[index].translations = try catalog.translations(matching: SQLiteCatalog.TranslationQuery.having(id, language, script, region))
+                    expressions[index].translations = try catalog.translations(matching: GenericTranslationQuery.having(id, language, script, region))
                 }
                 
                 exportAndroid(expressions)
             case .apple:
                 if let id = projectId {
-                    expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.projectID(id))
-                    let withLanguage = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.having(language, nil, nil))
+                    expressions = try catalog.expressions(matching: GenericExpressionQuery.projectID(id))
+                    let withLanguage = try catalog.expressions(matching: GenericExpressionQuery.translationsHaving(language, nil, nil))
                     expressions.removeAll { expression in
                         !withLanguage.contains(where: { $0.id == expression.id })
                     }
@@ -85,20 +85,20 @@ extension Catalog {
                 expressionIds = expressions.map { $0.id }
                 
                 for (index, id) in expressionIds.enumerated() {
-                    let preferredTranslations = try catalog.translations(matching: SQLiteCatalog.TranslationQuery.having(id, language, script, region))
+                    let preferredTranslations = try catalog.translations(matching: GenericTranslationQuery.having(id, language, script, region))
                     if !preferredTranslations.isEmpty {
                         expressions[index].translations = preferredTranslations
                         continue
                     }
                     
-                    let fallbackTranslations = try catalog.translations(matching: SQLiteCatalog.TranslationQuery.having(id, language, nil, nil))
+                    let fallbackTranslations = try catalog.translations(matching: GenericTranslationQuery.having(id, language, nil, nil))
                     if !fallbackTranslations.isEmpty {
                         expressions[index].translations = fallbackTranslations
                         continue
                     }
                     
                     let defaultLanguage = expressions[index].defaultLanguage
-                    let defaultTranslations = try catalog.translations(matching: SQLiteCatalog.TranslationQuery.having(id, defaultLanguage, nil, nil))
+                    let defaultTranslations = try catalog.translations(matching: GenericTranslationQuery.having(id, defaultLanguage, nil, nil))
                     expressions[index].translations = defaultTranslations
                 }
                 

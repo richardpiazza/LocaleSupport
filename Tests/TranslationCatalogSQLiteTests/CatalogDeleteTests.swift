@@ -121,7 +121,7 @@ final class CatalogDeleteTests: _CatalogTestCase {
         func preConditions(catalog: SQLiteCatalog) throws {
             try catalog.createProject(project)
             try catalog.createExpression(expression)
-            try catalog.updateExpression(expressionId, action: SQLiteCatalog.ExpressionUpdate.linkProject(projectId))
+            try catalog.updateProject(projectId, action: GenericProjectUpdate.linkExpression(expressionId))
             let projects = try catalog.projects()
             XCTAssertEqual(projects.count, 1)
             let expressions = try catalog.expressions()
