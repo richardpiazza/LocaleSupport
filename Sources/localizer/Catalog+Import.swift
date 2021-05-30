@@ -83,9 +83,41 @@ extension Catalog {
                 expressions = dictionary.expressions(defaultLanguage: defaultLanguage, language: language, script: script, region: region)
             }
             
-            try expressions.forEach({
-                try catalog.createExpression($0)
+            expressions.forEach({
+                importExpression($0, into: catalog)
             })
+        }
+        
+        private func importExpression(_ expression: Expression, into catalog: SQLiteCatalog) {
+            do {
+                try catalog.createExpression(expression)
+                print("Imported Expression '\(expression.name)'")
+            } catch SQLiteCatalog.Error.existingExpressionWithKey {
+                importTranslations(expression, into: catalog)
+            } catch {
+                print("Import Failure: \(expression); \(error.localizedDescription)")
+            }
+        }
+        
+        private func importTranslations(_ expression: Expression, into catalog: SQLiteCatalog) {
+            guard let id = try? catalog.expression(matching: GenericExpressionQuery.key(expression.key)).id else {
+                return
+            }
+            
+            expression.translations.forEach { translation in
+                var t = translation
+                t.expressionID = id
+                importTranslation(t, into: catalog)
+            }
+        }
+        
+        private func importTranslation(_ translation: TranslationCatalog.Translation, into catalog: SQLiteCatalog) {
+            do {
+                try catalog.createTranslation(translation)
+                print("Imported Translation '\(translation.value)'")
+            } catch {
+                print("Import Failure: \(translation); \(error.localizedDescription)")
+            }
         }
     }
 }

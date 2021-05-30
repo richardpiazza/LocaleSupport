@@ -63,7 +63,7 @@ extension Catalog.Query {
             var projects: [Project] = []
             
             if let named = self.named {
-                projects = try catalog.projects(matching: SQLiteCatalog.ProjectQuery.named(named))
+                projects = try catalog.projects(matching: GenericProjectQuery.named(named))
             } else {
                 projects = try catalog.projects()
             }
@@ -121,9 +121,9 @@ extension Catalog.Query {
             var expressions: [Expression] = []
             
             if let key = self.key {
-                expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.key(key))
+                expressions = try catalog.expressions(matching: GenericExpressionQuery.key(key))
             } else if let named = self.named {
-                expressions = try catalog.expressions(matching: SQLiteCatalog.ExpressionQuery.named(named))
+                expressions = try catalog.expressions(matching: GenericExpressionQuery.named(named))
             } else {
                 expressions = try catalog.expressions()
             }
