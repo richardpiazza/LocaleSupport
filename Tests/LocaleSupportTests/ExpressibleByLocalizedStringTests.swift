@@ -4,11 +4,6 @@ import XCTest
 
 final class ExpressibleByLocalizedStringTests: XCTestCase {
     
-    static var allTests = [
-        ("testKey", testKey),
-        ("testLocalizedValue", testLocalizedValue),
-    ]
-    
     private static var indicators: (prefix: Character, suffix: Character)? = nil
     private static var bundle: Bundle = .main
     

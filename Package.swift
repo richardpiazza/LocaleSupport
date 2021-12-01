@@ -18,47 +18,10 @@ let package = Package(
             name: "LocaleSupport",
             targets: ["LocaleSupport"]
         ),
-        .library(
-            name: "TranslationCatalog",
-            targets: ["TranslationCatalog"]
-        ),
-        .library(
-            name: "TranslationCatalogSQLite",
-            targets: ["TranslationCatalogSQLite"]
-        ),
-        .executable(
-            name: "localizer",
-            targets: ["localizer"]
-        )
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
-        .package(
-            url: "https://github.com/apple/swift-argument-parser",
-            .upToNextMinor(from: "0.3.1")
-        ),
-        .package(
-            url: "https://github.com/MaxDesiatov/XMLCoder.git",
-            .upToNextMinor(from: "0.11.1")
-        ),
-        .package(
-            name: "PerfectSQLite",
-            url: "https://github.com/PerfectlySoft/Perfect-SQLite.git",
-            .upToNextMinor(from: "5.0.0")
-        ),
-        .package(
-            url: "https://github.com/JohnSundell/Plot.git",
-            .upToNextMinor(from: "0.8.0")
-        ),
-        .package(
-            url: "https://github.com/alexisakers/HTMLString.git",
-            .upToNextMinor(from: "6.0.0")
-        ),
-        .package(
-            url: "https://github.com/richardpiazza/Statement.git",
-            .upToNextMinor(from: "0.4.0")
-        ),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -68,32 +31,6 @@ let package = Package(
             dependencies: []
         ),
         .target(
-            name: "TranslationCatalog",
-            dependencies: ["LocaleSupport"]
-        ),
-        .target(
-            name: "TranslationCatalogSQLite",
-            dependencies: [
-                "LocaleSupport",
-                "TranslationCatalog",
-                "Statement",
-                .product(name: "StatementSQLite", package: "Statement"),
-                "PerfectSQLite"
-            ]
-        ),
-        .target(
-            name: "localizer",
-            dependencies: [
-                "LocaleSupport",
-                "TranslationCatalog",
-                "TranslationCatalogSQLite",
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
-                "XMLCoder",
-                "Plot",
-                "HTMLString",
-            ]
-        ),
-        .target(
             name: "TestResources",
             dependencies: [],
             resources: [.process("Resources")]
@@ -101,15 +38,6 @@ let package = Package(
         .testTarget(
             name: "LocaleSupportTests",
             dependencies: ["LocaleSupport", "TestResources"]
-        ),
-        .testTarget(
-            name: "LocalizerTests",
-            dependencies: ["localizer"],
-            resources: [.process("Resources")]
-        ),
-        .testTarget(
-            name: "TranslationCatalogSQLiteTests",
-            dependencies: ["LocaleSupport", "TranslationCatalog", "TranslationCatalogSQLite"]
         ),
     ],
     swiftLanguageVersions: [.v5]
