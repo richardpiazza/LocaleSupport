@@ -15,7 +15,7 @@ public extension Locale {
         self.init(identifier: id)
     }
     
-    init(language: LanguageCode, script: ScriptCode? = nil, region: RegionCode? = nil) throws {
+    init(language: LocaleSupport.LanguageCode, script: ScriptCode? = nil, region: RegionCode? = nil) throws {
         var id: String = language.rawValue
         if let script = script {
             id += "-\(script.rawValue)"
