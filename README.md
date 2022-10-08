@@ -37,6 +37,15 @@ import LocaleSupport
 
 This module is focused on implementing localized strings within apps themselves. Highlighted by the `ExpressibleByLocalizedString` protocol.
 
+**Apple Platforms Note**:
+
+As of `macOS 13`, `iOS 16`, `tvOS 16` & `watchOS 9`, the `Locale` type includes support for many of the extensions in this package:
+
+* `Locale.LanguageCode`
+* `Locale.Script`
+* `Locale.Region`
+* `Locale.Components`
+
 ## Contribution
 
 Contributions to **LocaleSupport** are welcomed and encouraged!
