@@ -1,10 +1,8 @@
 import XCTest
 @testable import LocaleSupport
-@testable import TestResources
 
 final class ExpressibleByLocalizedStringTests: XCTestCase {
     
-    private static var indicators: (prefix: Character, suffix: Character)? = nil
     private static var bundle: Bundle = .main
     
     private enum Strings: String, ExpressibleByLocalizedString {
@@ -25,10 +23,6 @@ final class ExpressibleByLocalizedStringTests: XCTestCase {
         var bundle: Bundle {
             return ExpressibleByLocalizedStringTests.bundle
         }
-        
-        var defaultIndicators: (prefix: Character, suffix: Character)? {
-            return ExpressibleByLocalizedStringTests.indicators
-        }
     }
     
     func testKey() {
@@ -44,12 +38,14 @@ final class ExpressibleByLocalizedStringTests: XCTestCase {
         XCTAssertEqual(Strings.confirm.localizedValue, "Yes")
         XCTAssertEqual(Strings.cancel.localizedValue, "Cancel")
         
-        Self.indicators = ("[", "]")
+        LocaleSupportConfiguration.defaultIndicators = ("[", "]")
         
         XCTAssertEqual(Strings.alertTitle.localizedValue, "[Delete Document]")
         XCTAssertEqual(Strings.alertMessage.localizedValue, "[Are you sure you want to delete the document?]")
         XCTAssertEqual(Strings.confirm.localizedValue, "[Yes]")
         XCTAssertEqual(Strings.cancel.localizedValue, "[Cancel]")
+        
+        LocaleSupportConfiguration.defaultIndicators = nil
         
         Self.bundle = LocalizedStrings.bundle
         
@@ -57,5 +53,7 @@ final class ExpressibleByLocalizedStringTests: XCTestCase {
         XCTAssertEqual(Strings.alertMessage.localizedValue, "¿Estás seguro de que deseas eliminar el documento?")
         XCTAssertEqual(Strings.confirm.localizedValue, "Si")
         XCTAssertEqual(Strings.cancel.localizedValue, "Cancelar")
+        
+        
     }
 }

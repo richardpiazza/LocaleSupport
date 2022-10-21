@@ -30,14 +30,10 @@ let package = Package(
             name: "LocaleSupport",
             dependencies: []
         ),
-        .target(
-            name: "TestResources",
-            dependencies: [],
-            resources: [.process("Resources")]
-        ),
         .testTarget(
             name: "LocaleSupportTests",
-            dependencies: ["LocaleSupport", "TestResources"]
+            dependencies: ["LocaleSupport"],
+            resources: [.process("Resources")]
         ),
     ],
     swiftLanguageVersions: [.v5]

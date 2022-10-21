@@ -66,6 +66,8 @@ public protocol ExpressibleByLocalizedString {
     /// Optional characters that will be prepended/appended to the `value` if used.
     ///
     /// This is handy if you want to easily know when the default value is used in your UI if lookup fails.
+    ///
+    /// The default implementation will proxy the `LocaleSupportConfiguration.defaultIndicators`.
     var defaultIndicators: (prefix: Character, suffix: Character)? { get }
 }
 
@@ -116,7 +118,7 @@ public extension ExpressibleByLocalizedString {
     var tableName: String? { nil }
     var comment: String? { nil }
     var prefix: String? { nil }
-    var defaultIndicators: (prefix: Character, suffix: Character)? { nil }
+    var defaultIndicators: (prefix: Character, suffix: Character)? { LocaleSupportConfiguration.defaultIndicators }
 }
 
 // MARK: - RawRepresentable Values
