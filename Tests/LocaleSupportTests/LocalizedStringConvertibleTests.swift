@@ -5,7 +5,7 @@ final class ExpressibleByLocalizedStringTests: XCTestCase {
     
     private static var bundle: Bundle = .main
     
-    private enum Strings: String, ExpressibleByLocalizedString {
+    private enum Strings: String, LocalizedStringConvertible {
         case alertTitle = "Delete Document"
         case alertMessage = "Are you sure you want to delete the document?"
         case confirm = "Yes"

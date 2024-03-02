@@ -35,7 +35,7 @@ import LocaleSupport
 
 ### LocaleSupport
 
-This module is focused on implementing localized strings within apps themselves. Highlighted by the `ExpressibleByLocalizedString` protocol.
+This module is focused on implementing localized strings within apps themselves. Highlighted by the `LocalizedStringConvertible` protocol.
 
 **Apple Platforms Note**:
 

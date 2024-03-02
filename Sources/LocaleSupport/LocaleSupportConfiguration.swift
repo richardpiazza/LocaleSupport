@@ -3,6 +3,6 @@ public struct LocaleSupportConfiguration {
     private init() {
     }
     
-    /// Characters that will be prepended/appended to any default `ExpressibleByLocalizedString` implementation.
+    /// Characters that will be prepended/appended to any default `LocalizedStringConvertible` implementation.
     public static var defaultIndicators: (prefix: Character, suffix: Character)?
 }
