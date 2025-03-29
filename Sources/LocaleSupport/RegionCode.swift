@@ -1,7 +1,7 @@
 /// ISO 3166 Country/Subdivision Code
 ///
 /// Codes for the names of countries, dependent territories, special areas of geographical interest, and their principal subdivisions.
-public enum RegionCode: String, Hashable, Codable, CaseIterable {
+public enum RegionCode: String, CaseIterable, Codable, Hashable, Sendable {
     case AC
     case AD
     case AE
