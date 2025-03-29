@@ -1,7 +1,9 @@
 import Foundation
 
 public extension Locale {
+    @available(*, deprecated, renamed: "LocaleSupportError")
     enum Error: Swift.Error {
+        @available(*, deprecated, renamed: "LocaleSupportError.unavailableLocalIdentifier()")
         case unavailableIdentifier(String)
     }
     
@@ -9,13 +11,17 @@ public extension Locale {
     
     init(_ id: String) throws {
         guard Locale.availableIdentifiers.contains(id) else {
-            throw Error.unavailableIdentifier(id)
+            throw LocaleSupportError.unavailableLocaleIdentifier(id)
         }
         
         self.init(identifier: id)
     }
     
-    init(language: LocaleSupport.LanguageCode, script: ScriptCode? = nil, region: RegionCode? = nil) throws {
+    init(
+        language: LocaleSupport.LanguageCode,
+        script: ScriptCode? = nil,
+        region: RegionCode? = nil
+    ) throws {
         var id: String = language.rawValue
         if let script = script {
             id += "-\(script.rawValue)"
@@ -72,8 +78,8 @@ public extension Locale {
     
     /// The US English language name
     var englishName: String? {
-        if let language = languageCode {
-            return Self.english.localizedString(forLanguageCode: language)
+        if let languageCode {
+            return Self.english.localizedString(forLanguageCode: languageCode)
         } else {
             return nil
         }
@@ -81,22 +87,28 @@ public extension Locale {
     
     /// The US English region name
     var englishRegion: String? {
-        if let region = regionCode {
-            return Self.english.localizedString(forRegionCode: region)
+        if let regionCode {
+            return Self.english.localizedString(forRegionCode: regionCode)
         } else {
             return nil
         }
     }
     
     var englishScript: String? {
-        if let script = scriptCode {
-            return Self.english.localizedString(forScriptCode: script)
+        if let scriptCode {
+            return Self.english.localizedString(forScriptCode: scriptCode)
         } else {
             return nil
         }
     }
 }
 
+#if hasFeature(RetroactiveAttribute)
+extension Locale: @retroactive Identifiable {
+    public var id: String { identifier }
+}
+#else
 extension Locale: Identifiable {
     public var id: String { identifier }
 }
+#endif

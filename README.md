@@ -2,13 +2,8 @@
 
 Swift references and extensions for app localization &amp; internationalization.
 
-<p>
-  <img src="https://github.com/richardpiazza/LocaleSupport/workflows/Swift/badge.svg?branch=main" />
-  <img src="https://img.shields.io/badge/Swift-5.3-orange.svg" />
-  <a href="https://twitter.com/richardpiazza">
-    <img src="https://img.shields.io/badge/twitter-@richardpiazza-blue.svg?style=flat" alt="Twitter: @richardpiazza" />
-  </a>
-</p>
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Frichardpiazza%2FLocaleSupport%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/richardpiazza/LocaleSupport)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Frichardpiazza%2FLocaleSupport%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/richardpiazza/LocaleSupport)
 
 ## Usage
 

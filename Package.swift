@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.8
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -7,10 +7,11 @@ let package = Package(
     name: "LocaleSupport",
     defaultLocalization: "en",
     platforms: [
-        .macOS(.v10_15),
-        .iOS(.v12),
-        .tvOS(.v12),
-        .watchOS(.v6)
+        .macOS(.v12),
+        .macCatalyst(.v15),
+        .iOS(.v15),
+        .tvOS(.v15),
+        .watchOS(.v8),
     ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
@@ -33,7 +34,9 @@ let package = Package(
         .testTarget(
             name: "LocaleSupportTests",
             dependencies: ["LocaleSupport"],
-            resources: [.process("Resources")]
+            resources: [
+                .process("Resources"),
+            ]
         ),
     ],
     swiftLanguageVersions: [.v5]
