@@ -1,35 +1,6 @@
 import Foundation
 
 public extension Locale {
-
-    typealias Identifier = String
-    
-    init(_ id: String) throws {
-        guard Locale.availableIdentifiers.contains(id) else {
-            throw LocaleSupportError.unavailableLocaleIdentifier(id)
-        }
-        
-        self.init(identifier: id)
-    }
-    
-    init(
-        language: LocaleSupport.LanguageCode,
-        script: ScriptCode? = nil,
-        region: RegionCode? = nil
-    ) throws {
-        var id: String = language.rawValue
-        if let script = script {
-            id += "-\(script.rawValue)"
-        }
-        if let region = region {
-            id += "_\(region.rawValue)"
-        }
-        
-        try self.init(id)
-    }
-}
-
-public extension Locale {
     /// Two character ISO 639-1 identifier
     var alpha2Code: String? { (languageCode?.count == 2) ? languageCode : nil }
     
@@ -97,13 +68,3 @@ public extension Locale {
         }
     }
 }
-
-#if hasFeature(RetroactiveAttribute)
-extension Locale: @retroactive Identifiable {
-    public var id: String { identifier }
-}
-#else
-extension Locale: Identifiable {
-    public var id: String { identifier }
-}
-#endif
