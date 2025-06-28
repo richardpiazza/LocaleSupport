@@ -1,5 +1,5 @@
 /// Designator used when ambiguity needs to be resolved for a particular language and/or language & region pair.
-public enum ScriptCode: String, CaseIterable, Codable, Hashable, Sendable {
+public enum ScriptCode: String, Hashable, Identifiable, Sendable, CaseIterable, Codable {
     case Arab
     case Beng
     case Cyrl
@@ -10,4 +10,6 @@ public enum ScriptCode: String, CaseIterable, Codable, Hashable, Sendable {
     case Mtei
     case Olck
     case Tfng
+    
+    public var id: String { rawValue }
 }
