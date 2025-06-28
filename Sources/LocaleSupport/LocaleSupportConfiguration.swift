@@ -1,4 +1,4 @@
-/// Global configuration fot the **LocaleSupport** package.
+/// Global configuration for the **LocaleSupport** package.
 public struct LocaleSupportConfiguration {
     private init() {
     }

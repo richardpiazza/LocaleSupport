@@ -1,12 +1,7 @@
 import Foundation
 
 public extension Locale {
-    @available(*, deprecated, renamed: "LocaleSupportError")
-    enum Error: Swift.Error {
-        @available(*, deprecated, renamed: "LocaleSupportError.unavailableLocalIdentifier()")
-        case unavailableIdentifier(String)
-    }
-    
+
     typealias Identifier = String
     
     init(_ id: String) throws {
