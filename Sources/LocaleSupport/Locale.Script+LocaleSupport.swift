@@ -10,7 +10,7 @@ public extension Locale.Script {
 
         self = script
     }
-    
+
     /// A localized representation for the identifier using the current `Locale.`
     var localizedName: String? {
         localizedName()

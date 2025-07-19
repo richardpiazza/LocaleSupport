@@ -7,10 +7,10 @@ public extension Locale.LanguageCode {
         guard Self.allCases.contains(languageCode) else {
             throw LocaleSupportError.languageCode(knownIdentifier)
         }
-        
+
         self = languageCode
     }
-    
+
     /// A localized representation for the identifier using the current `Locale.`
     var localizedName: String? {
         localizedName()

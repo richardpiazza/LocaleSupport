@@ -259,8 +259,8 @@ public enum RegionCode: String, Hashable, Identifiable, Sendable, CaseIterable, 
     case ZA
     case ZM
     case ZW
-    
+
     public static var `default`: Self = .US
-    
+
     public var id: String { rawValue }
 }

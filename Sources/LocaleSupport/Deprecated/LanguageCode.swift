@@ -599,8 +599,8 @@ public enum LanguageCode: String, Hashable, Identifiable, Sendable, CaseIterable
     case zun
     case zxx
     case zza
-    
+
     public static var `default`: Self = .en
-    
+
     public var id: String { rawValue }
 }

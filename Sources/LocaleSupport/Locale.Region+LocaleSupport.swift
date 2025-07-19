@@ -10,7 +10,7 @@ public extension Locale.Region {
 
         self = region
     }
-    
+
     /// A localized representation for the identifier using the current `Locale.`
     var localizedName: String? {
         localizedName()
@@ -20,18 +20,18 @@ public extension Locale.Region {
     func localizedName(for locale: Locale = .current) -> String? {
         locale.localizedString(forRegionCode: identifier)
     }
-    
+
     /// An _emoji_ representation of the `Locale.Region`.
     var unicodeFlag: String? {
         // equivalent to UInt32 = 127397
         let base = UnicodeScalar("🇦").value - UnicodeScalar("A").value
         var symbol = ""
-        identifier.unicodeScalars.forEach {
-            if let scalar = UnicodeScalar(base + $0.value) {
+        for unicodeScalar in identifier.unicodeScalars {
+            if let scalar = UnicodeScalar(base + unicodeScalar.value) {
                 symbol.unicodeScalars.append(scalar)
             }
         }
-        
+
         return symbol
     }
 }

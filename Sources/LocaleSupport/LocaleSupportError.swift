@@ -5,7 +5,7 @@ public enum LocaleSupportError: Error {
     case region(String)
     /// An unidentified `Locale.Script` was encountered.
     case script(String)
-    
+
     @available(*, deprecated)
     case unavailableLocaleIdentifier(String)
 }

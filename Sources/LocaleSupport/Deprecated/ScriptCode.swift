@@ -11,6 +11,6 @@ public enum ScriptCode: String, Hashable, Identifiable, Sendable, CaseIterable, 
     case Mtei
     case Olck
     case Tfng
-    
+
     public var id: String { rawValue }
 }
