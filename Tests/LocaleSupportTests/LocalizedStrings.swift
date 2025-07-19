@@ -1,5 +1,5 @@
 import Foundation
 
-struct LocalizedStrings {
+enum LocalizedStrings {
     static let bundle: Bundle = Bundle.module
 }
