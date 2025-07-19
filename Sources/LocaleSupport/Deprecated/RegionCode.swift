@@ -1,6 +1,7 @@
 /// ISO 3166 Country/Subdivision Code
 ///
 /// Codes for the names of countries, dependent territories, special areas of geographical interest, and their principal subdivisions.
+@available(*, deprecated, message: "Use `Foundation.Locale.Region`.")
 public enum RegionCode: String, Hashable, Identifiable, Sendable, CaseIterable, Codable {
     case AC
     case AD

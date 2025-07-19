@@ -2,8 +2,10 @@ import Foundation
 
 public extension Locale {
 
+    @available(*, deprecated)
     typealias Identifier = String
     
+    @available(*, deprecated)
     init(_ id: String) throws {
         guard Locale.availableIdentifiers.contains(id) else {
             throw LocaleSupportError.unavailableLocaleIdentifier(id)
@@ -12,6 +14,7 @@ public extension Locale {
         self.init(identifier: id)
     }
     
+    @available(*, deprecated)
     init(
         language: LocaleSupport.LanguageCode,
         script: ScriptCode? = nil,

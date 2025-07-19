@@ -1,7 +1,7 @@
 import XCTest
 @testable import LocaleSupport
 
-final class ExpressibleByLocalizedStringTests: XCTestCase {
+final class LocalizedStringConvertibleTests: XCTestCase {
     
     private static var bundle: Bundle = .main
     
@@ -21,7 +21,7 @@ final class ExpressibleByLocalizedStringTests: XCTestCase {
         }
         
         var bundle: Bundle {
-            return ExpressibleByLocalizedStringTests.bundle
+            return LocalizedStringConvertibleTests.bundle
         }
     }
     
@@ -53,7 +53,5 @@ final class ExpressibleByLocalizedStringTests: XCTestCase {
         XCTAssertEqual(Strings.alertMessage.localizedValue, "¿Estás seguro de que deseas eliminar el documento?")
         XCTAssertEqual(Strings.confirm.localizedValue, "Si")
         XCTAssertEqual(Strings.cancel.localizedValue, "Cancelar")
-        
-        
     }
 }
