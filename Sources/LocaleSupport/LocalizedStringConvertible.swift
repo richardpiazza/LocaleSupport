@@ -1,8 +1,5 @@
 import Foundation
 
-@available(*, deprecated, renamed: "LocalizedStringConvertible")
-public typealias ExpressibleByLocalizedString = LocalizedStringConvertible
-
 /// Protocol defining the properties needed to produce string localizations.
 ///
 /// Localization is one of the key differentiators between *good* apps and *great* apps. Though many development teams
