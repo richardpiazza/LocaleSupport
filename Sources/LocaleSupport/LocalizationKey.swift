@@ -11,7 +11,7 @@ public struct LocalizationKey: LocalizedStringConvertible {
         key: String,
         strategy: Strategy = .default,
         defaultValue: String,
-        comment: String? = nil
+        comment: String? = nil,
     ) {
         self.key = key
         self.strategy = strategy

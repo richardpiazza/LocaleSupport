@@ -38,11 +38,15 @@ public extension Locale.Region {
 
 #if hasFeature(RetroactiveAttribute)
 extension Locale.Region: @retroactive Identifiable {
-    public var id: String { identifier }
+    public var id: String {
+        identifier
+    }
 }
 #else
 extension Locale.Region: Identifiable {
-    public var id: String { identifier }
+    public var id: String {
+        identifier
+    }
 }
 #endif
 

@@ -15,10 +15,12 @@ struct LocalizedStringConvertibleTests {
         let defaultValueIndicator: DefaultValueIndicator?
         let bundle: Bundle
 
-        var key: String { strategy.key(from: caseName, prefix: prefix) }
+        var key: String {
+            strategy.key(from: caseName, prefix: prefix)
+        }
 
         init?(rawValue: String) {
-            return nil
+            nil
         }
 
         init(
@@ -29,7 +31,7 @@ struct LocalizedStringConvertibleTests {
             bundle: Bundle = .main,
         ) {
             self.caseName = caseName
-            self.rawValue = defaultValue
+            rawValue = defaultValue
             self.prefix = prefix
             self.defaultValueIndicator = defaultValueIndicator
             self.bundle = bundle
@@ -51,10 +53,12 @@ struct LocalizedStringConvertibleTests {
             }
         }
 
-        var bundle: Bundle { .module }
+        var bundle: Bundle {
+            .module
+        }
     }
 
-    @Test func testKey() {
+    @Test func `test key`() {
         #expect(Strings.alertTitle.key == "ALERT_TITLE")
         #expect(Strings.alertMessage.key == "ALERT_MESSAGE")
         #expect(Strings.confirm.key == "STANDARD_CONFIRM")
@@ -71,7 +75,7 @@ struct LocalizedStringConvertibleTests {
         #expect(cancel.key == "CANCEL")
     }
 
-    @Test func testLocalizedValue() {
+    @Test func `localized value`() {
         var alertTitle = TestLocalizedValues(caseName: "alertTitle", defaultValue: "Delete Document")
         var alertMessage = TestLocalizedValues(caseName: "alertMessage", defaultValue: "Are you sure you want to delete the document?")
         var confirm = TestLocalizedValues(caseName: "confirm", defaultValue: "Yes", prefix: "standard")
@@ -85,23 +89,23 @@ struct LocalizedStringConvertibleTests {
         alertTitle = TestLocalizedValues(
             caseName: "alertTitle",
             defaultValue: "Delete Document",
-            defaultValueIndicator: .openCloseBracket
+            defaultValueIndicator: .openCloseBracket,
         )
         alertMessage = TestLocalizedValues(
             caseName: "alertMessage",
             defaultValue: "Are you sure you want to delete the document?",
-            defaultValueIndicator: .openCloseBracket
+            defaultValueIndicator: .openCloseBracket,
         )
         confirm = TestLocalizedValues(
             caseName: "confirm",
             defaultValue: "Yes",
             prefix: "standard",
-            defaultValueIndicator: .openCloseBracket
+            defaultValueIndicator: .openCloseBracket,
         )
         cancel = TestLocalizedValues(
             caseName: "cancel",
             defaultValue: "Cancel",
-            defaultValueIndicator: .openCloseBracket
+            defaultValueIndicator: .openCloseBracket,
         )
 
         #expect(alertTitle.localizedValue == "[Delete Document]")
@@ -137,7 +141,7 @@ struct LocalizedStringConvertibleTests {
         #expect(cancel.localizedValue == "Cancelar")
     }
 
-    @Test func testEnumLocalizedValues() {
+    @Test func `enum localized values`() {
         #expect(Strings.alertTitle.localizedValue == "Eliminar Documento")
         #expect(Strings.alertMessage.localizedValue == "¿Estás seguro de que deseas eliminar el documento?")
         #expect(Strings.confirm.localizedValue == "Si")

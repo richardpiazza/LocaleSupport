@@ -24,7 +24,7 @@ public struct LocalizationKeyStrategy: Hashable, Sendable {
     public init(
         casing: Casing = .uppercase,
         splitting: Set<Splitting> = [.numbers, .uppercaseCharacters],
-        separator: Character = "_"
+        separator: Character = "_",
     ) {
         self.casing = casing
         self.splitting = splitting
@@ -55,13 +55,13 @@ public struct LocalizationKeyStrategy: Hashable, Sendable {
             mutatedFrom = mutatedFrom.replacingOccurrences(
                 of: captureGroup,
                 with: "\(separator)$1",
-                options: .regularExpression
+                options: .regularExpression,
             )
 
             mutatedPrefix = mutatedPrefix.replacingOccurrences(
                 of: captureGroup,
                 with: "\(separator)$1",
-                options: .regularExpression
+                options: .regularExpression,
             )
         }
 
