@@ -1,8 +1,4 @@
-#if canImport(FoundationEssentials)
-import FoundationEssentials
-#else
 import Foundation
-#endif
 
 public struct LocalizationKeyStrategy: Hashable, Sendable {
     public enum Casing: Hashable, Sendable {
