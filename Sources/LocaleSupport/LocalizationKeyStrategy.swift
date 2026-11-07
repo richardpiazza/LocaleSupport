@@ -1,9 +1,18 @@
-public struct LocalizationKeyStrategy {
-    public enum Casing {
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
+
+public struct LocalizationKeyStrategy: Hashable, Sendable {
+    public enum Casing: Hashable, Sendable {
         case uppercase
     }
 
-    public enum Splitting {
+    public enum Splitting: Hashable, Sendable {
+        /// Every digit will split
+        case anyDigit
+        /// Preserves numbers as a group
         case numbers
         case uppercaseCharacters
     }
@@ -38,7 +47,8 @@ public struct LocalizationKeyStrategy {
 
         for split in splitting {
             let captureGroup = switch split {
-            case .numbers: "([0-9])"
+            case .anyDigit: "([0-9])"
+            case .numbers: "([0-9]+)"
             case .uppercaseCharacters: "([A-Z])"
             }
 

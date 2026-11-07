@@ -1,9 +1,40 @@
+#if canImport(FoundationEssentials)
+import FoundationEssentials
+#else
+import Foundation
+#endif
 @testable import LocaleSupport
-import XCTest
+import Testing
 
-final class LocalizedStringConvertibleTests: XCTestCase {
+struct LocalizedStringConvertibleTests {
 
-    private static var bundle: Bundle = .main
+    private struct TestLocalizedValues: LocalizedStringConvertible, RawRepresentable {
+        let caseName: String
+        let rawValue: String
+        let prefix: String?
+        let defaultValueIndicator: DefaultValueIndicator?
+        let bundle: Bundle
+
+        var key: String { strategy.key(from: caseName, prefix: prefix) }
+
+        init?(rawValue: String) {
+            return nil
+        }
+
+        init(
+            caseName: String,
+            defaultValue: String,
+            prefix: String? = nil,
+            defaultValueIndicator: DefaultValueIndicator? = nil,
+            bundle: Bundle = .main,
+        ) {
+            self.caseName = caseName
+            self.rawValue = defaultValue
+            self.prefix = prefix
+            self.defaultValueIndicator = defaultValueIndicator
+            self.bundle = bundle
+        }
+    }
 
     private enum Strings: String, LocalizedStringConvertible {
         case alertTitle = "Delete Document"
@@ -20,38 +51,96 @@ final class LocalizedStringConvertibleTests: XCTestCase {
             }
         }
 
-        var bundle: Bundle {
-            LocalizedStringConvertibleTests.bundle
-        }
+        var bundle: Bundle { .module }
     }
 
-    func testKey() {
-        XCTAssertEqual(Strings.alertTitle.key, "ALERT_TITLE")
-        XCTAssertEqual(Strings.alertMessage.key, "ALERT_MESSAGE")
-        XCTAssertEqual(Strings.confirm.key, "STANDARD_CONFIRM")
-        XCTAssertEqual(Strings.cancel.key, "CANCEL")
+    @Test func testKey() {
+        #expect(Strings.alertTitle.key == "ALERT_TITLE")
+        #expect(Strings.alertMessage.key == "ALERT_MESSAGE")
+        #expect(Strings.confirm.key == "STANDARD_CONFIRM")
+        #expect(Strings.cancel.key == "CANCEL")
+
+        let alertTitle = TestLocalizedValues(caseName: "alertTitle", defaultValue: "Delete Document")
+        let alertMessage = TestLocalizedValues(caseName: "alertMessage", defaultValue: "Are you sure you want to delete the document?")
+        let confirm = TestLocalizedValues(caseName: "confirm", defaultValue: "Yes", prefix: "standard")
+        let cancel = TestLocalizedValues(caseName: "cancel", defaultValue: "Cancel")
+
+        #expect(alertTitle.key == "ALERT_TITLE")
+        #expect(alertMessage.key == "ALERT_MESSAGE")
+        #expect(confirm.key == "STANDARD_CONFIRM")
+        #expect(cancel.key == "CANCEL")
     }
 
-    func testLocalizedValue() {
-        XCTAssertEqual(Strings.alertTitle.localizedValue, "Delete Document")
-        XCTAssertEqual(Strings.alertMessage.localizedValue, "Are you sure you want to delete the document?")
-        XCTAssertEqual(Strings.confirm.localizedValue, "Yes")
-        XCTAssertEqual(Strings.cancel.localizedValue, "Cancel")
+    @Test func testLocalizedValue() {
+        var alertTitle = TestLocalizedValues(caseName: "alertTitle", defaultValue: "Delete Document")
+        var alertMessage = TestLocalizedValues(caseName: "alertMessage", defaultValue: "Are you sure you want to delete the document?")
+        var confirm = TestLocalizedValues(caseName: "confirm", defaultValue: "Yes", prefix: "standard")
+        var cancel = TestLocalizedValues(caseName: "cancel", defaultValue: "Cancel")
 
-        LocaleSupportConfiguration.defaultIndicators = ("[", "]")
+        #expect(alertTitle.localizedValue == "Delete Document")
+        #expect(alertMessage.localizedValue == "Are you sure you want to delete the document?")
+        #expect(confirm.localizedValue == "Yes")
+        #expect(cancel.localizedValue == "Cancel")
 
-        XCTAssertEqual(Strings.alertTitle.localizedValue, "[Delete Document]")
-        XCTAssertEqual(Strings.alertMessage.localizedValue, "[Are you sure you want to delete the document?]")
-        XCTAssertEqual(Strings.confirm.localizedValue, "[Yes]")
-        XCTAssertEqual(Strings.cancel.localizedValue, "[Cancel]")
+        alertTitle = TestLocalizedValues(
+            caseName: "alertTitle",
+            defaultValue: "Delete Document",
+            defaultValueIndicator: .openCloseBracket
+        )
+        alertMessage = TestLocalizedValues(
+            caseName: "alertMessage",
+            defaultValue: "Are you sure you want to delete the document?",
+            defaultValueIndicator: .openCloseBracket
+        )
+        confirm = TestLocalizedValues(
+            caseName: "confirm",
+            defaultValue: "Yes",
+            prefix: "standard",
+            defaultValueIndicator: .openCloseBracket
+        )
+        cancel = TestLocalizedValues(
+            caseName: "cancel",
+            defaultValue: "Cancel",
+            defaultValueIndicator: .openCloseBracket
+        )
 
-        LocaleSupportConfiguration.defaultIndicators = nil
+        #expect(alertTitle.localizedValue == "[Delete Document]")
+        #expect(alertMessage.localizedValue == "[Are you sure you want to delete the document?]")
+        #expect(confirm.localizedValue == "[Yes]")
+        #expect(cancel.localizedValue == "[Cancel]")
 
-        Self.bundle = LocalizedStrings.bundle
+        alertTitle = TestLocalizedValues(
+            caseName: "alertTitle",
+            defaultValue: "Delete Document",
+            bundle: .module,
+        )
+        alertMessage = TestLocalizedValues(
+            caseName: "alertMessage",
+            defaultValue: "Are you sure you want to delete the document?",
+            bundle: .module,
+        )
+        confirm = TestLocalizedValues(
+            caseName: "confirm",
+            defaultValue: "Yes",
+            prefix: "standard",
+            bundle: .module,
+        )
+        cancel = TestLocalizedValues(
+            caseName: "cancel",
+            defaultValue: "Cancel",
+            bundle: .module,
+        )
 
-        XCTAssertEqual(Strings.alertTitle.localizedValue, "Eliminar Documento")
-        XCTAssertEqual(Strings.alertMessage.localizedValue, "¿Estás seguro de que deseas eliminar el documento?")
-        XCTAssertEqual(Strings.confirm.localizedValue, "Si")
-        XCTAssertEqual(Strings.cancel.localizedValue, "Cancelar")
+        #expect(alertTitle.localizedValue == "Eliminar Documento")
+        #expect(alertMessage.localizedValue == "¿Estás seguro de que deseas eliminar el documento?")
+        #expect(confirm.localizedValue == "Si")
+        #expect(cancel.localizedValue == "Cancelar")
+    }
+
+    @Test func testEnumLocalizedValues() {
+        #expect(Strings.alertTitle.localizedValue == "Eliminar Documento")
+        #expect(Strings.alertMessage.localizedValue == "¿Estás seguro de que deseas eliminar el documento?")
+        #expect(Strings.confirm.localizedValue == "Si")
+        #expect(Strings.cancel.localizedValue == "Cancelar")
     }
 }

@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -12,6 +12,7 @@ let package = Package(
         .iOS(.v16),
         .tvOS(.v16),
         .watchOS(.v9),
+        .visionOS(.v1), // .v2 ~ iOS 18
     ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
@@ -39,5 +40,15 @@ let package = Package(
             ]
         ),
     ],
-    swiftLanguageVersions: [.v5]
+    swiftLanguageModes: [.v5]
 )
+
+for target in package.targets {
+    var settings = target.swiftSettings ?? []
+    settings.append(contentsOf: [
+        .enableUpcomingFeature("ExistentialAny"),
+        .enableUpcomingFeature("MemberImportVisibility"),
+        .enableUpcomingFeature("StrictConcurrency=complete"),
+    ])
+    target.swiftSettings = settings
+}

@@ -66,11 +66,17 @@ public protocol LocalizedStringConvertible {
     ///         no spaces or punctuation.
     var prefix: String? { get }
 
-    /// Optional characters that will be prepended/appended to the `value` if used.
+    /// Characters that will be prepended/appended to the `defaultValue` if used.
+    ///
+    /// This is handy if you want to easily know when the default value is used in your UI if lookup fails.
+    var defaultValueIndicator: DefaultValueIndicator? { get }
+
+    /// Optional characters that will be prepended/appended to the `defaultValue` if used.
     ///
     /// This is handy if you want to easily know when the default value is used in your UI if lookup fails.
     ///
     /// The default implementation will proxy the `LocaleSupportConfiguration.defaultIndicators`.
+    @available(*, deprecated, renamed: "defaultValueIndicator")
     var defaultIndicators: (prefix: Character, suffix: Character)? { get }
 }
 
@@ -81,6 +87,8 @@ public extension LocalizedStringConvertible {
     var tableName: String? { nil }
     var comment: String? { nil }
     var prefix: String? { nil }
+    var defaultValueIndicator: DefaultValueIndicator? { nil }
+    @available(*, deprecated)
     var defaultIndicators: (prefix: Character, suffix: Character)? { LocaleSupportConfiguration.defaultIndicators }
 
     /// The value returned from 'NSLocalizedString(...)' or `Bundle.localizedString()`.
@@ -131,8 +139,8 @@ public extension LocalizedStringConvertible where Self: RawRepresentable, Self.R
     /// When an enumeration is declared to be using a `RawValue` of type `String`, the assumption will be that the value
     /// specified is the default value for localization should the '.strings' lookup fail.
     var defaultValue: String {
-        if let indicators = defaultIndicators {
-            String(indicators.prefix) + rawValue + String(indicators.suffix)
+        if let defaultValueIndicator {
+            String(defaultValueIndicator.prefix) + rawValue + String(defaultValueIndicator.suffix)
         } else {
             rawValue
         }
