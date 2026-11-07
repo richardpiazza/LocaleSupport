@@ -24,11 +24,15 @@ public extension Locale.Script {
 
 #if hasFeature(RetroactiveAttribute)
 extension Locale.Script: @retroactive Identifiable {
-    public var id: String { identifier }
+    public var id: String {
+        identifier
+    }
 }
 #else
 extension Locale.Script: Identifiable {
-    public var id: String { identifier }
+    public var id: String {
+        identifier
+    }
 }
 #endif
 

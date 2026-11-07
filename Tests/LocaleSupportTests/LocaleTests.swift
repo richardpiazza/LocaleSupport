@@ -1,18 +1,19 @@
+import Foundation
 @testable import LocaleSupport
-import XCTest
+import Testing
 
-final class LocaleTests: XCTestCase {
+struct LocaleTests {
 
-    func testAllCases() {
-        XCTAssertEqual(Locale.LanguageCode.allCases.count, 107)
-        XCTAssertEqual(Locale.Script.allCases.count, 37)
-        XCTAssertEqual(Locale.Region.allCases.count, 255)
+    @Test func `all cases`() {
+        #expect(Locale.LanguageCode.allCases.count == 107)
+        #expect(Locale.Script.allCases.count == 37)
+        #expect(Locale.Region.allCases.count == 255)
     }
 
-    func testLocalizedNames() {
+    @Test func `localized names`() {
         let englishUnitedStates = Locale(languageCode: .english, languageRegion: .unitedStates)
-        XCTAssertEqual(Locale.LanguageCode.french.localizedName(for: englishUnitedStates), "French")
-        XCTAssertEqual(Locale.Script.hanSimplified.localizedName(for: englishUnitedStates), "Simplified Han")
-        XCTAssertEqual(Locale.Region.brazil.localizedName(for: englishUnitedStates), "Brazil")
+        #expect(Locale.LanguageCode.french.localizedName(for: englishUnitedStates) == "French")
+        #expect(Locale.Script.hanSimplified.localizedName(for: englishUnitedStates) == "Simplified Han")
+        #expect(Locale.Region.brazil.localizedName(for: englishUnitedStates) == "Brazil")
     }
 }

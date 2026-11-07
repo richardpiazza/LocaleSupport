@@ -1,9 +1,14 @@
-public struct LocalizationKeyStrategy {
-    public enum Casing {
+import Foundation
+
+public struct LocalizationKeyStrategy: Hashable, Sendable {
+    public enum Casing: Hashable, Sendable {
         case uppercase
     }
 
-    public enum Splitting {
+    public enum Splitting: Hashable, Sendable {
+        /// Every digit will split
+        case anyDigit
+        /// Preserves numbers as a group
         case numbers
         case uppercaseCharacters
     }
@@ -15,7 +20,7 @@ public struct LocalizationKeyStrategy {
     public init(
         casing: Casing = .uppercase,
         splitting: Set<Splitting> = [.numbers, .uppercaseCharacters],
-        separator: Character = "_"
+        separator: Character = "_",
     ) {
         self.casing = casing
         self.splitting = splitting
@@ -38,20 +43,21 @@ public struct LocalizationKeyStrategy {
 
         for split in splitting {
             let captureGroup = switch split {
-            case .numbers: "([0-9])"
+            case .anyDigit: "([0-9])"
+            case .numbers: "([0-9]+)"
             case .uppercaseCharacters: "([A-Z])"
             }
 
             mutatedFrom = mutatedFrom.replacingOccurrences(
                 of: captureGroup,
                 with: "\(separator)$1",
-                options: .regularExpression
+                options: .regularExpression,
             )
 
             mutatedPrefix = mutatedPrefix.replacingOccurrences(
                 of: captureGroup,
                 with: "\(separator)$1",
-                options: .regularExpression
+                options: .regularExpression,
             )
         }
 
