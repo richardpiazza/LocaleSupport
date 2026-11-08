@@ -4,15 +4,15 @@ import Testing
 
 struct LocalizedStringConvertibleTests {
 
-    private struct TestLocalizedValues: LocalizedStringConvertible, RawRepresentable {
-        let caseName: String
+    private struct StringsStruct: RawRepresentable, LocalizedStringConvertible {
         let rawValue: String
+        let caseName: String
         let prefix: String?
-        let defaultValueIndicator: DefaultValueIndicator?
+        let defaultIndicator: DefaultValueIndicator?
         let bundle: Bundle
 
         var key: String {
-            strategy.key(from: caseName, prefix: prefix)
+            keyStrategy.key(from: caseName, prefix: prefix)
         }
 
         init?(rawValue: String) {
@@ -20,21 +20,21 @@ struct LocalizedStringConvertibleTests {
         }
 
         init(
+            rawValue: String,
             caseName: String,
-            defaultValue: String,
             prefix: String? = nil,
-            defaultValueIndicator: DefaultValueIndicator? = nil,
+            defaultIndicator: DefaultValueIndicator? = nil,
             bundle: Bundle = .main,
         ) {
+            self.rawValue = rawValue
             self.caseName = caseName
-            rawValue = defaultValue
             self.prefix = prefix
-            self.defaultValueIndicator = defaultValueIndicator
+            self.defaultIndicator = defaultIndicator
             self.bundle = bundle
         }
     }
 
-    private enum Strings: String, LocalizedStringConvertible {
+    private enum StringsEnum: String, LocalizedStringConvertible {
         case alertTitle = "Delete Document"
         case alertMessage = "Are you sure you want to delete the document?"
         case confirm = "Yes"
@@ -54,16 +54,38 @@ struct LocalizedStringConvertibleTests {
         }
     }
 
-    @Test func `test key`() {
-        #expect(Strings.alertTitle.key == "ALERT_TITLE")
-        #expect(Strings.alertMessage.key == "ALERT_MESSAGE")
-        #expect(Strings.confirm.key == "STANDARD_CONFIRM")
-        #expect(Strings.cancel.key == "CANCEL")
+    @Test func `Strings Enum Key Generation`() {
+        #expect(StringsEnum.alertTitle.key == "ALERT_TITLE")
+        #expect(StringsEnum.alertMessage.key == "ALERT_MESSAGE")
+        #expect(StringsEnum.confirm.key == "STANDARD_CONFIRM")
+        #expect(StringsEnum.cancel.key == "CANCEL")
+    }
 
-        let alertTitle = TestLocalizedValues(caseName: "alertTitle", defaultValue: "Delete Document")
-        let alertMessage = TestLocalizedValues(caseName: "alertMessage", defaultValue: "Are you sure you want to delete the document?")
-        let confirm = TestLocalizedValues(caseName: "confirm", defaultValue: "Yes", prefix: "standard")
-        let cancel = TestLocalizedValues(caseName: "cancel", defaultValue: "Cancel")
+    @Test func `Strings Enum Localized Values`() {
+        #expect(StringsEnum.alertTitle.localizedValue == "Eliminar Documento")
+        #expect(StringsEnum.alertMessage.localizedValue == "¿Estás seguro de que deseas eliminar el documento?")
+        #expect(StringsEnum.confirm.localizedValue == "Si")
+        #expect(StringsEnum.cancel.localizedValue == "Cancelar")
+    }
+
+    @Test func `Strings Struct Key Generation`() {
+        let alertTitle = StringsStruct(
+            rawValue: "Delete Document",
+            caseName: "alertTitle",
+        )
+        let alertMessage = StringsStruct(
+            rawValue: "Are you sure you want to delete the document?",
+            caseName: "alertMessage",
+        )
+        let confirm = StringsStruct(
+            rawValue: "Yes",
+            caseName: "confirm",
+            prefix: "standard",
+        )
+        let cancel = StringsStruct(
+            rawValue: "Cancel",
+            caseName: "cancel",
+        )
 
         #expect(alertTitle.key == "ALERT_TITLE")
         #expect(alertMessage.key == "ALERT_MESSAGE")
@@ -71,37 +93,54 @@ struct LocalizedStringConvertibleTests {
         #expect(cancel.key == "CANCEL")
     }
 
-    @Test func `localized value`() {
-        var alertTitle = TestLocalizedValues(caseName: "alertTitle", defaultValue: "Delete Document")
-        var alertMessage = TestLocalizedValues(caseName: "alertMessage", defaultValue: "Are you sure you want to delete the document?")
-        var confirm = TestLocalizedValues(caseName: "confirm", defaultValue: "Yes", prefix: "standard")
-        var cancel = TestLocalizedValues(caseName: "cancel", defaultValue: "Cancel")
+    @Test func `Strings Struct Localized Values`() {
+        var alertTitle = StringsStruct(
+            rawValue: "Delete Document",
+            caseName: "alertTitle",
+            defaultIndicator: nil,
+        )
+        var alertMessage = StringsStruct(
+            rawValue: "Are you sure you want to delete the document?",
+            caseName: "alertMessage",
+            defaultIndicator: nil,
+        )
+        var confirm = StringsStruct(
+            rawValue: "Yes",
+            caseName: "confirm",
+            prefix: "standard",
+            defaultIndicator: nil,
+        )
+        var cancel = StringsStruct(
+            rawValue: "Cancel",
+            caseName: "cancel",
+            defaultIndicator: nil,
+        )
 
         #expect(alertTitle.localizedValue == "Delete Document")
         #expect(alertMessage.localizedValue == "Are you sure you want to delete the document?")
         #expect(confirm.localizedValue == "Yes")
         #expect(cancel.localizedValue == "Cancel")
 
-        alertTitle = TestLocalizedValues(
+        alertTitle = StringsStruct(
+            rawValue: "Delete Document",
             caseName: "alertTitle",
-            defaultValue: "Delete Document",
-            defaultValueIndicator: .openCloseBracket,
+            defaultIndicator: .openCloseBracket,
         )
-        alertMessage = TestLocalizedValues(
+        alertMessage = StringsStruct(
+            rawValue: "Are you sure you want to delete the document?",
             caseName: "alertMessage",
-            defaultValue: "Are you sure you want to delete the document?",
-            defaultValueIndicator: .openCloseBracket,
+            defaultIndicator: .openCloseBracket,
         )
-        confirm = TestLocalizedValues(
+        confirm = StringsStruct(
+            rawValue: "Yes",
             caseName: "confirm",
-            defaultValue: "Yes",
             prefix: "standard",
-            defaultValueIndicator: .openCloseBracket,
+            defaultIndicator: .openCloseBracket,
         )
-        cancel = TestLocalizedValues(
+        cancel = StringsStruct(
+            rawValue: "Cancel",
             caseName: "cancel",
-            defaultValue: "Cancel",
-            defaultValueIndicator: .openCloseBracket,
+            defaultIndicator: .openCloseBracket,
         )
 
         #expect(alertTitle.localizedValue == "[Delete Document]")
@@ -109,25 +148,25 @@ struct LocalizedStringConvertibleTests {
         #expect(confirm.localizedValue == "[Yes]")
         #expect(cancel.localizedValue == "[Cancel]")
 
-        alertTitle = TestLocalizedValues(
+        alertTitle = StringsStruct(
+            rawValue: "Delete Document",
             caseName: "alertTitle",
-            defaultValue: "Delete Document",
             bundle: .module,
         )
-        alertMessage = TestLocalizedValues(
+        alertMessage = StringsStruct(
+            rawValue: "Are you sure you want to delete the document?",
             caseName: "alertMessage",
-            defaultValue: "Are you sure you want to delete the document?",
             bundle: .module,
         )
-        confirm = TestLocalizedValues(
+        confirm = StringsStruct(
+            rawValue: "Yes",
             caseName: "confirm",
-            defaultValue: "Yes",
             prefix: "standard",
             bundle: .module,
         )
-        cancel = TestLocalizedValues(
+        cancel = StringsStruct(
+            rawValue: "Cancel",
             caseName: "cancel",
-            defaultValue: "Cancel",
             bundle: .module,
         )
 
@@ -135,12 +174,5 @@ struct LocalizedStringConvertibleTests {
         #expect(alertMessage.localizedValue == "¿Estás seguro de que deseas eliminar el documento?")
         #expect(confirm.localizedValue == "Si")
         #expect(cancel.localizedValue == "Cancelar")
-    }
-
-    @Test func `enum localized values`() {
-        #expect(Strings.alertTitle.localizedValue == "Eliminar Documento")
-        #expect(Strings.alertMessage.localizedValue == "¿Estás seguro de que deseas eliminar el documento?")
-        #expect(Strings.confirm.localizedValue == "Si")
-        #expect(Strings.cancel.localizedValue == "Cancelar")
     }
 }

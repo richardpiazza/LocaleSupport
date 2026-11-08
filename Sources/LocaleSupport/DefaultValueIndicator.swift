@@ -12,5 +12,8 @@ public struct DefaultValueIndicator: Hashable, Sendable {
         self.suffix = suffix
     }
 
-    public static let openCloseBracket: DefaultValueIndicator = DefaultValueIndicator()
+    public static let `default`: DefaultValueIndicator = DefaultValueIndicator()
+    public static var openCloseBracket: DefaultValueIndicator {
+        .default
+    }
 }

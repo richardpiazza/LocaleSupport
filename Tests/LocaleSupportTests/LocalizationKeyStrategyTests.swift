@@ -3,7 +3,7 @@ import Testing
 
 struct LocalizationKeyStrategyTests {
 
-    @Test func `key generation`() {
+    @Test func `Default Strategy`() {
         let strategy: LocalizationKeyStrategy = .default
 
         var key = strategy.key(from: "buttonTitleContinue", prefix: nil)
@@ -16,7 +16,7 @@ struct LocalizationKeyStrategyTests {
         #expect(key == "NEXT")
     }
 
-    @Test func `multiple numers`() {
+    @Test func `Sequential Digits`() {
         var strategy: LocalizationKeyStrategy = .default
 
         var key = strategy.key(from: "button4Title", prefix: nil)
