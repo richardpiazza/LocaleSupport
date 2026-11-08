@@ -1,5 +1,3 @@
-import Foundation
-
 /// Protocol defining the properties needed to produce string localizations.
 ///
 /// Localization is one of the key differentiators between *good* apps and *great* apps. Though many development teams
@@ -29,142 +27,21 @@ import Foundation
 ///
 /// For detailed information on using `String` resources, see
 /// [Apple's Documentation](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/LoadingResources/Strings/Strings.html#//apple_ref/doc/uid/20000005-97055)
-public protocol LocalizedStringConvertible {
-    /// The '.strings' unique identifier for the localization
-    var key: String { get }
-
-    /// Strategy used to automatically generate keys
-    var strategy: LocalizationKeyStrategy { get }
-
-    /// Optional file name in the '.strings' file containing the 'key'
-    ///
-    /// By default, specifying 'nil' for the 'tableName' in NSLocalizedString() will use the 'Localizable.strings' file.
-    /// If multiple '.strings' files are in use, the specific file can be indicated.
-    var tableName: String? { get }
-
-    /// The `Bundle` where the localization table can be found
-    ///
-    /// If creating a shared library or multiple modules, the bundle value can be specified by overriding this value.
-    var bundle: Bundle { get }
-
-    /// The default value
-    ///
-    /// If a lookup fails to find a 'key' in the specified 'table', a default value should be provided.
-    var defaultValue: String { get }
-
-    /// A comment to clarify the intended usage of the localization
-    ///
-    /// This should be provided to translation teams to assist in proper proper translation.
-    var comment: String? { get }
-
-    /// A optional prefix appended to the beginning of the key.
-    ///
-    /// It is a common practice to group string localizations to help identify purpose and clarify meaning. The default
-    /// implementation will append any given value to the beginning of the generated localization 'key'.
-    ///
-    /// - note: If a string is specified, it should be in the same style as the enumeration case (i.e. camelCase) with
-    ///         no spaces or punctuation.
-    var prefix: String? { get }
-
-    /// Characters that will be prepended/appended to the `defaultValue` if used.
-    ///
-    /// This is handy if you want to easily know when the default value is used in your UI if lookup fails.
-    var defaultValueIndicator: DefaultValueIndicator? { get }
-
-    /// Optional characters that will be prepended/appended to the `defaultValue` if used.
-    ///
-    /// This is handy if you want to easily know when the default value is used in your UI if lookup fails.
-    ///
-    /// The default implementation will proxy the `LocaleSupportConfiguration.defaultIndicators`.
-    @available(*, deprecated, renamed: "defaultValueIndicator")
-    var defaultIndicators: (prefix: Character, suffix: Character)? { get }
-}
+public protocol LocalizedStringConvertible: AnnotatedLocalizationReference, BundleRetrievable {}
 
 public extension LocalizedStringConvertible {
-    var key: String {
-        strategy.key(from: String(describing: self), prefix: prefix)
-    }
-
-    var strategy: LocalizationKeyStrategy {
-        .default
-    }
-
-    var bundle: Bundle {
-        .main
-    }
-
-    var tableName: String? {
-        nil
-    }
-
-    var comment: String? {
-        nil
-    }
-
-    var prefix: String? {
-        nil
-    }
-
-    var defaultValueIndicator: DefaultValueIndicator? {
-        nil
-    }
-
-    @available(*, deprecated)
-    var defaultIndicators: (prefix: Character, suffix: Character)? {
-        LocaleSupportConfiguration.defaultIndicators
-    }
-
-    /// The value returned from 'NSLocalizedString(...)' or `Bundle.localizedString()`.
-    var localizedValue: String {
-        #if canImport(ObjectiveC)
-        NSLocalizedString(key, tableName: tableName, bundle: bundle, value: defaultValue, comment: comment ?? "")
-        #else
-        bundle.localizedString(forKey: key, value: defaultValue, table: tableName)
-        #endif
-    }
-}
-
-@available(*, deprecated, renamed: "strategy.key(from:prefix:)")
-public extension LocalizedStringConvertible {
-    /// Generates a '.strings' key applying casing & prefixing as needed.
-    ///
-    /// Each localization needs a unique 'key' to be defined in the '.strings' files. If a `prefix` is specific, it will
-    /// be appended to the beginning of the key name. This generates a '_' separated, uppercased representation of a
-    /// camelCased string.
-    ///
-    /// ## Example
-    /// The `String` 'navigationControllerTitle' would be converted to 'NAVIGATION_CONTROLLER_TITLE'.
-    ///
-    /// - parameter using: The camel-cased value for which to generate a key.
-    func generateKey(using: String) -> String {
-        let caseKey = using.replacingOccurrences(of: "([A-Z])", with: "_$1", options: .regularExpression).uppercased()
-
-        if let prefix {
-            let prefixKey = prefix.replacingOccurrences(of: "([A-Z])", with: "_$1", options: .regularExpression).uppercased()
-            return "\(prefixKey)_\(caseKey)"
-        } else {
-            return caseKey
-        }
-    }
-
-    /// By default, a key will automatically be generated from the enumeration case itself.
-    var autogeneratedKey: String {
-        generateKey(using: String(describing: self))
-    }
-}
-
-// MARK: - RawRepresentable Values
-
-public extension LocalizedStringConvertible where Self: RawRepresentable, Self.RawValue == String {
-    /// `rawValue` of a `String` RawRepresentable case (with indicators if present).
-    ///
-    /// When an enumeration is declared to be using a `RawValue` of type `String`, the assumption will be that the value
-    /// specified is the default value for localization should the '.strings' lookup fail.
+    @available(*, deprecated, renamed: "value")
     var defaultValue: String {
-        if let defaultValueIndicator {
-            String(defaultValueIndicator.prefix) + rawValue + String(defaultValueIndicator.suffix)
-        } else {
-            rawValue
-        }
+        value
+    }
+
+    @available(*, deprecated, renamed: "keyStrategy")
+    var strategy: LocalizationKeyStrategy {
+        keyStrategy
+    }
+
+    @available(*, deprecated, renamed: "defaultIndicator")
+    var defaultValueIndicator: DefaultValueIndicator? {
+        defaultIndicator
     }
 }

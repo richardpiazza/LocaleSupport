@@ -1,3 +1,4 @@
+@available(*, deprecated, message: "Consider `LocalizationReference` or `AnnotatedLocalizationReference`.")
 public struct LocalizationKey: LocalizedStringConvertible {
 
     public typealias Strategy = LocalizationKeyStrategy
@@ -6,6 +7,10 @@ public struct LocalizationKey: LocalizedStringConvertible {
     public let strategy: Strategy
     public let defaultValue: String
     public let comment: String?
+
+    public var value: String {
+        defaultValue
+    }
 
     public init(
         key: String,
