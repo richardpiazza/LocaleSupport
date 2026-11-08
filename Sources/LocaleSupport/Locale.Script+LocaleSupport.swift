@@ -22,21 +22,12 @@ public extension Locale.Script {
     }
 }
 
-#if hasFeature(RetroactiveAttribute)
 extension Locale.Script: @retroactive Identifiable {
     public var id: String {
         identifier
     }
 }
-#else
-extension Locale.Script: Identifiable {
-    public var id: String {
-        identifier
-    }
-}
-#endif
 
-#if hasFeature(RetroactiveAttribute)
 extension Locale.Script: @retroactive CaseIterable {
     public static let allCases: [Locale.Script] = [
         .adlam,
@@ -78,46 +69,3 @@ extension Locale.Script: @retroactive CaseIterable {
         .tibetan,
     ]
 }
-#else
-extension Locale.Script: CaseIterable {
-    public static let allCases: [Locale.Script] = [
-        .adlam,
-        .arabic,
-        .arabicNastaliq,
-        .armenian,
-        .bangla,
-        .cherokee,
-        .cyrillic,
-        .devanagari,
-        .ethiopic,
-        .georgian,
-        .greek,
-        .gujarati,
-        .gurmukhi,
-        .hanifiRohingya,
-        .hanSimplified,
-        .hanTraditional,
-        .hebrew,
-        .hiragana,
-        .japanese,
-        .kannada,
-        .katakana,
-        .khmer,
-        .korean,
-        .lao,
-        .latin,
-        .malayalam,
-        .meiteiMayek,
-        .myanmar,
-        .odia,
-        .olChiki,
-        .sinhala,
-        .syriac,
-        .tamil,
-        .telugu,
-        .thaana,
-        .thai,
-        .tibetan,
-    ]
-}
-#endif

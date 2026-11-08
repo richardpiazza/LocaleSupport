@@ -1,3 +1,5 @@
+/// Characters that will be applied to a Localized String value if a lookup fails,
+/// and the 'default value' is used instead.
 public struct DefaultValueIndicator: Hashable, Sendable {
     public let prefix: Character
     public let suffix: Character

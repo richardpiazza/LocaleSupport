@@ -70,14 +70,6 @@ public protocol LocalizedStringConvertible {
     ///
     /// This is handy if you want to easily know when the default value is used in your UI if lookup fails.
     var defaultValueIndicator: DefaultValueIndicator? { get }
-
-    /// Optional characters that will be prepended/appended to the `defaultValue` if used.
-    ///
-    /// This is handy if you want to easily know when the default value is used in your UI if lookup fails.
-    ///
-    /// The default implementation will proxy the `LocaleSupportConfiguration.defaultIndicators`.
-    @available(*, deprecated, renamed: "defaultValueIndicator")
-    var defaultIndicators: (prefix: Character, suffix: Character)? { get }
 }
 
 public extension LocalizedStringConvertible {
@@ -106,12 +98,7 @@ public extension LocalizedStringConvertible {
     }
 
     var defaultValueIndicator: DefaultValueIndicator? {
-        nil
-    }
-
-    @available(*, deprecated)
-    var defaultIndicators: (prefix: Character, suffix: Character)? {
-        LocaleSupportConfiguration.defaultIndicators
+        .openCloseBracket
     }
 
     /// The value returned from 'NSLocalizedString(...)' or `Bundle.localizedString()`.

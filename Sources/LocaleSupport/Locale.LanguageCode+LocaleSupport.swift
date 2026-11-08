@@ -22,21 +22,12 @@ public extension Locale.LanguageCode {
     }
 }
 
-#if hasFeature(RetroactiveAttribute)
 extension Locale.LanguageCode: @retroactive Identifiable {
     public var id: String {
         identifier
     }
 }
-#else
-extension Locale.LanguageCode: Identifiable {
-    public var id: String {
-        identifier
-    }
-}
-#endif
 
-#if hasFeature(RetroactiveAttribute)
 extension Locale.LanguageCode: @retroactive CaseIterable {
     public static let allCases: [Locale.LanguageCode] = [
         .ainu,
@@ -148,116 +139,3 @@ extension Locale.LanguageCode: @retroactive CaseIterable {
         .yiddish,
     ]
 }
-#else
-extension Locale.LanguageCode: CaseIterable {
-    public static let allCases: [Locale.LanguageCode] = [
-        .ainu,
-        .albanian,
-        .amharic,
-        .apacheWestern,
-        .arabic,
-        .armenian,
-        .assamese,
-        .assyrian,
-        .azerbaijani,
-        .bangla,
-        .belarusian,
-        .bodo,
-        .bulgarian,
-        .burmese,
-        .cantonese,
-        .catalan,
-        .cherokee,
-        .chinese,
-        .croatian,
-        .czech,
-        .danish,
-        .dhivehi,
-        .dogri,
-        .dutch,
-        .dzongkha,
-        .english,
-        .estonian,
-        .faroese,
-        .finnish,
-        .french,
-        .fula,
-        .georgian,
-        .german,
-        .greek,
-        .gujarati,
-        .hawaiian,
-        .hebrew,
-        .hindi,
-        .hungarian,
-        .icelandic,
-        .igbo,
-        .indonesian,
-        .irish,
-        .italian,
-        .japanese,
-        .kannada,
-        .kashmiri,
-        .kazakh,
-        .khmer,
-        .konkani,
-        .korean,
-        .kurdish,
-        .kurdishSorani,
-        .kyrgyz,
-        .lao,
-        .latvian,
-        .lithuanian,
-        .macedonian,
-        .maithili,
-        .malay,
-        .malayalam,
-        .maltese,
-        .manipuri,
-        .māori,
-        .marathi,
-        .mongolian,
-        .navajo,
-        .nepali,
-        .norwegian,
-        .norwegianBokmål,
-        .norwegianNynorsk,
-        .odia,
-        .pashto,
-        .persian,
-        .polish,
-        .portuguese,
-        .punjabi,
-        .rohingya,
-        .romanian,
-        .russian,
-        .samoan,
-        .sanskrit,
-        .santali,
-        .serbian,
-        .sindhi,
-        .sinhala,
-        .slovak,
-        .slovenian,
-        .spanish,
-        .swahili,
-        .swedish,
-        .tagalog,
-        .tajik,
-        .tamil,
-        .telugu,
-        .thai,
-        .tibetan,
-        .tongan,
-        .turkish,
-        .turkmen,
-        .ukrainian,
-        .urdu,
-        .uyghur,
-        .uzbek,
-        .vietnamese,
-        .welsh,
-        .yiddish,
-    ]
-}
-#endif
